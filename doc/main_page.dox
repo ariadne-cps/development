@@ -73,10 +73,15 @@ A guide on the differences between the Python interface and the documented C++ A
 
 More information on the mathematical foundations of %Ariadne can be found on the following pages:
 
+<<<<<<< HEAD
  - \ref computable_analysis_page
  - \ref topology_page
  - \ref logic_page
  - \ref real_numbers_page
+=======
+ - \ref type_system_page
+ - \ref numeric_page
+>>>>>>> 46ee75ff7... Added initial documentation on type system and computability theory.
  - \ref linear_algebra_page
  - \ref linear_programming_page
  - \ref function_evaluation_page
