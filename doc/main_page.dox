@@ -80,6 +80,7 @@ More information on the mathematical foundations of %Ariadne can be found on the
  - \ref real_numbers_page
 =======
  - \ref type_system_page
+ - \ref logic_page
  - \ref numeric_page
 >>>>>>> 46ee75ff7... Added initial documentation on type system and computability theory.
  - \ref linear_algebra_page

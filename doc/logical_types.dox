@@ -1,0 +1,90 @@
+/***************************************************************************
+ *            logical_types.dox
+ *
+ *  Copyright  2018  Pieter Collins
+ *
+ ****************************************************************************/
+
+/*
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Library General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ */
+
+
+
+/*! \file logical_types.dox
+ *  \brief Documentation on logical types
+ */
+
+namespace Ariadne {
+
+/*!
+
+\page logic_page %Logic 
+
+This page describes the theory of computable logic.
+
+\section logicaltypes Logical Types
+
+The basic logical type used in (classical) mathematics and programming is the %Boolean type \f$\mathbb{B}=\{T,F\}\f$.
+This type is suitable as the result of a decidable logical predicate.
+In continuous mathematics, most predicates are not decidable, since non-robust instances cannot be resolved.
+An example is the positivity check \f$x \geq 0\f$ for real numbers \f$x\in\mathbb{R}\f$; if \f$x\f$ is exactly equal to \f$0\f$, then
+(see the \ref numeric_page for more details).
+For this reason, in %Ariadne, we provide extensed logical types, based on the \em %Kleenean type with values \f$\mathbb{K}=\{T,F,I\}\f$ and the \em %Sierpinskian type with values \f$\mathbb{S}=\{T,I\}\f$.
+The negation of a %Sierpinskian has values \f$\{F,I\}\f$.
+
+\subsection kleenean_representation Representations
+
+The %Kleenean data type can be represented in terms of the alphabet \tt T, \tt F, \tt I by taking \f$\mathtt{I}^\omega \mapsto I\f$, \f$\mathtt{I}^*\mathtt{T}^\omega \mapsto T\f$ and \f$\mathtt{I}^*\mathtt{F}^\omega \mapsto F\f$.
+
+Alternatively, using binary, we can take  \f$\mathtt{0}^\omega \mapsto I\f$, \f$\mathtt{0}^*\mathtt{11}^\omega \mapsto T\f$, and \f$\mathtt{0}^*\mathtt{10}^\omega \mapsto F\f$.
+
+The %Kleenean data type can be represented in terms of the alphabet \tt T, \tt F, \tt I by taking <tt>I</tt><sup>ω</sup> = \f$I\f$, \tt <tt>I</tt><sup>*</sup><tt>T</tt><sup>ω</sup> = \f$T\f$ and \tt <tt>I</tt><sup>*</sup><tt>F</tt><sup>ω</sup> = \f$F\f$.
+
+\subsection sierpinskian_interpretation Interpretations of the Sierpinskians
+It turns out that there are two possible interpretations of the %Sierpinskian type.
+To see this, note that the %Sierpinskians are a subtype of the %Kleeneans, so have a natural inclusion \f$\mathbb{S}\hookrightarrow\mathbb{K}\f$.
+However, since the indeterminate value \f$I\f$ denotes an unknown (or unknowable) value, there is also a natural projection \f$\mathbb{K}\to\mathbb{S}\f$ given by \f$T \mapsto T\f$ and \f$F,I \, \mapsto I\f$.
+The composition is \emph{not} the identity on \f$\mathbb{K}\f$, so loses information. 
+The inclusion of \f$\mathbb{S}\f$ in \f$\mathbb{K}\f$ loses the information that the value is not \f$F\f$, whereas the projection of \f$\mathbb{K}\f$ onto \f$\mathbb{S}\f$ loses the information that the value is \f$F\f$. 
+The "weak" interpretation of %Sierpinskian is the result of a predicate for which we have not tested for falseness, only truth.
+This is useful when only a definitely true value is relevant, or when only partial information about the object is available.
+The "strong" interpretation of %Sierpinskian is the result of a predicate which \em cannot be \em robustly false, such as the apartness (inequality) predicate on continous types.
+In %Ariadne, the "weak" Sierpinskians are called upper-Kleeneans, and are not equivalent to Sierpinskians, even though they take the same values.
+
+\subsection comparisons Comparison operators
+
+In classical mathematics, orderings are typically determined by the less-then-or-equal predicate \f$\leq\f$, and may be \em partial, satisfying axioms of 
+- Reflexivity: \f$x \leq x\f$
+- Antisymmetry: \f$x \leq y \wedge y \leq x \Rightarrow x=y \f$
+- Transitivity: \f$x \leq y \wedge y \leq z \Rightarrow x \leq z\f$
+
+or \em total, additionally satisfying
+- Totality: \f$ x\leq y \vee y \leq x \f$.
+
+In computable mathematics, we additionally distinguish \em decidable, \em quasidecidable and \em semideciable orderings, returning %Boolean, %Kleenean or (weak) %Sierpinskian values, respectively.
+
+In a decidable total order, the standard operators \f$=,\neq,\leq,\geq,<,>\f$ (in C++, denoted respectively by \c ==, \c !=, \c <=, \c >=, \c <, \c >) take %Boolean values, and satisfy the standard relations, namely
+\f[ \begin{aligned} x=y &\iff x\leq y \wedge y \leq x, \\ x\neq y &\iff \neg (x=y),\\ x\geq y &\iff y\leq x, \\ x<y &\iff x\leq y \wedge x\neq y \iff x \leq y \wedge \neg(x\geq y),\\ x>y &\iff y<x . \end{aligned}\f]
+Further, in a field, we can define \f$x\leq y\f$ in terms of the positivity predicate \f$(y-x) \geq 0\f$
+
+In a decidable partial order, we can similarly define \f$x\geq y\iff y\leq x\f$ and \f$x=y \iff x\leq y \wedge y\leq x\f$. 
+We shall postpone the discussion of the meaning of \f$x<y\f$.
+
+
+*/
+
+} // namespace Ariadne
+
