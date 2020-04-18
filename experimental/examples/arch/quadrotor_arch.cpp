@@ -60,7 +60,8 @@ int main()
     std::cout << "Quadrotor system:\n" << std::flush;
 
     MaximumError max_err=1e-2;
-    TaylorSeriesIntegrator integrator(max_err,Order(2u));
+    ThresholdSweeper<FloatDP> sweeper(DoublePrecision(),max_err/1024/10);
+    TaylorSeriesIntegrator integrator(max_err,sweeper,LipschitzConstant(0.5),Order(2u));
 
     VectorFieldEvolver evolver(dynamics,integrator);
     evolver.configuration().set_maximum_enclosure_radius(1.0);

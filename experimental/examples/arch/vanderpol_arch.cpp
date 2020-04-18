@@ -84,7 +84,8 @@ int main()
         VectorField dynamics({dot(x)=y, dot(y)= mu*y*(1-sqr(x))-x});
 
         MaximumError max_err = 1e-5;
-        TaylorSeriesIntegrator integrator(max_err, Order(5u));
+        ThresholdSweeper<FloatDP> sweeper(DoublePrecision(),max_err/1024);
+        TaylorSeriesIntegrator integrator(max_err,sweeper,LipschitzConstant(0.5),Order(5u));
 
         VectorFieldEvolver evolver(dynamics, integrator);
         evolver.configuration().set_maximum_enclosure_radius(0.03);

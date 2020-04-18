@@ -165,7 +165,8 @@ int main() {
         std::cout << "Running for W=0.1...\n" << std::flush;
 
         MaximumError max_err = 2e-3;
-        TaylorSeriesIntegrator integrator(max_err, Order(4u));
+        ThresholdSweeper<FloatDP> sweeper(DoublePrecision(),max_err/1024);
+        TaylorSeriesIntegrator integrator(max_err,sweeper,LipschitzConstant(0.5),Order(4u));
 
         VectorFieldEvolver evolver(dynamics, integrator);
         evolver.configuration().set_maximum_enclosure_radius(0.09);
