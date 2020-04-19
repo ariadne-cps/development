@@ -42,7 +42,7 @@ Int main(Int argc, const char* argv[])
     RealVariable cnt("cnt");
 
     RealConstant mu("mu",1.0_dec);
-    RealConstant sqradius("sqradius",2.35_dec);
+    RealConstant sqradius("sqradius",3.0_dec);
 
     StringVariable vanderpol("vanderpol");
     StringConstant outside("outside");
@@ -79,6 +79,16 @@ Int main(Int argc, const char* argv[])
     sw.click();
     std::cout << "Done in " << sw.elapsed() << " seconds." << std::endl;
 
-    plot("vanderpol-xy",Axes2d(-2.5<=x<=2.5, -4<=y<=4), orbit);
+    HybridAutomaton circle;
+    DiscreteLocation rotate;
+    RealVariable t("t");
+    circle.new_mode(rotate,{let(x)=sqradius*cos(t),let(y)=-sqradius*sin(t)},{dot(t)=1});
+    HybridSimulator simulator;
+    simulator.set_step_size(0.1);
+    HybridRealPoint circle_initial(rotate,{t=0});
+    HybridTime circle_time(6.28_dec,1);
+    auto circle_orbit = simulator.orbit(circle,circle_initial,circle_time);
+
+    plot("vanderpol-xy",Axes2d(-2.5<=x<=2.5,-4<=y<=4), ariadneorange, orbit, black, circle_orbit);
     plot("vanderpol-tcnt",Axes2d(0<=TimeVariable()<=7,0<=cnt<=7), orbit);
 }
