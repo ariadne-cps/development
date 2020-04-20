@@ -2,7 +2,7 @@ set(EXAMPLES_EXPERIMENTAL_ARCH
     vanderpol_arch
 	laub_loomis_arch
 	quadrotor_arch
-    vanderpol_hybrid_arch
+    lotka_volterra_arch
     space_rendezvous_arch
 )
 

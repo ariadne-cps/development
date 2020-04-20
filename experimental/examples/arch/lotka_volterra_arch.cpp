@@ -41,21 +41,27 @@ Int main(Int argc, const char* argv[])
     RealVariable y("y");
     RealVariable cnt("cnt");
 
-    RealConstant mu("mu",1.0_dec);
-    RealConstant sqradius("sqradius",3.0_dec);
+    RealConstant alpha("alpha",3);
+    RealConstant beta("beta",3);
+    RealConstant gamma("gamma",1);
+    RealConstant delta("delta",1);
+    RealConstant radius("radius",0.2_dec);
 
-    StringVariable vanderpol("vanderpol");
+    StringVariable lotkavolterra("lotkavolterra");
     StringConstant outside("outside");
     StringConstant inside("inside");
-    HybridAutomaton automaton(vanderpol.name());
+    HybridAutomaton automaton(lotkavolterra.name());
 
     DiscreteEvent enter("enter");
     DiscreteEvent exit("exit");
 
-    automaton.new_mode(vanderpol|outside,{dot(x)=y, dot(y)= mu*y*(1-sqr(x))-x, dot(cnt)=0});
-    automaton.new_mode(vanderpol|inside,{dot(x)=y, dot(y)= mu*y*(1-sqr(x))-x, dot(cnt)=1});
-    automaton.new_transition(vanderpol|outside,enter,vanderpol|inside,{next(x)=x,next(y)=y,next(cnt)=cnt},sqr(x)+sqr(y)<=sqradius,EventKind::IMPACT);
-    automaton.new_transition(vanderpol|inside,exit,vanderpol|outside,{next(x)=x,next(y)=y,next(cnt)=cnt},sqr(x)+sqr(y)>=sqradius,EventKind::IMPACT);
+    Real cx = gamma/delta;
+    Real cy = alpha/beta;
+
+    automaton.new_mode(lotkavolterra|outside,{dot(x)=alpha*x-beta*x*y, dot(y)= delta*x*y-gamma*y, dot(cnt)=0});
+    automaton.new_mode(lotkavolterra|inside,{dot(x)=alpha*x-beta*x*y, dot(y)= delta*x*y-gamma*y, dot(cnt)=1});
+    //automaton.new_transition(lotkavolterra|outside,enter,lotkavolterra|inside,{next(x)=x,next(y)=y,next(cnt)=cnt},sqr(x-cx)+sqr(y-cy)<=sqr(radius),EventKind::IMPACT);
+    //automaton.new_transition(lotkavolterra|inside,exit,lotkavolterra|outside,{next(x)=x,next(y)=y,next(cnt)=cnt},sqr(x-cx)+sqr(y-cy)>=sqr(radius),EventKind::IMPACT);
 
     MaximumError max_err=1e-5;
     TaylorSeriesIntegrator integrator(max_err,Order(5u));
@@ -67,10 +73,11 @@ Int main(Int argc, const char* argv[])
     evolver.configuration().set_maximum_spacial_error(2e-4);
     evolver.verbosity=evolver_verbosity;
 
-    Real ex(0.01_dec); //Real ex(0.15_dec);
-    Real ey(0.01_dec); //Real ey(0.05_dec);
-    HybridSet initial_set(vanderpol|outside,{1.4_dec-ex<=x<=1.4_dec+ex,-ey+2.4_dec<=y<=2.4_dec+ey,cnt==0});
-    HybridTime evolution_time(7.0,5);
+    RealPoint ic({1.2_dec,1.1_dec});
+    Real ex(0.0_dec); //Real ex(0.15_dec);
+    Real ey(0.0_dec); //Real ey(0.05_dec);
+    HybridSet initial_set(lotkavolterra|outside,{ic[0]-ex<=x<=ic[0]+ex,-ey+ic[1]<=y<=ic[1]+ey,cnt==0});
+    HybridTime evolution_time(3.64,5);
 
     StopWatch sw;
 
@@ -82,13 +89,13 @@ Int main(Int argc, const char* argv[])
     HybridAutomaton circle;
     DiscreteLocation rotate;
     RealVariable t("t");
-    circle.new_mode(rotate,{let(x)=sqradius*cos(t),let(y)=-sqradius*sin(t)},{dot(t)=1});
+    circle.new_mode(rotate,{let(x)=cx+radius*cos(t),let(y)=cy-radius*sin(t)},{dot(t)=1});
     HybridSimulator simulator;
     simulator.set_step_size(0.1);
     HybridRealPoint circle_initial(rotate,{t=0});
     HybridTime circle_time(6.28_dec,1);
     auto circle_orbit = simulator.orbit(circle,circle_initial,circle_time);
 
-    plot("vanderpol-xy",Axes2d(-2.5<=x<=2.5,-4<=y<=4), ariadneorange, orbit, black, circle_orbit);
-    plot("vanderpol-tcnt",Axes2d(0<=TimeVariable()<=7,0<=cnt<=7), orbit);
+    plot("lotkavolterra-xy",Axes2d(0.75<=x<=1.3,0.75<=y<=1.3), ariadneorange, orbit, black, circle_orbit);
+    plot("lotkavolterra-tcnt",Axes2d(0<=TimeVariable()<=evolution_time.continuous_time(),0<=cnt<=evolution_time.continuous_time()), orbit);
 }
