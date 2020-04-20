@@ -60,8 +60,8 @@ Int main(Int argc, const char* argv[])
 
     automaton.new_mode(lotkavolterra|outside,{dot(x)=alpha*x-beta*x*y, dot(y)= delta*x*y-gamma*y, dot(cnt)=0});
     automaton.new_mode(lotkavolterra|inside,{dot(x)=alpha*x-beta*x*y, dot(y)= delta*x*y-gamma*y, dot(cnt)=1});
-    automaton.new_transition(lotkavolterra|outside,enter,lotkavolterra|inside,{next(x)=x,next(y)=y,next(cnt)=cnt},sqr(x-cx)+sqr(y-cy)<=sqr(radius),EventKind::URGENT);
-    automaton.new_transition(lotkavolterra|inside,exit,lotkavolterra|outside,{next(x)=x,next(y)=y,next(cnt)=cnt},sqr(x-cx)+sqr(y-cy)>=sqr(radius),EventKind::URGENT);
+    automaton.new_transition(lotkavolterra|outside,enter,lotkavolterra|inside,{next(x)=x,next(y)=y,next(cnt)=cnt},sqr(x-cx)+sqr(y-cy)<=sqr(radius),EventKind::IMPACT);
+    automaton.new_transition(lotkavolterra|inside,exit,lotkavolterra|outside,{next(x)=x,next(y)=y,next(cnt)=cnt},sqr(x-cx)+sqr(y-cy)>=sqr(radius),EventKind::IMPACT);
 
     MaximumError max_err=1e-5;
     TaylorSeriesIntegrator integrator(max_err,Order(5u));
@@ -74,15 +74,15 @@ Int main(Int argc, const char* argv[])
     evolver.verbosity=evolver_verbosity;
 
     RealPoint ic({1.2_dec,1.1_dec});
-    Real ex(0.01_dec); //Real ex(0.002_dec);
-    Real ey(0.01_dec); //Real ey(0.002_dec);
+    Real ex(0.002_dec); //Real ex(0.002_dec);
+    Real ey(0.002_dec); //Real ey(0.002_dec);
     HybridSet initial_set(lotkavolterra|outside,{ic[0]-ex<=x<=ic[0]+ex,-ey+ic[1]<=y<=ic[1]+ey,cnt==0});
     HybridTime evolution_time(3.64,5);
 
     StopWatch sw;
 
     std::cout << "Computing evolution... " << std::flush;
-    auto orbit = evolver.orbit(initial_set,evolution_time,Semantics::LOWER);
+    auto orbit = evolver.orbit(initial_set,evolution_time,Semantics::UPPER);
     sw.click();
     std::cout << "Done in " << sw.elapsed() << " seconds." << std::endl;
 
