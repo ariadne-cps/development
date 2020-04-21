@@ -64,19 +64,18 @@ Int main(Int argc, const char* argv[])
     automaton.new_transition(lotkavolterra|inside,exit,lotkavolterra|outside,{next(x)=x,next(y)=y,next(cnt)=cnt},sqr(x-cx)+sqr(y-cy)>=sqr(radius),EventKind::IMPACT);
 
     MaximumError max_err=1e-5;
-    TaylorSeriesIntegrator integrator(max_err,Order(5u));
+    TaylorSeriesIntegrator integrator(max_err,Order(2u));
 
     GeneralHybridEvolver evolver(automaton);
     evolver.set_integrator(integrator);
     evolver.configuration().set_maximum_enclosure_radius(1.0);
-    evolver.configuration().set_maximum_step_size(0.01);
+    evolver.configuration().set_maximum_step_size(0.02);
     evolver.configuration().set_maximum_spacial_error(2e-4);
     evolver.verbosity=evolver_verbosity;
 
-    RealPoint ic({1.2_dec,1.1_dec});
-    Real ex(0.003_dec); //Real ex(0.002_dec);
-    Real ey(0.003_dec); //Real ey(0.002_dec);
-    HybridSet initial_set(lotkavolterra|outside,{ic[0]-ex<=x<=ic[0]+ex,-ey+ic[1]<=y<=ic[1]+ey,cnt==0});
+    RealPoint ic({1.3_dec,1.0_dec});
+    Real e(0.004_dec);
+    HybridSet initial_set(lotkavolterra|outside,{ic[0]-e<=x<=ic[0]+e,y==ic[1],cnt==0});
     HybridTime evolution_time(3.64,5);
 
     StopWatch sw;
@@ -96,6 +95,12 @@ Int main(Int argc, const char* argv[])
     HybridTime circle_time(2*pi,1);
     auto circle_orbit = simulator.orbit(circle,circle_initial,circle_time);
 
-    plot("lotkavolterra-xy",Axes2d(0.75<=x<=1.3,0.75<=y<=1.3), ariadneorange, orbit, black, circle_orbit);
+    FloatDPUpperBound result(0);
+    for (HybridEnclosure encl : orbit.final()) {
+        result = max(result,encl.bounding_box().second.continuous_set()[2].upper());
+    }
+    std::cout << "Trajectory stays within " << (radius*100).get_d() << "% of the equilibrium for " << result << " time units" << std::endl;
+
+    plot("lotkavolterra-xy",Axes2d(0.6<=x<=1.4,0.6<=y<=1.4), ariadneorange, orbit, black, circle_orbit);
     plot("lotkavolterra-tcnt",Axes2d(0<=TimeVariable()<=evolution_time.continuous_time(),0<=cnt<=evolution_time.continuous_time()), orbit);
 }
