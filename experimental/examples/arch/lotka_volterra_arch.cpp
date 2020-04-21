@@ -74,9 +74,9 @@ Int main(Int argc, const char* argv[])
     evolver.verbosity=evolver_verbosity;
 
     RealPoint ic({1.2_dec,1.1_dec});
-    Real ex(0.002_dec); //Real ex(0.002_dec);
-    Real ey(0.002_dec); //Real ey(0.002_dec);
-    HybridSet initial_set(lotkavolterra|outside,{ic[0]-ex<=x<=ic[0]+ex,-ey+ic[1]<=y<=ic[1]+ey,cnt==0});
+    Real ex(0.00_dec); //Real ex(0.002_dec);
+    Real ey(0.00_dec); //Real ey(0.002_dec);
+    HybridSet initial_set(lotkavolterra|inside,{ic[0]-ex<=x<=ic[0]+ex,-ey+ic[1]<=y<=ic[1]+ey,cnt==0});
     HybridTime evolution_time(3.64,5);
 
     StopWatch sw;
