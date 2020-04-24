@@ -32,10 +32,6 @@ Int main(Int argc, const char* argv[])
 {
     Nat evolver_verbosity=get_verbosity(argc,argv);
 
-    /// Set the system parameters
-    Real a = 0.5_dec;  // Coefficient of restitution
-    Real g = 9.8_dec;
-
     /// Set the position and velocity functions.
     RealVariable x("x");
     RealVariable y("y");

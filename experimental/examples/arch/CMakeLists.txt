@@ -3,6 +3,7 @@ set(EXAMPLES_EXPERIMENTAL_ARCH
 	laub_loomis_arch
 	quadrotor_arch
     lotka_volterra_arch
+    production_destruction_arch
     space_rendezvous_arch
 )
 
