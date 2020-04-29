@@ -32,12 +32,14 @@ Int main(Int argc, const char* argv[])
 {
     Nat evolver_verbosity=get_verbosity(argc,argv);
 
-    RealConstant a("a",0.3_dec);
+    //RealConstant a("a",0.3_dec);
     RealVariable x("x"),y("y"),z("z");
+    RealVariable a("a");
 
     VectorField dynamics({dot(x)=-x*y/(x+1),
                           dot(y)=x*y/(x+1)-a*y,
-                          dot(z)=a*y
+                          dot(z)=a*y,
+                          dot(a)=0
                          });
 
     std::cout << "Production-destruction system:\n" << std::flush;
@@ -48,13 +50,13 @@ Int main(Int argc, const char* argv[])
 
     VectorFieldEvolver evolver(dynamics,integrator);
     evolver.configuration().set_maximum_enclosure_radius(1.0);
-    evolver.configuration().set_maximum_step_size(0.1);
+    evolver.configuration().set_maximum_step_size(0.02);
     evolver.configuration().set_maximum_spacial_error(1e-2);
     evolver.verbosity = evolver_verbosity;
 
-    Real eps = 0.002_dec;
+    Real eps = 0.00_dec;
 
-    Box<RealInterval> initial_set({{0.98_dec-eps,0.98_dec+eps},{0.01_dec-eps,0.01_dec+eps},{0.01_dec-eps,0.01_dec+eps}});
+    Box<RealInterval> initial_set({{9.5_dec,10.0_dec},{0.01_dec,0.01_dec},{0.01_dec,0.01_dec},{0.3_dec,0.3_dec}});
 
     Real evolution_time(100.0);
 
@@ -65,8 +67,9 @@ Int main(Int argc, const char* argv[])
     sw.click();
     std::cout << "Done in " << sw.elapsed() << " seconds." << std::endl;
     std::cout << "Plotting..." << std::endl;
-    plot("production_destruction-xy",PlanarProjectionMap(3,0,1),ApproximateBoxType({{0.0,1.0},{0.0,1.0},{0.0,1.0}}), Colour(1.0,0.75,0.5), orbit);
-    plot("production_destruction-xz",PlanarProjectionMap(3,0,2),ApproximateBoxType({{0.0,1.0},{0.0,1.0},{0.0,1.0}}), Colour(1.0,0.75,0.5), orbit);
-    plot("production_destruction-yz",PlanarProjectionMap(3,1,2),ApproximateBoxType({{0.0,1.0},{0.0,1.0},{0.0,1.0}}), Colour(1.0,0.75,0.5), orbit);
+    plot("production_destruction-xy",PlanarProjectionMap(4,0,1),ApproximateBoxType({{0.0,10.0},{0.0,10.0},{0.0,10.0},{0.2,0.4}}), Colour(1.0,0.75,0.5), orbit);
+    plot("production_destruction-xz",PlanarProjectionMap(4,0,2),ApproximateBoxType({{0.0,10.0},{0.0,10.0},{0.0,10.0},{0.2,0.4}}), Colour(1.0,0.75,0.5), orbit);
+    plot("production_destruction-yz",PlanarProjectionMap(4,1,2),ApproximateBoxType({{0.0,10.0},{0.0,10.0},{0.0,10.0},{0.2,0.4}}), Colour(1.0,0.75,0.5), orbit);
+    plot("production_destruction-xa",PlanarProjectionMap(4,0,3),ApproximateBoxType({{0.0,10.0},{0.0,10.0},{0.0,10.0},{0.2,0.4}}), Colour(1.0,0.75,0.5), orbit);
     std::cout << "Files written." << std::endl;
 }
