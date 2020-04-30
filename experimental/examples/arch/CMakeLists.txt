@@ -1,5 +1,6 @@
 set(EXAMPLES_EXPERIMENTAL_ARCH
     vanderpol_arch
+    vanderpol_2coupled_arch
 	laub_loomis_arch
 	quadrotor_arch
     lotka_volterra_arch
