@@ -29,8 +29,10 @@
 using namespace Ariadne;
 
 
-int main()
+Int main(Int argc, const char* argv[])
 {
+    Nat evolver_verbosity=get_verbosity(argc,argv);
+
     RealConstant g("g",9.81_dec);
     RealConstant R("R",0.1_dec);
     RealConstant l("l",0.5_dec);
@@ -67,7 +69,7 @@ int main()
     evolver.configuration().set_maximum_enclosure_radius(1.0);
     evolver.configuration().set_maximum_step_size(0.01);
     evolver.configuration().set_maximum_spacial_error(1e-2);
-    evolver.verbosity = 0;
+    evolver.verbosity = evolver_verbosity;
 
     Real eps = 0.4_dec;
 
@@ -80,6 +82,7 @@ int main()
     std::cout << "Computing orbit... " << std::endl << std::flush;
     auto orbit = evolver.orbit(evolver.enclosure(initial_set),evolution_time,Semantics::UPPER);
     std::cout << "Checking properties... " << std::endl << std::flush;
+
     for (auto set : orbit.reach()) {
         if (possibly(set.bounding_box()[2] >= 1.40_dec))
             std::cout << "height of " << set.bounding_box()[2] << " is over the required bound." << std::endl;
