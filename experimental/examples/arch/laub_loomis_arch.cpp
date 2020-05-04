@@ -218,7 +218,7 @@ int main() {
     std::cout << "Plotting..." << std::endl;
     Box<FloatDPUpperInterval> graphics_box{{1.5,5.0},{1.5,5.0},{1.5,5.0},{1.5,5.0},{1.5,5.0},{1.5,5.0},{1.5,5.0},{0.0,20.0}};
     Figure fig=Figure();
-    fig.set_projection_map(PlanarProjectionMap(8,7,3));
+    fig.set_projection_map(Projection2d(8,7,3));
     fig.set_bounding_box(graphics_box);
     fig.set_line_colour(0.0,0.0,0.0);
     fig.set_line_style(false);

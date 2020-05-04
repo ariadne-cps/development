@@ -34,10 +34,10 @@ Int main(Int argc, const char* argv[])
 
     RealVariable x1("x1"), y1("y1"), x2("x2"), y2("y2");
 
-    std::cout << "2 coupled van der Pol oscillators system:\n" << std::flush;
+    std::cout << "Coupled van der Pol Oscillator system:\n" << std::flush;
 
-    ListSet<Enclosure> reach1, reach2;
-
+    ListSet<LabelledEnclosure> reach1, reach2;
+/*
     {
         std::cout << "Running for mu=1...\n" << std::flush;
 
@@ -45,16 +45,16 @@ Int main(Int argc, const char* argv[])
         VectorField dynamics({dot(x1)=y1, dot(y1)=mu*(1-sqr(x1))*y1+x2-2*x1, dot(x2)=y2, dot(y2)=mu*(1-sqr(x2))*y2+x1-2*x2});
 
         MaximumError max_err = 1e-5;
-        TaylorSeriesIntegrator integrator(max_err, Order(4u));
-        //TaylorPicardIntegrator integrator(max_err);
+        //TaylorSeriesIntegrator integrator(max_err, Order(5u));
+        TaylorPicardIntegrator integrator(max_err);
 
         VectorFieldEvolver evolver(dynamics, integrator);
         evolver.configuration().set_maximum_enclosure_radius(1.0);
-        evolver.configuration().set_maximum_step_size(0.01);
+        evolver.configuration().set_maximum_step_size(0.005);
         evolver.configuration().set_maximum_spacial_error(2e-4);
         evolver.verbosity = evolver_verbosity;
 
-        Box<RealInterval> initial_set({{1.25_dec, 1.55_dec},{2.25_dec, 2.35_dec},{1.25_dec, 1.55_dec},{2.25_dec, 2.35_dec}});
+        Box<RealInterval> initial_set({{1.25_dec, 1.55_dec},{2.25_dec, 2.35_dec},{1.25_dec, 1.55_dec},{2.35_dec, 2.45_dec}});
 
         Real evolution_time(7.0);
 
@@ -62,44 +62,92 @@ Int main(Int argc, const char* argv[])
 
         std::cout << "Computing orbit... \n" << std::flush;
         auto orbit = evolver.orbit(evolver.enclosure(initial_set), evolution_time, Semantics::UPPER);
-        sw.click();
         std::cout << "Done in " << sw.elapsed() << " seconds." << std::endl;
-/*
+
         std::cout << "Checking properties... \n" << std::flush;
 
         SizeType ce=0;
         for (auto set : orbit.reach()) {
-            if (possibly(set.bounding_box()[1] >= 2.75_dec)) {
-                std::cout << "set with y=" << set.bounding_box()[1] << " is outside the specification." << std::endl;
+            if (possibly(set.bounding_box().continuous_set()[1] >= 2.75_dec)) {
+                std::cout << "set with y1=" << set.bounding_box().continuous_set()[1] << " is outside the specification." << std::endl;
+                ++ce;
+            }
+            if (possibly(set.bounding_box().continuous_set()[3] >= 2.75_dec)) {
+                std::cout << "set with y2=" << set.bounding_box().continuous_set()[3] << " is outside the specification." << std::endl;
                 ++ce;
             }
         }
         sw.click();
-        if (ce>0) std::cout << "Number of sets not satisfying the specification: " << ce << std::endl;
+        if (ce>0) std::cout << "Number of failures in satisfying the specification: " << ce << std::endl;
         std::cout << "Done in " << sw.elapsed() << " seconds." << std::endl;
-*/
+
         reach1.adjoin(orbit.reach());
     }
-
-    /*
-    std::cout << "Plotting..." << std::endl;
-    Box<FloatDPUpperInterval> graphics_box(4);
-    graphics_box[0] = FloatDPUpperInterval(-4.0,4.0);
-    graphics_box[1] = FloatDPUpperInterval(-4.0,4.0);
-    graphics_box[2] = FloatDPUpperInterval(-4.0,4.0);
-    graphics_box[3] = FloatDPUpperInterval(-4.0,4.0);
-    Figure fig=Figure();
-    fig.set_bounding_box(graphics_box);
-    fig.set_projection_map(PlanarProjectionMap(4,0,1))
-    fig.set_line_colour(black);
-    fig.set_line_style(true);
-    fig.set_fill_colour(0.6,0.6,0.6);
-    fig.draw(reach2);
-    fig.set_fill_colour(ariadneorange);
-    fig.draw(reach1);
-    fig.write("vanderpol-2coupled");
     */
-    plot("vanderpol-2coupled-x1y1",PlanarProjectionMap(4,0,1),ApproximateBoxType({{-4.0,4.0},{-4.0,4.0},{-4.0,4.0},{-4.0,4.0}}), Colour(ariadneorange), reach1);
-    plot("vanderpol-2coupled-x2y2",PlanarProjectionMap(4,2,3),ApproximateBoxType({{-4.0,4.0},{-4.0,4.0},{-4.0,4.0},{-4.0,4.0}}), Colour(ariadneorange), reach1);
+
+    {
+        std::cout << "Running for mu=2...\n" << std::flush;
+
+        RealConstant mu("mu",2.0_dec);
+        VectorField dynamics({dot(x1)=y1, dot(y1)=mu*(1-sqr(x1))*y1+x2-2*x1, dot(x2)=y2, dot(y2)=mu*(1-sqr(x2))*y2+x1-2*x2});
+
+        MaximumError max_err = 1e-5;
+        //TaylorSeriesIntegrator integrator(max_err, Order(4u));
+        TaylorPicardIntegrator integrator(max_err);
+
+        VectorFieldEvolver evolver(dynamics, integrator);
+        evolver.configuration().set_maximum_enclosure_radius(0.05);
+        evolver.configuration().set_maximum_step_size(0.005);
+        evolver.configuration().set_maximum_spacial_error(2e-4);
+        evolver.verbosity = evolver_verbosity;
+
+        Box<RealInterval> initial_set({{1.55_dec, 1.85_dec},{2.25_dec, 2.35_dec},{1.55_dec, 1.85_dec},{2.35_dec, 2.45_dec}});
+
+        Real evolution_time(8.0);
+
+        StopWatch sw;
+
+        std::cout << "Computing orbit... \n" << std::flush;
+        auto orbit = evolver.orbit(evolver.enclosure(initial_set), evolution_time, Semantics::UPPER);
+        sw.click();
+        std::cout << "Done in " << sw.elapsed() << " seconds." << std::endl;
+
+        std::cout << "Checking properties... \n" << std::flush;
+
+        SizeType ce=0;
+        for (auto set : orbit.reach()) {
+            if (possibly(set.bounding_box().continuous_set()[1] >= 4.05_dec)) {
+                std::cout << "set with y1=" << set.bounding_box().continuous_set()[1] << " is outside the specification." << std::endl;
+                ++ce;
+            }
+            if (possibly(set.bounding_box().continuous_set()[3] >= 4.05_dec)) {
+                std::cout << "set with y2=" << set.bounding_box().continuous_set()[3] << " is outside the specification." << std::endl;
+                ++ce;
+            }
+        }
+        sw.click();
+        if (ce>0) std::cout << "Number of failures in satisfying the specification: " << ce << std::endl;
+        std::cout << "Done in " << sw.elapsed() << " seconds." << std::endl;
+
+        reach2.adjoin(orbit.reach());
+    }
+
+
+    std::cout << "Plotting..." << std::endl;
+
+    Axes2d x1y1_axes(-2.5<=x1<=2.5,-4.05<=y1<=4.05);
+    LabelledFigure fig1=LabelledFigure(x1y1_axes);
+    fig1 << fill_colour(Colour(0.6,0.6,0.6));
+    fig1.draw(reach1);
+    fig1 << fill_colour(ariadneorange);
+    fig1.draw(reach2);
+    fig1.write("coupled-vanderpol-x1y1");
+    Axes2d x2y2_axes(-2.5<=x2<=2.5,-4.05<=y2<=4.05);
+    LabelledFigure fig2=LabelledFigure(x1y1_axes);
+    fig2 << fill_colour(Colour(0.6,0.6,0.6));
+    fig2.draw(reach1);
+    fig2 << fill_colour(ariadneorange);
+    fig2.draw(reach2);
+    fig2.write("coupled-vanderpol-x2y2");
     std::cout << "Png files written." << std::endl;
 }
