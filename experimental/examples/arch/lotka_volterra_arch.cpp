@@ -71,7 +71,7 @@ Int main(Int argc, const char* argv[])
     evolver.verbosity=evolver_verbosity;
 
     RealPoint ic({1.3_dec,1.0_dec});
-    Real e(0.004_dec);
+    Real e(0.008_dec);
     HybridSet initial_set(lotkavolterra|outside,{ic[0]-e<=x<=ic[0]+e,y==ic[1],cnt==0});
     HybridTime evolution_time(3.64,3);
 
@@ -100,7 +100,7 @@ Int main(Int argc, const char* argv[])
     else std::cout << "No final set with two transitions has been found!" << std::endl;
 
     std::cout << "Trajectory stays within " << (radius*100).get_d() << "% of the equilibrium for at most " << max_cnt << " time units: ";
-    if (max_cnt.get_d() < 0.15) std::cout << " constraint satisfied." << std::endl;
+    if (max_cnt.get_d() < 0.2) std::cout << " constraint satisfied." << std::endl;
     else std::cout << " constraint not satisfied!" << std::endl;
 
     Box<ExactIntervalType> final_bounding(3);
