@@ -60,7 +60,8 @@ Int main(Int argc, const char* argv[])
     automaton.new_transition(lotkavolterra|inside,exit,lotkavolterra|outside,{next(x)=x,next(y)=y,next(cnt)=cnt},sqr(x-cx)+sqr(y-cy)>=sqr(radius),EventKind::IMPACT);
 
     MaximumError max_err=1e-5;
-    TaylorSeriesIntegrator integrator(max_err,Order(2u));
+    //TaylorSeriesIntegrator integrator(max_err,Order(2u));
+    TaylorPicardIntegrator integrator(max_err);
 
     GeneralHybridEvolver evolver(automaton);
     evolver.set_integrator(integrator);
