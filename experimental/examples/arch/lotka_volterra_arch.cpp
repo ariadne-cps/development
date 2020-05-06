@@ -99,8 +99,15 @@ Int main(Int argc, const char* argv[])
     else std::cout << "No final set with two transitions has been found!" << std::endl;
 
     std::cout << "Trajectory stays within " << (radius*100).get_d() << "% of the equilibrium for at most " << max_cnt << " time units: ";
-    if (possibly(max_cnt < FloatDPUpperBound(0.15))) std::cout << " constraint satisfied." << std::endl;
+    if (max_cnt.get_d() < 0.15) std::cout << " constraint satisfied." << std::endl;
     else std::cout << " constraint not satisfied!" << std::endl;
+
+    Box<ExactIntervalType> final_bounding(3);
+    for (HybridEnclosure encl : orbit.final()) {
+        Box<ExactIntervalType> current_box = encl.bounding_box().second.continuous_set();
+        final_bounding = hull(final_bounding, current_box);
+    }
+    std::cout << "Final set volume: " << final_bounding[0].width()*final_bounding[1].width() << std::endl;
 
     HybridAutomaton circle;
     DiscreteLocation rotate;
