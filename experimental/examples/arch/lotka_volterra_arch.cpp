@@ -78,8 +78,29 @@ Int main(Int argc, const char* argv[])
 
     std::cout << "Computing evolution... " << std::flush;
     auto orbit = evolver.orbit(initial_set,evolution_time,Semantics::UPPER);
+
+    FloatDPUpperBound max_cnt(0);
+    Bool has_any_zero_transitions;
+    Bool has_any_two_transitions;
+    for (HybridEnclosure encl : orbit.final()) {
+        max_cnt = max(max_cnt,encl.bounding_box().second.continuous_set()[2].upper());
+        if ((not has_any_zero_transitions) and encl.previous_events().size() == 0)
+            has_any_zero_transitions = true;
+        if ((not has_any_two_transitions) and encl.previous_events().size() == 2)
+            has_any_two_transitions = true;
+    }
+
     sw.click();
     std::cout << "Done in " << sw.elapsed() << " seconds." << std::endl;
+
+    if (has_any_zero_transitions) std::cout << "A final set with zero transitions has been found correctly." << std::endl;
+    else std::cout << "No final set with zero transitions has been found!" << std::endl;
+    if (has_any_two_transitions) std::cout << "A final set with two transitions has been found correctly." << std::endl;
+    else std::cout << "No final set with two transitions has been found!" << std::endl;
+
+    std::cout << "Trajectory stays within " << (radius*100).get_d() << "% of the equilibrium for at most " << max_cnt << " time units: ";
+    if (possibly(max_cnt < FloatDPUpperBound(0.15))) std::cout << " constraint satisfied." << std::endl;
+    else std::cout << " constraint not satisfied!" << std::endl;
 
     HybridAutomaton circle;
     DiscreteLocation rotate;
@@ -91,12 +112,5 @@ Int main(Int argc, const char* argv[])
     HybridTime circle_time(2*pi,1);
     auto circle_orbit = simulator.orbit(circle,circle_initial,circle_time);
 
-    FloatDPUpperBound result(0);
-    for (HybridEnclosure encl : orbit.final()) {
-        result = max(result,encl.bounding_box().second.continuous_set()[2].upper());
-    }
-    std::cout << "Trajectory stays within " << (radius*100).get_d() << "% of the equilibrium for " << result << " time units" << std::endl;
-
     plot("lotkavolterra-xy",Axes2d(0.6<=x<=1.4,0.6<=y<=1.4), ariadneorange, orbit, black, circle_orbit);
-    plot("lotkavolterra-tcnt",Axes2d(0<=TimeVariable()<=evolution_time.continuous_time(),0<=cnt<=evolution_time.continuous_time()), orbit);
 }
