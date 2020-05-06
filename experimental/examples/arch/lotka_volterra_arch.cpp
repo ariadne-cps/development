@@ -65,14 +65,14 @@ Int main(Int argc, const char* argv[])
     GeneralHybridEvolver evolver(automaton);
     evolver.set_integrator(integrator);
     evolver.configuration().set_maximum_enclosure_radius(1.0);
-    evolver.configuration().set_maximum_step_size(0.02);
+    evolver.configuration().set_maximum_step_size(0.024);
     evolver.configuration().set_maximum_spacial_error(2e-4);
     evolver.verbosity=evolver_verbosity;
 
     RealPoint ic({1.3_dec,1.0_dec});
     Real e(0.004_dec);
     HybridSet initial_set(lotkavolterra|outside,{ic[0]-e<=x<=ic[0]+e,y==ic[1],cnt==0});
-    HybridTime evolution_time(3.64,5);
+    HybridTime evolution_time(3.64,3);
 
     StopWatch sw;
 
