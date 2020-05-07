@@ -53,7 +53,8 @@ decltype(auto) make_space_rendezvous_problem() {
     StringConstant aborting("aborting");
 
     DiscreteEvent attempt("attempt");
-    DiscreteEvent timeout("timeout");
+    DiscreteEvent can_timeout("can_timeout");
+    DiscreteEvent must_timeout("must_timeout");
 
     HybridAutomaton space_rendezvous("space_rendezvous");
 
@@ -81,8 +82,12 @@ decltype(auto) make_space_rendezvous_problem() {
     space_rendezvous.new_mode(spacecraft|aborting, {let(rc)=rc_dyn, let(ux)=0, let(uy)=0}, {dot(t)=t_dyn, dot(x)=vx, dot(y)=vy, dot(vx)=vx_dyn, dot(vy)=vy_dyn});
 
     space_rendezvous.new_transition(spacecraft|approaching,attempt,spacecraft|rendezvous, next({t,x,y,vx,vy})={t,x,y,vx,vy}, x>=-100, EventKind::URGENT);
-    space_rendezvous.new_transition(spacecraft|approaching,timeout,spacecraft|aborting, next({t,x,y,vx,vy})={t,x,y,vx,vy}, t>=120, EventKind::URGENT);
-    space_rendezvous.new_transition(spacecraft|rendezvous,timeout,spacecraft|aborting, next({t,x,y,vx,vy})={t,x,y,vx,vy}, t>=120, EventKind::URGENT);
+    space_rendezvous.new_transition(spacecraft|approaching,can_timeout,spacecraft|aborting, next({t,x,y,vx,vy})={t,x,y,vx,vy}, t>=120, EventKind::PERMISSIVE);
+    space_rendezvous.new_transition(spacecraft|rendezvous,can_timeout,spacecraft|aborting, next({t,x,y,vx,vy})={t,x,y,vx,vy}, t>=120, EventKind::PERMISSIVE);
+
+    space_rendezvous.new_invariant(spacecraft|approaching, t<=150, must_timeout);
+    space_rendezvous.new_invariant(spacecraft|rendezvous, t<=150, must_timeout);
+
 
     return make_problem(initial_set,space_rendezvous,safe_set);
 }

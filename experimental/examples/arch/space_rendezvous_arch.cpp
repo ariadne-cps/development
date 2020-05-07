@@ -18,11 +18,12 @@
 #include "space_rendezvous_arch.hpp"
 #include <cstring>
 
-namespace Ariadne {
+using namespace Ariadne;
 
-using std::cout;
+Int main(Int argc, const char* argv[])
+{
+    Nat evolver_verbosity=get_verbosity(argc,argv);
 
-void verify_space_rendezvous() {
     auto problem = make_space_rendezvous_problem();
 
     auto initial_set = problem.initial_set;
@@ -44,11 +45,11 @@ void verify_space_rendezvous() {
     evolver.configuration().set_maximum_step_size(1.0);
     evolver.configuration().set_maximum_spacial_error(1e-3);
     evolver.configuration().set_enable_subdivisions(true);
-    evolver.verbosity=0;
+    evolver.verbosity=evolver_verbosity;
 
     StopWatch sw;
 
-    cout << "Computing orbit...\n";
+    std::cout << "Computing orbit...\n";
     HybridTime evolution_time(200.0,3);
     auto orbit=evolver.orbit(initial_set,evolution_time,Semantics::UPPER);
 
@@ -57,19 +58,19 @@ void verify_space_rendezvous() {
     StringConstant rendezvous("rendezvous");
     StringConstant aborting("aborting");
 
-    cout << "Checking properties...\n";
+    std::cout << "Checking properties...\n";
     Nat num_ce = 0;
     for (auto reach : orbit.reach()) {
         if (reach.location() == DiscreteLocation(spacecraft|rendezvous) and not(definitely(safe_set.covers(reach.bounding_box())))) {
-            cout << "Found counterexample in location " << reach.location() << " with bounding box " << reach.bounding_box() << ", unsafe\n";
+            std::cout << "Found counterexample in location " << reach.location() << " with bounding box " << reach.bounding_box() << ", unsafe\n";
             ++num_ce;
         }
         if (reach.location() == DiscreteLocation(spacecraft|aborting) and not(definitely(safe_set.separated(reach.bounding_box())))) {
-            cout << "Found counterexample in location " << reach.location() << " with bounding box " << reach.bounding_box() << ", unsafe\n";
+            std::cout << "Found counterexample in location " << reach.location() << " with bounding box " << reach.bounding_box() << ", unsafe\n";
             ++num_ce;
         }
     }
-    if (num_ce>0) cout << "Number of counterexamples: " << num_ce << std::endl;
+    if (num_ce>0) std::cout << "Number of counterexamples: " << num_ce << std::endl;
 
     sw.click();
     std::cout << "Done in " << sw.elapsed() << " seconds." << std::endl;
@@ -79,16 +80,4 @@ void verify_space_rendezvous() {
     std::cout << "Plotting..." << std::endl;
     plot("spacerendezvous",{-1000<=x<=200,-450<=y<=0},Colour(1.0,0.75,0.5),orbit.reach());
     std::cout << "File spacerendezvous.png written." << std::endl;
-}
-
-
-void test() {
-
-    verify_space_rendezvous();
-}
-
-} // namespace Ariadne
-
-int main() {
-    Ariadne::test();
 }
