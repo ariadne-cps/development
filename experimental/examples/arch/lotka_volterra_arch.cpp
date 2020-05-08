@@ -66,7 +66,7 @@ Int main(Int argc, const char* argv[])
     GeneralHybridEvolver evolver(automaton);
     evolver.set_integrator(integrator);
     evolver.configuration().set_maximum_enclosure_radius(1.0);
-    evolver.configuration().set_maximum_step_size(0.024);
+    evolver.configuration().set_maximum_step_size(0.09); // optimal: 0.0916
     evolver.configuration().set_maximum_spacial_error(2e-4);
     evolver.verbosity=evolver_verbosity;
 
@@ -100,15 +100,16 @@ Int main(Int argc, const char* argv[])
     else std::cout << "No final set with two transitions has been found!" << std::endl;
 
     std::cout << "Trajectory stays within " << (radius*100).get_d() << "% of the equilibrium for at most " << max_cnt << " time units: ";
-    if (max_cnt.get_d() < 0.2) std::cout << " constraint satisfied." << std::endl;
-    else std::cout << " constraint not satisfied!" << std::endl;
+    if (max_cnt.get_d() < 0.2) std::cout << "constraint satisfied." << std::endl;
+    else std::cout << "constraint not satisfied!" << std::endl;
 
     Box<ExactIntervalType> final_bounding(3);
+    std::cout << "# of final sets: " << orbit.final().size() << std::endl;
     for (HybridEnclosure encl : orbit.final()) {
         Box<ExactIntervalType> current_box = encl.bounding_box().second.continuous_set();
         final_bounding = hull(final_bounding, current_box);
     }
-    std::cout << "Final set volume: " << final_bounding[0].width()*final_bounding[1].width() << std::endl;
+    std::cout << "Final set area: " << final_bounding[0].width()*final_bounding[1].width() << std::endl;
 
     HybridAutomaton circle;
     DiscreteLocation rotate;
