@@ -57,7 +57,7 @@ Pair<StepSizeType,UpperBoxType> EulerBounder::_compute(ValidatedVectorMultivaria
     const PositiveFloatDPValue LIPSCHITZ_TOLERANCE=cast_positive(1.0_exact);
     const StepSizeType MINIMUM_STEP_SIZE(1,20u);
     const Nat EXPANSION_STEPS=4;
-    const Nat H_REFINEMENT_STEPS=30;
+    const double H_REFINEMENT_MIN_IMPROVEMENT=0.01;
     const Nat REFINEMENT_STEPS=4;
 
     StepSizeType h=hsug;
@@ -69,12 +69,10 @@ Pair<StepSizeType,UpperBoxType> EulerBounder::_compute(ValidatedVectorMultivaria
     IntervalDomainType T = to_time_bounds(t,t+h);
 
     UpperBoxType B;
-    Nat h_refinement_step = 0;
-    Dyadic result_h(0);
+    Dyadic good_h(0);
     UpperBoxType result_B = B;
-    //std::cout << "Starting from " << h << std::endl;
+    Dyadic bad_h(h);
     while(true) {
-        //std::cout << "Check " << h << std::endl;
         B=this->_formula(f,D,T,A,D,BOX_RADIUS_WIDENING,INITIAL_STARTING_WIDENING);
         Bool success=false;
         for(Nat i=0; i<EXPANSION_STEPS; ++i) {
@@ -91,22 +89,19 @@ Pair<StepSizeType,UpperBoxType> EulerBounder::_compute(ValidatedVectorMultivaria
             }
         }
         if(!success) {
-            //std::cout << "Failure" << std::endl;
-            h=hlf(h);
+            bad_h = h;
+            h=hlf(good_h+bad_h);
             if (h < MINIMUM_STEP_SIZE)
                 ARIADNE_THROW(BoundingNotFoundException,"EulerBounder::_compute","The step size is lower than the minimum (" << MINIMUM_STEP_SIZE << ") allowed, bounding could not be found.");
 
             T = to_time_bounds(t,t+h);
         } else {
-            //std::cout << "Success" << std::endl;
-            if (h > result_h) {
-                result_h = h;
-                result_B = B;
-            }
-            ++h_refinement_step;
-            if (h_refinement_step >= H_REFINEMENT_STEPS) break;
+            auto improvement = 1.0 - good_h.get_d()/h.get_d();
+            good_h = h;
+            result_B = B;
+            if (improvement < H_REFINEMENT_MIN_IMPROVEMENT) break;
             else {
-                h = hlf(3*h);
+                h = hlf(good_h+bad_h);
                 T = to_time_bounds(t,t+h);
             }
         }
@@ -116,9 +111,8 @@ Pair<StepSizeType,UpperBoxType> EulerBounder::_compute(ValidatedVectorMultivaria
         result_B = this->_refinement(f,D,T,A,result_B);
     }
 
-    //Dyadic::set_default_writer(new DecimalWriter());
-    //std::cout << "using " << result_h << ", " << result_B << std::endl;
-    return std::make_pair(result_h,result_B);
+    good_h = Dyadic(good_h.get_d());
+    return std::make_pair(good_h,result_B);
 }
 
 UpperBoxType EulerBounder::_refinement(ValidatedVectorMultivariateFunction const& f, BoxDomainType const& D, IntervalDomainType const& T, BoxDomainType const& A, UpperBoxType const& B) const {
