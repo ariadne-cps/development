@@ -54,9 +54,10 @@ Pair<StepSizeType,UpperBoxType> EulerBounder::_compute(ValidatedVectorMultivaria
     const PositiveFloatDPValue NO_WIDENING=cast_positive(1.0_exact);
     const PositiveFloatDPValue INITIAL_STARTING_WIDENING=cast_positive(2.0_exact);
     const PositiveFloatDPValue INITIAL_REFINING_WIDENING=cast_positive(1.125_exact);
-    const PositiveFloatDPValue LIPSCHITZ_TOLERANCE=cast_positive(0.5_exact);
+    const PositiveFloatDPValue LIPSCHITZ_TOLERANCE=cast_positive(1.0_exact);
     const StepSizeType MINIMUM_STEP_SIZE(1,20u);
     const Nat EXPANSION_STEPS=4;
+    const Nat H_REFINEMENT_STEPS=30;
     const Nat REFINEMENT_STEPS=4;
 
     StepSizeType h=hsug;
@@ -67,10 +68,15 @@ Pair<StepSizeType,UpperBoxType> EulerBounder::_compute(ValidatedVectorMultivaria
 
     IntervalDomainType T = to_time_bounds(t,t+h);
 
-    UpperBoxType B=D;
-    Bool success=false;
-    while(!success) {
-        B=this->_formula(f,D,T,A,B,BOX_RADIUS_WIDENING,INITIAL_STARTING_WIDENING);
+    UpperBoxType B;
+    Nat h_refinement_step = 0;
+    Dyadic result_h(0);
+    UpperBoxType result_B = B;
+    //std::cout << "Starting from " << h << std::endl;
+    while(true) {
+        //std::cout << "Check " << h << std::endl;
+        B=this->_formula(f,D,T,A,D,BOX_RADIUS_WIDENING,INITIAL_STARTING_WIDENING);
+        Bool success=false;
         for(Nat i=0; i<EXPANSION_STEPS; ++i) {
             UpperBoxType Br=this->_refinement(f,D,T,A,B);
             if(not definitely(is_bounded(Br))) {
@@ -85,19 +91,34 @@ Pair<StepSizeType,UpperBoxType> EulerBounder::_compute(ValidatedVectorMultivaria
             }
         }
         if(!success) {
+            //std::cout << "Failure" << std::endl;
             h=hlf(h);
             if (h < MINIMUM_STEP_SIZE)
                 ARIADNE_THROW(BoundingNotFoundException,"EulerBounder::_compute","The step size is lower than the minimum (" << MINIMUM_STEP_SIZE << ") allowed, bounding could not be found.");
 
             T = to_time_bounds(t,t+h);
+        } else {
+            //std::cout << "Success" << std::endl;
+            if (h > result_h) {
+                result_h = h;
+                result_B = B;
+            }
+            ++h_refinement_step;
+            if (h_refinement_step >= H_REFINEMENT_STEPS) break;
+            else {
+                h = hlf(3*h);
+                T = to_time_bounds(t,t+h);
+            }
         }
     }
 
     for(Nat i=0; i<REFINEMENT_STEPS; ++i) {
-        B = this->_refinement(f,D,T,A,B);
+        result_B = this->_refinement(f,D,T,A,result_B);
     }
 
-    return std::make_pair(h,B);
+    //Dyadic::set_default_writer(new DecimalWriter());
+    //std::cout << "using " << result_h << ", " << result_B << std::endl;
+    return std::make_pair(result_h,result_B);
 }
 
 UpperBoxType EulerBounder::_refinement(ValidatedVectorMultivariateFunction const& f, BoxDomainType const& D, IntervalDomainType const& T, BoxDomainType const& A, UpperBoxType const& B) const {
