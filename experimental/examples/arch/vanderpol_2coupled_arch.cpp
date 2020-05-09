@@ -36,8 +36,8 @@ Int main(Int argc, const char* argv[])
 
     std::cout << "Coupled van der Pol Oscillator system:\n" << std::flush;
 
-    ListSet<LabelledEnclosure> reach1, reach2;
-/*
+    ListSet<Enclosure> reach1, reach2;
+
     {
         std::cout << "Running for mu=1...\n" << std::flush;
 
@@ -68,12 +68,12 @@ Int main(Int argc, const char* argv[])
 
         SizeType ce=0;
         for (auto set : orbit.reach()) {
-            if (possibly(set.bounding_box().continuous_set()[1] >= 2.75_dec)) {
-                std::cout << "set with y1=" << set.bounding_box().continuous_set()[1] << " is outside the specification." << std::endl;
+            if (possibly(set.bounding_box()[1] >= 2.75_dec)) {
+                std::cout << "set with y1=" << set.bounding_box()[1] << " is outside the specification." << std::endl;
                 ++ce;
             }
-            if (possibly(set.bounding_box().continuous_set()[3] >= 2.75_dec)) {
-                std::cout << "set with y2=" << set.bounding_box().continuous_set()[3] << " is outside the specification." << std::endl;
+            if (possibly(set.bounding_box()[3] >= 2.75_dec)) {
+                std::cout << "set with y2=" << set.bounding_box()[3] << " is outside the specification." << std::endl;
                 ++ce;
             }
         }
@@ -83,7 +83,6 @@ Int main(Int argc, const char* argv[])
 
         reach1.adjoin(orbit.reach());
     }
-    */
 
     {
         std::cout << "Running for mu=2...\n" << std::flush;
@@ -116,12 +115,12 @@ Int main(Int argc, const char* argv[])
 
         SizeType ce=0;
         for (auto set : orbit.reach()) {
-            if (possibly(set.bounding_box().continuous_set()[1] >= 4.05_dec)) {
-                std::cout << "set with y1=" << set.bounding_box().continuous_set()[1] << " is outside the specification." << std::endl;
+            if (possibly(set.bounding_box()[1] >= 4.05_dec)) {
+                std::cout << "set with y1=" << set.bounding_box()[1] << " is outside the specification." << std::endl;
                 ++ce;
             }
-            if (possibly(set.bounding_box().continuous_set()[3] >= 4.05_dec)) {
-                std::cout << "set with y2=" << set.bounding_box().continuous_set()[3] << " is outside the specification." << std::endl;
+            if (possibly(set.bounding_box()[3] >= 4.05_dec)) {
+                std::cout << "set with y2=" << set.bounding_box()[3] << " is outside the specification." << std::endl;
                 ++ce;
             }
         }
@@ -135,19 +134,13 @@ Int main(Int argc, const char* argv[])
 
     std::cout << "Plotting..." << std::endl;
 
-    Axes2d x1y1_axes(-2.5<=x1<=2.5,-4.05<=y1<=4.05);
-    LabelledFigure fig1=LabelledFigure(x1y1_axes);
-    fig1 << fill_colour(Colour(0.6,0.6,0.6));
-    fig1.draw(reach1);
-    fig1 << fill_colour(ariadneorange);
-    fig1.draw(reach2);
-    fig1.write("coupled-vanderpol-x1y1");
-    Axes2d x2y2_axes(-2.5<=x2<=2.5,-4.05<=y2<=4.05);
-    LabelledFigure fig2=LabelledFigure(x1y1_axes);
-    fig2 << fill_colour(Colour(0.6,0.6,0.6));
-    fig2.draw(reach1);
-    fig2 << fill_colour(ariadneorange);
-    fig2.draw(reach2);
-    fig2.write("coupled-vanderpol-x2y2");
-    std::cout << "Png files written." << std::endl;
+    Box<FloatDPUpperInterval> graphics_box{{-2.5,2.5},{-4.05,4.05},{-2.5,2.5},{-4.05,4.05}};
+    Figure fig=Figure();
+    fig.set_projection_map(Projection2d(4,0,1));
+    fig << fill_colour(Colour(0.6,0.6,0.6));
+    fig.draw(reach1);
+    fig << fill_colour(ariadneorange);
+    fig.draw(reach2);
+    fig.write("coupled-vanderpol");
+    std::cout << "Png file written." << std::endl;
 }
