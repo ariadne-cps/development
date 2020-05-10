@@ -36,7 +36,7 @@ Int main(Int argc, const char* argv[])
 
     std::cout << "Coupled van der Pol Oscillator system:\n" << std::flush;
 
-    ListSet<Enclosure> reach1, reach2;
+    ListSet<LabelledEnclosure> reach1, reach2;
 
     {
         std::cout << "Running for mu=1...\n" << std::flush;
@@ -54,7 +54,7 @@ Int main(Int argc, const char* argv[])
         evolver.configuration().set_maximum_spacial_error(2e-4);
         evolver.verbosity = evolver_verbosity;
 
-        Box<RealInterval> initial_set({{1.25_dec, 1.55_dec},{2.25_dec, 2.35_dec},{1.25_dec, 1.55_dec},{2.35_dec, 2.45_dec}});
+        RealVariablesBox initial_set({1.55_dec<=x1<=1.85_dec,2.35_dec<=y1<=2.45_dec,1.55_dec<=x2<=1.85_dec,2.35_dec<=y2<=2.45_dec});
 
         Real evolution_time(7.0);
 
@@ -68,12 +68,12 @@ Int main(Int argc, const char* argv[])
 
         SizeType ce=0;
         for (auto set : orbit.reach()) {
-            if (possibly(set.bounding_box()[1] >= 2.75_dec)) {
-                std::cout << "set with y1=" << set.bounding_box()[1] << " is outside the specification." << std::endl;
+            if (possibly(set.bounding_box().continuous_set()[1] >= 2.75_dec)) {
+                std::cout << "set with y1=" << set.bounding_box().continuous_set()[1] << " is outside the specification." << std::endl;
                 ++ce;
             }
-            if (possibly(set.bounding_box()[3] >= 2.75_dec)) {
-                std::cout << "set with y2=" << set.bounding_box()[3] << " is outside the specification." << std::endl;
+            if (possibly(set.bounding_box().continuous_set()[3] >= 2.75_dec)) {
+                std::cout << "set with y2=" << set.bounding_box().continuous_set()[3] << " is outside the specification." << std::endl;
                 ++ce;
             }
         }
@@ -91,8 +91,8 @@ Int main(Int argc, const char* argv[])
         VectorField dynamics({dot(x1)=y1, dot(y1)=mu*(1-sqr(x1))*y1+x2-2*x1, dot(x2)=y2, dot(y2)=mu*(1-sqr(x2))*y2+x1-2*x2});
 
         MaximumError max_err = 1e-5;
-        //TaylorSeriesIntegrator integrator(max_err, Order(4u));
-        TaylorPicardIntegrator integrator(max_err);
+        TaylorSeriesIntegrator integrator(max_err, Order(4u));
+        //TaylorPicardIntegrator integrator(max_err);
 
         VectorFieldEvolver evolver(dynamics, integrator);
         evolver.configuration().set_maximum_enclosure_radius(0.05);
@@ -100,7 +100,7 @@ Int main(Int argc, const char* argv[])
         evolver.configuration().set_maximum_spacial_error(2e-4);
         evolver.verbosity = evolver_verbosity;
 
-        Box<RealInterval> initial_set({{1.55_dec, 1.85_dec},{2.25_dec, 2.35_dec},{1.55_dec, 1.85_dec},{2.35_dec, 2.45_dec}});
+        RealVariablesBox initial_set({1.55_dec<=x1<=1.85_dec,2.35_dec<=y1<=2.45_dec,1.55_dec<=x2<=1.85_dec,2.35_dec<=y2<=2.45_dec});
 
         Real evolution_time(8.0);
 
@@ -115,12 +115,12 @@ Int main(Int argc, const char* argv[])
 
         SizeType ce=0;
         for (auto set : orbit.reach()) {
-            if (possibly(set.bounding_box()[1] >= 4.05_dec)) {
-                std::cout << "set with y1=" << set.bounding_box()[1] << " is outside the specification." << std::endl;
+            if (possibly(set.bounding_box().continuous_set()[1] >= 4.05_dec)) {
+                std::cout << "set with y1=" << set.bounding_box().continuous_set()[1] << " is outside the specification." << std::endl;
                 ++ce;
             }
-            if (possibly(set.bounding_box()[3] >= 4.05_dec)) {
-                std::cout << "set with y2=" << set.bounding_box()[3] << " is outside the specification." << std::endl;
+            if (possibly(set.bounding_box().continuous_set()[3] >= 4.05_dec)) {
+                std::cout << "set with y2=" << set.bounding_box().continuous_set()[3] << " is outside the specification." << std::endl;
                 ++ce;
             }
         }
@@ -134,9 +134,7 @@ Int main(Int argc, const char* argv[])
 
     std::cout << "Plotting..." << std::endl;
 
-    Box<FloatDPUpperInterval> graphics_box{{-2.5,2.5},{-4.05,4.05},{-2.5,2.5},{-4.05,4.05}};
-    Figure fig=Figure();
-    fig.set_projection_map(Projection2d(4,0,1));
+    LabelledFigure fig(Axes2d(-2.5<=x1<=2.5,-4.05<=x2<=4.05));
     fig << fill_colour(Colour(0.6,0.6,0.6));
     fig.draw(reach1);
     fig << fill_colour(ariadneorange);

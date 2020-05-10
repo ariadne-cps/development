@@ -33,13 +33,13 @@ int main() {
     RealVariable x1("x1"), x2("x2"), x3("x3"), x4("x4"), x5("x5"), x6("x6"), x7("x7"), t("t");
 
     VectorField dynamics({dot(x1) = Real(1.4) * x3 - Real(0.9) * x1,
-                                 dot(x2) = Real(2.5) * x5 - Real(1.5) * x2,
-                                 dot(x3) = Real(0.6) * x7 - Real(0.8) * x2 * x3,
-                                 dot(x4) = Real(2) - Real(1.3) * x3 * x4,
-                                 dot(x5) = Real(0.7) * x1 - x4 * x5,
-                                 dot(x6) = Real(0.3) * x1 - Real(3.1) * x6,
-                                 dot(x7) = Real(1.8) * x6 - Real(1.5) * x2 * x7,
-                                 dot(t) = Real(1.0)
+                          dot(x2) = Real(2.5) * x5 - Real(1.5) * x2,
+                          dot(x3) = Real(0.6) * x7 - Real(0.8) * x2 * x3,
+                          dot(x4) = Real(2) - Real(1.3) * x3 * x4,
+                          dot(x5) = Real(0.7) * x1 - x4 * x5,
+                          dot(x6) = Real(0.3) * x1 - Real(3.1) * x6,
+                          dot(x7) = Real(1.8) * x6 - Real(1.5) * x2 * x7,
+                          dot(t) = Real(1.0)
                          });
 
     Real x1_0(1.2);
@@ -53,7 +53,7 @@ int main() {
 
     std::cout << "Laub-Loomis system:\n" << std::flush;
 
-    ListSet<Enclosure> reach1, reach2, reach3;
+    ListSet<LabelledEnclosure> reach1, reach2, reach3;
 
     {
         std::cout << "Running for W=0.01...\n" << std::flush;
@@ -88,8 +88,8 @@ int main() {
 
         Nat ce = 0;
         for (auto set : orbit.reach()) {
-            if (definitely(set.bounding_box()[3].upper().raw() >= 4.5)) {
-                std::cout << "set with value " << set.bounding_box()[3] << " does not respect the specification."
+            if (definitely(set.bounding_box().continuous_set()[3].upper().raw() >= 4.5)) {
+                std::cout << "set with value " << set.bounding_box().continuous_set()[3] << " does not respect the specification."
                           << std::endl;
                 ++ce;
             }
@@ -97,7 +97,7 @@ int main() {
 
         UpperIntervalType bounds = UpperIntervalType::empty_interval();
         for (auto set : orbit.final()) {
-            bounds = hull(set.bounding_box()[3],bounds);
+            bounds = hull(set.bounding_box().continuous_set()[3],bounds);
         }
 
         sw.click();
@@ -141,8 +141,8 @@ int main() {
 
         Nat ce = 0;
         for (auto set : orbit.reach()) {
-            if (definitely(set.bounding_box()[3].upper().raw() >= 4.5)) {
-                std::cout << "set with value " << set.bounding_box()[3] << " does not respect the specification."
+            if (definitely(set.bounding_box().continuous_set()[3].upper().raw() >= 4.5)) {
+                std::cout << "set with value " << set.bounding_box().continuous_set()[3] << " does not respect the specification."
                           << std::endl;
                 ++ce;
             }
@@ -150,7 +150,7 @@ int main() {
 
         UpperIntervalType bounds = UpperIntervalType::empty_interval();
         for (auto set : orbit.final()) {
-            bounds = hull(set.bounding_box()[3],bounds);
+            bounds = hull(set.bounding_box().continuous_set()[3],bounds);
         }
 
         sw.click();
@@ -195,8 +195,8 @@ int main() {
 
         Nat ce = 0;
         for (auto set : orbit.reach()) {
-            if (definitely(set.bounding_box()[3].upper().raw() >= 5.0)) {
-                std::cout << "set with value " << set.bounding_box()[3] << " does not respect the specification."
+            if (definitely(set.bounding_box().continuous_set()[3].upper().raw() >= 5.0)) {
+                std::cout << "set with value " << set.bounding_box().continuous_set()[3] << " does not respect the specification."
                           << std::endl;
                 ++ce;
             }
@@ -204,7 +204,7 @@ int main() {
 
         UpperIntervalType bounds = UpperIntervalType::empty_interval();
         for (auto set : orbit.final()) {
-            bounds = hull(set.bounding_box()[3],bounds);
+            bounds = hull(set.bounding_box().continuous_set()[3],bounds);
         }
 
         sw.click();
@@ -216,17 +216,14 @@ int main() {
     }
 
     std::cout << "Plotting..." << std::endl;
-    Box<FloatDPUpperInterval> graphics_box{{1.5,5.0},{1.5,5.0},{1.5,5.0},{1.5,5.0},{1.5,5.0},{1.5,5.0},{1.5,5.0},{0.0,20.0}};
-    Figure fig=Figure();
-    fig.set_projection_map(Projection2d(8,7,3));
-    fig.set_bounding_box(graphics_box);
-    fig.set_line_colour(0.0,0.0,0.0);
-    fig.set_line_style(false);
-    fig.set_fill_colour(1.0,0.75,0.5);
+    LabelledFigure fig(Axes2d({0<=t<=20,1.5<=x4<=5}));
+    fig << line_colour(0.0,0.0,0.0);
+    fig << line_style(false);
+    fig << fill_colour(1.0,0.75,0.5);
     fig.draw(reach3);
-    fig.set_fill_colour(0.6,0.6,0.6);
+    fig << fill_colour(0.6,0.6,0.6);
     fig.draw(reach2);
-    fig.set_fill_colour(1.0,1.0,1.0);
+    fig << fill_colour(1.0,1.0,1.0);
     fig.draw(reach1);
     fig.write("laubloomis");
     std::cout << "File laubloomis.png written." << std::endl;

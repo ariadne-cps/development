@@ -73,7 +73,8 @@ Int main(Int argc, const char* argv[])
 
     Real eps = 0.4_dec;
 
-    Box<RealInterval> initial_set({{-eps,eps},{-eps,eps},{-eps,eps},{-eps,eps},{-eps,eps},{-eps,eps},{0,0},{0,0},{0,0},{0,0},{0,0},{0,0}});
+    RealVariablesBox initial_set({-eps<=x1<=eps,-eps<=x2<=eps,-eps<=x3<=eps,-eps<=x4<=eps,-eps<=x5<=eps,-eps<=x6<=eps,
+                                 x6==0,x7==0,x8==0,x9==0,x10==0,x11==0,t==0});
 
     Real evolution_time(5.0);
 
@@ -84,16 +85,18 @@ Int main(Int argc, const char* argv[])
     std::cout << "Checking properties... " << std::endl << std::flush;
 
     for (auto set : orbit.reach()) {
-        if (possibly(set.bounding_box()[2] >= 1.40_dec))
-            std::cout << "height of " << set.bounding_box()[2] << " is over the required bound." << std::endl;
-        if (possibly(set.bounding_box()[11] >= 1) and possibly(set.bounding_box()[2] <= 0.9_dec))
-            std::cout << "height of " << set.bounding_box()[2] << " is below the required bound after 1s." << std::endl;
-        if (possibly(set.bounding_box()[11] >= 5) and possibly(set.bounding_box()[2] <= 0.98_dec or set.bounding_box()[2] >= 1.02_dec))
-            std::cout << "height of " << set.bounding_box()[2] << " is outside the required bounds at 5s." << std::endl;
+        if (possibly(set.bounding_box().continuous_set()[2] >= 1.40_dec))
+            std::cout << "height of " << set.bounding_box().continuous_set()[2] << " is over the required bound." << std::endl;
+        if (possibly(set.bounding_box().continuous_set()[11] >= 1) and possibly(set.bounding_box().continuous_set()[2] <= 0.9_dec))
+            std::cout << "height of " << set.bounding_box().continuous_set()[2] << " is below the required bound after 1s." << std::endl;
+        if (possibly(set.bounding_box().continuous_set()[11] >= 5) and possibly(set.bounding_box().continuous_set()[2] <= 0.98_dec or set.bounding_box().continuous_set()[2] >= 1.02_dec))
+            std::cout << "height of " << set.bounding_box().continuous_set()[2] << " is outside the required bounds at 5s." << std::endl;
     }
     sw.click();
     std::cout << "Done in " << sw.elapsed() << " seconds." << std::endl;
     std::cout << "Plotting..." << std::endl;
-    plot("quadrotor",PlanarProjectionMap(12,11,2),ApproximateBoxType({{-0.5,1.5},{-0.5,1.5},{-0.5,1.5},{-0.5,1.5},{-0.5,1.5},{-0.5,1.5},{-0.5,1.5},{-0.5,1.5},{-0.5,1.5},{-0.5,1.5},{-0.5,1.5},{0.0,5.0}}), Colour(1.0,0.75,0.5), orbit);
+    LabelledFigure fig(Axes2d({0<=t<=5,-0.8<=x3<=1.5}));
+    fig.draw(orbit.reach());
+    fig.write("quadrotor");
     std::cout << "File quadrotor.png written." << std::endl;
 }
