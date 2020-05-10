@@ -58,8 +58,9 @@ int main() {
     {
         std::cout << "Running for W=0.01...\n" << std::flush;
 
-        MaximumError max_err = 2e-3;
-        TaylorSeriesIntegrator integrator(max_err, Order(4u));
+        MaximumError max_err = 1e-3;
+        //TaylorSeriesIntegrator integrator(max_err, Order(4u));
+        TaylorPicardIntegrator integrator(max_err);
 
         VectorFieldEvolver evolver(dynamics, integrator);
         evolver.configuration().set_maximum_enclosure_radius(0.09);
@@ -111,8 +112,9 @@ int main() {
     {
         std::cout << "Running for W=0.05...\n" << std::flush;
 
-        MaximumError max_err = 2e-3;
-        TaylorSeriesIntegrator integrator(max_err, Order(4u));
+        MaximumError max_err = 1e-3;
+        //TaylorSeriesIntegrator integrator(max_err, Order(4u));
+        TaylorPicardIntegrator integrator(max_err);
 
         VectorFieldEvolver evolver(dynamics, integrator);
         evolver.configuration().set_maximum_enclosure_radius(0.04);
@@ -164,9 +166,10 @@ int main() {
     {
         std::cout << "Running for W=0.1...\n" << std::flush;
 
-        MaximumError max_err = 2e-3;
-        ThresholdSweeper<FloatDP> sweeper(DoublePrecision(),max_err/1024);
-        TaylorSeriesIntegrator integrator(max_err,sweeper,LipschitzConstant(0.5),Order(4u));
+        MaximumError max_err = 1e-3;
+        //ThresholdSweeper<FloatDP> sweeper(DoublePrecision(),max_err/1024);
+        //TaylorSeriesIntegrator integrator(max_err,sweeper,LipschitzConstant(0.5),Order(4u));
+        TaylorPicardIntegrator integrator(max_err);
 
         VectorFieldEvolver evolver(dynamics, integrator);
         evolver.configuration().set_maximum_enclosure_radius(0.09);
