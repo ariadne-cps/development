@@ -44,15 +44,13 @@ Int main(Int argc, const char* argv[]) {
 
     std::cout << "Production-destruction system:\n" << std::flush;
 
-    MaximumError max_err = 1e-2;
-    ThresholdSweeper<FloatDP> sweeper(DoublePrecision(), max_err / 1024 / 10);
-    TaylorSeriesIntegrator integrator(max_err, sweeper, LipschitzConstant(0.5), Order(2u));
-    //TaylorPicardIntegrator integrator(max_err);
+    MaximumError max_err = 1e-6;
+    TaylorPicardIntegrator integrator(max_err);
 
     VectorFieldEvolver evolver(dynamics, integrator);
     evolver.configuration().set_maximum_enclosure_radius(1.0);
-    evolver.configuration().set_maximum_step_size(0.01);
-    evolver.configuration().set_maximum_spacial_error(1e-2);
+    evolver.configuration().set_maximum_step_size(0.04);
+    evolver.configuration().set_maximum_spacial_error(1e-6);
     evolver.verbosity = evolver_verbosity;
 
     ListSet<LabelledEnclosure> reach1, reach2, reach3;
@@ -83,9 +81,10 @@ Int main(Int argc, const char* argv[]) {
             std::cout << "x+y+z does not contain 100" << std::endl;
 
         auto volume = bbox.continuous_set()[0].width()*bbox.continuous_set()[1].width()*bbox.continuous_set()[2].width();
-        std::cout << "volume = " << volume << std::endl;
-
-        sw.click();
+        std::cout << "Final volume = " << volume << std::endl;
+	std::cout << "Range for final z = " << bbox.continuous_set()[2] << std::endl;    
+	
+	sw.click();
         std::cout << "Done in " << sw.elapsed() << " seconds." << std::endl;
     }
 
@@ -113,7 +112,8 @@ Int main(Int argc, const char* argv[]) {
             std::cout << "x+y+z does not contain 100" << std::endl;
 
         auto volume = bbox.continuous_set()[0].width()*bbox.continuous_set()[1].width()*bbox.continuous_set()[2].width();
-        std::cout << "volume = " << volume << std::endl;
+        std::cout << "Final volume = " << volume << std::endl;
+	std::cout << "Range for final z = " << bbox.continuous_set()[2] << std::endl;    
 
         sw.click();
         std::cout << "Done in " << sw.elapsed() << " seconds." << std::endl;
@@ -143,7 +143,8 @@ Int main(Int argc, const char* argv[]) {
             std::cout << "x+y+z does not contain 100" << std::endl;
 
         auto volume = bbox.continuous_set()[0].width()*bbox.continuous_set()[1].width()*bbox.continuous_set()[2].width();
-        std::cout << "volume = " << volume << std::endl;
+        std::cout << "Final volume = " << volume << std::endl;
+	std::cout << "Range for final z = " << bbox.continuous_set()[2] << std::endl;    
 
         sw.click();
         std::cout << "Done in " << sw.elapsed() << " seconds." << std::endl;
@@ -154,11 +155,11 @@ Int main(Int argc, const char* argv[]) {
     fig << line_colour(0.0,0.0,0.0);
     fig << line_style(false);
     fig << fill_colour(0.6,0.6,0.6);
-    fig.draw(reach3);
-    fig << fill_colour(1.0,1.0,1.0);
-    fig.draw(reach1);
-    fig << fill_colour(1.0,0.75,0.5);
     fig.draw(reach2);
+    fig << fill_colour(1.0,0.0,0.0);
+    fig.draw(reach3);
+    fig << fill_colour(1.0,0.75,0.5);
+    fig.draw(reach1);
     fig.write("production_destruction");
-    std::cout << "File written." << std::endl;
+    std::cout << "File production_destruction.png written." << std::endl;
 }
