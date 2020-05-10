@@ -62,8 +62,7 @@ Int main(Int argc, const char* argv[])
     std::cout << "Quadrotor system:\n" << std::flush;
 
     MaximumError max_err=1e-2;
-    ThresholdSweeper<FloatDP> sweeper(DoublePrecision(),max_err/1024/10);
-    TaylorSeriesIntegrator integrator(max_err,sweeper,LipschitzConstant(0.5),Order(2u));
+    TaylorPicardIntegrator integrator(max_err);
 
     VectorFieldEvolver evolver(dynamics,integrator);
     evolver.configuration().set_maximum_enclosure_radius(1.0);
@@ -71,32 +70,87 @@ Int main(Int argc, const char* argv[])
     evolver.configuration().set_maximum_spacial_error(1e-2);
     evolver.verbosity = evolver_verbosity;
 
-    Real eps = 0.4_dec;
-
-    RealVariablesBox initial_set({-eps<=x1<=eps,-eps<=x2<=eps,-eps<=x3<=eps,-eps<=x4<=eps,-eps<=x5<=eps,-eps<=x6<=eps,
-                                 x6==0,x7==0,x8==0,x9==0,x10==0,x11==0,t==0});
-
     Real evolution_time(5.0);
 
-    StopWatch sw;
+    ListSet<LabelledEnclosure> reach1, reach2, reach3;
 
-    std::cout << "Computing orbit... " << std::endl << std::flush;
-    auto orbit = evolver.orbit(evolver.enclosure(initial_set),evolution_time,Semantics::UPPER);
-    std::cout << "Checking properties... " << std::endl << std::flush;
+    {
+        Real eps = 0.1_dec;
 
-    for (auto set : orbit.reach()) {
-        if (possibly(set.bounding_box().continuous_set()[2] >= 1.40_dec))
-            std::cout << "height of " << set.bounding_box().continuous_set()[2] << " is over the required bound." << std::endl;
-        if (possibly(set.bounding_box().continuous_set()[11] >= 1) and possibly(set.bounding_box().continuous_set()[2] <= 0.9_dec))
-            std::cout << "height of " << set.bounding_box().continuous_set()[2] << " is below the required bound after 1s." << std::endl;
-        if (possibly(set.bounding_box().continuous_set()[11] >= 5) and possibly(set.bounding_box().continuous_set()[2] <= 0.98_dec or set.bounding_box().continuous_set()[2] >= 1.02_dec))
-            std::cout << "height of " << set.bounding_box().continuous_set()[2] << " is outside the required bounds at 5s." << std::endl;
+        RealVariablesBox initial_set(
+                {-eps <= x1 <= eps, -eps <= x2 <= eps, -eps <= x3 <= eps, -eps <= x4 <= eps, -eps <= x5 <= eps,
+                 -eps <= x6 <= eps,
+                 x6 == 0, x7 == 0, x8 == 0, x9 == 0, x10 == 0, x11 == 0, t == 0});
+
+        StopWatch sw;
+
+        std::cout << "Computing orbit for Delta=0.1 ... " << std::endl << std::flush;
+        auto orbit = evolver.orbit(evolver.enclosure(initial_set), evolution_time, Semantics::UPPER);
+        reach1 = orbit.reach();
+        sw.click();
+        std::cout << "Done in " << sw.elapsed() << " seconds." << std::endl;
     }
-    sw.click();
-    std::cout << "Done in " << sw.elapsed() << " seconds." << std::endl;
+
+    {
+        Real eps = 0.4_dec;
+
+        RealVariablesBox initial_set(
+                {-eps <= x1 <= eps, -eps <= x2 <= eps, -eps <= x3 <= eps, -eps <= x4 <= eps, -eps <= x5 <= eps,
+                 -eps <= x6 <= eps,
+                 x6 == 0, x7 == 0, x8 == 0, x9 == 0, x10 == 0, x11 == 0, t == 0});
+
+        StopWatch sw;
+
+        std::cout << "Computing orbit for Delta=0.4 ... " << std::endl << std::flush;
+        auto orbit = evolver.orbit(evolver.enclosure(initial_set), evolution_time, Semantics::UPPER);
+        reach2 = orbit.reach();
+        std::cout << "Checking properties... " << std::endl << std::flush;
+
+        for (auto set : orbit.reach()) {
+            if (possibly(set.bounding_box().continuous_set()[2] >= 1.40_dec))
+                std::cout << "height of " << set.bounding_box().continuous_set()[2] << " is over the required bound."
+                          << std::endl;
+            if (possibly(set.bounding_box().continuous_set()[11] >= 1) and
+                possibly(set.bounding_box().continuous_set()[2] <= 0.9_dec))
+                std::cout << "height of " << set.bounding_box().continuous_set()[2]
+                          << " is below the required bound after 1s." << std::endl;
+            if (possibly(set.bounding_box().continuous_set()[11] >= 5) and possibly(
+                    set.bounding_box().continuous_set()[2] <= 0.98_dec or
+                    set.bounding_box().continuous_set()[2] >= 1.02_dec))
+                std::cout << "height of " << set.bounding_box().continuous_set()[2]
+                          << " is outside the required bounds at 5s." << std::endl;
+        }
+        sw.click();
+        std::cout << "Done in " << sw.elapsed() << " seconds." << std::endl;
+    }
+
+    {
+        Real eps = 0.8_dec;
+
+        RealVariablesBox initial_set(
+                {-eps <= x1 <= eps, -eps <= x2 <= eps, -eps <= x3 <= eps, -eps <= x4 <= eps, -eps <= x5 <= eps,
+                 -eps <= x6 <= eps,
+                 x6 == 0, x7 == 0, x8 == 0, x9 == 0, x10 == 0, x11 == 0, t == 0});
+
+        StopWatch sw;
+
+        std::cout << "Computing orbit for Delta=0.8 ... " << std::endl << std::flush;
+        auto orbit = evolver.orbit(evolver.enclosure(initial_set), evolution_time, Semantics::UPPER);
+        reach3 = orbit.reach();
+        sw.click();
+        std::cout << "Done in " << sw.elapsed() << " seconds." << std::endl;
+    }
+
     std::cout << "Plotting..." << std::endl;
     LabelledFigure fig(Axes2d({0<=t<=5,-0.8<=x3<=1.5}));
-    fig.draw(orbit.reach());
+    fig << line_colour(0.0,0.0,0.0);
+    fig << line_style(false);
+    fig << fill_colour(1.0,0.75,0.5);
+    fig.draw(reach3);
+    fig << fill_colour(0.6,0.6,0.6);
+    fig.draw(reach2);
+    fig << fill_colour(1.0,1.0,1.0);
+    fig.draw(reach1);
     fig.write("quadrotor");
     std::cout << "File quadrotor.png written." << std::endl;
 }
