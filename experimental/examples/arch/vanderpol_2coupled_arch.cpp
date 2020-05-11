@@ -91,13 +91,13 @@ Int main(Int argc, const char* argv[])
         VectorField dynamics({dot(x1)=y1, dot(y1)=mu*(1-sqr(x1))*y1+x2-2*x1, dot(x2)=y2, dot(y2)=mu*(1-sqr(x2))*y2+x1-2*x2});
 
         MaximumError max_err = 1e-5;
-        TaylorSeriesIntegrator integrator(max_err, Order(4u));
-        //TaylorPicardIntegrator integrator(max_err);
+        //TaylorSeriesIntegrator integrator(max_err, Order(4u));
+        TaylorPicardIntegrator integrator(max_err);
 
         VectorFieldEvolver evolver(dynamics, integrator);
         evolver.configuration().set_maximum_enclosure_radius(0.05);
-        evolver.configuration().set_maximum_step_size(0.005);
-        evolver.configuration().set_maximum_spacial_error(2e-4);
+        evolver.configuration().set_maximum_step_size(0.02);
+        evolver.configuration().set_maximum_spacial_error(1e-5);
         evolver.verbosity = evolver_verbosity;
 
         RealVariablesBox initial_set({1.55_dec<=x1<=1.85_dec,2.35_dec<=y1<=2.45_dec,1.55_dec<=x2<=1.85_dec,2.35_dec<=y2<=2.45_dec});
