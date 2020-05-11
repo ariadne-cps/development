@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.9)
 message(STATUS "CMake version ${CMAKE_VERSION}")
 
-project(Ariadne VERSION 1.9)
+project(Ariadne VERSION 2.0)
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "Intel")
   message(WARNING "Intel compiler not supported.")
@@ -17,7 +17,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 set(CMAKE_MACOSX_RPATH 1)
 set(BUILD_SHARED_LIBS ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(PYBIND_SUBMODULE_COMMIT 435dbdd)
 
