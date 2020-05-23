@@ -181,14 +181,14 @@ class FloatDP {
     //! \brief Convert from a built-in double-precision floating-point number.
 //    explicit FloatDP(ExactDouble const& x);
 //    explicit FloatDP(double x, DoublePrecision) : dbl(x) { }
-    template<class N, EnableIf<IsBuiltinIntegral<N>> =dummy> FloatDP(N n, DoublePrecision) : dbl(n) { }
+    template<BuiltinIntegral N> FloatDP(N n, DoublePrecision) : dbl(n) { }
     FloatDP(ExactDouble const& x, DoublePrecision);
     FloatDP(TwoExp const& x, DoublePrecision);
     FloatDP(Dyadic const& x, DoublePrecision);
     //! \brief Copy constructor.
     FloatDP(const FloatDP& x) : dbl(x.dbl) { }
     //! \brief Assignment.
-    template<class N, EnableIf<IsBuiltinIntegral<N>> =dummy> FloatDP& operator=(N n) {
+    template<BuiltinIntegral N> FloatDP& operator=(N n) {
         return this->operator=(ExactDouble(n)); }
     FloatDP& operator=(const ExactDouble& x);
     //! \brief Copy assignment.
@@ -197,7 +197,7 @@ class FloatDP {
     //! \brief Construct from another FloatDP using given rounding
     explicit FloatDP(FloatDP const& d, RoundingModeType rnd, PrecisionType pr);
     //! \brief Construct from an integer using given rounding
-    template<class N, EnableIf<IsBuiltinIntegral<N>> =dummy> explicit FloatDP(N n, RoundingModeType rnd, PrecisionType pr)
+    template<BuiltinIntegral N> explicit FloatDP(N n, RoundingModeType rnd, PrecisionType pr)
         : FloatDP(ExactDouble(n),rnd,pr) { }
     //! \brief Construct from an integer using given rounding
     explicit FloatDP(ExactDouble x, RoundingModeType rnd, PrecisionType pr)

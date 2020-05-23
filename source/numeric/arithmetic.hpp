@@ -1054,28 +1054,28 @@ template<class X, class Y> struct ProvideConcreteGenericFieldOperations<X,Y,Void
 
 
 template<class X> struct ProvideConcreteGenericFieldOperators<X,Void> {
-    template<class Y, EnableIf<IsGenericScalar<Y>> =dummy> friend decltype(auto) operator+(X const& x, Y const& y) { return add(x,factory(x).create(y)); }
-    template<class Y, EnableIf<IsGenericScalar<Y>> =dummy> friend decltype(auto) operator-(X const& x, Y const& y) { return sub(x,factory(x).create(y)); }
-    template<class Y, EnableIf<IsGenericScalar<Y>> =dummy> friend decltype(auto) operator*(X const& x, Y const& y) { return mul(x,factory(x).create(y)); }
-    template<class Y, EnableIf<IsGenericScalar<Y>> =dummy> friend decltype(auto) operator/(X const& x, Y const& y) { return div(x,factory(x).create(y)); }
-    template<class Y, EnableIf<IsGenericScalar<Y>> =dummy> friend decltype(auto) operator+(Y const& y, X const& x) { return add(factory(x).create(y),x); }
-    template<class Y, EnableIf<IsGenericScalar<Y>> =dummy> friend decltype(auto) operator-(Y const& y, X const& x) { return sub(factory(x).create(y),x); }
-    template<class Y, EnableIf<IsGenericScalar<Y>> =dummy> friend decltype(auto) operator*(Y const& y, X const& x) { return mul(factory(x).create(y),x); }
-    template<class Y, EnableIf<IsGenericScalar<Y>> =dummy> friend decltype(auto) operator/(Y const& y, X const& x) { return div(factory(x).create(y),x); }
-    template<class Y, EnableIf<IsGenericScalar<Y>> =dummy> friend decltype(auto) operator+=(X& x, Y const& y) { return x=add(x,factory(x).create(y)); }
-    template<class Y, EnableIf<IsGenericScalar<Y>> =dummy> friend decltype(auto) operator-=(X& x, Y const& y) { return x=sub(x,factory(x).create(y)); }
-    template<class Y, EnableIf<IsGenericScalar<Y>> =dummy> friend decltype(auto) operator*=(X& x, Y const& y) { return x=mul(x,factory(x).create(y)); }
-    template<class Y, EnableIf<IsGenericScalar<Y>> =dummy> friend decltype(auto) operator/=(X& x, Y const& y) { return x=div(x,factory(x).create(y)); }
+    template<GenericScalar Y> friend decltype(auto) operator+(X const& x, Y const& y) { return add(x,factory(x).create(y)); }
+    template<GenericScalar Y> friend decltype(auto) operator-(X const& x, Y const& y) { return sub(x,factory(x).create(y)); }
+    template<GenericScalar Y> friend decltype(auto) operator*(X const& x, Y const& y) { return mul(x,factory(x).create(y)); }
+    template<GenericScalar Y> friend decltype(auto) operator/(X const& x, Y const& y) { return div(x,factory(x).create(y)); }
+    template<GenericScalar Y> friend decltype(auto) operator+(Y const& y, X const& x) { return add(factory(x).create(y),x); }
+    template<GenericScalar Y> friend decltype(auto) operator-(Y const& y, X const& x) { return sub(factory(x).create(y),x); }
+    template<GenericScalar Y> friend decltype(auto) operator*(Y const& y, X const& x) { return mul(factory(x).create(y),x); }
+    template<GenericScalar Y> friend decltype(auto) operator/(Y const& y, X const& x) { return div(factory(x).create(y),x); }
+    template<GenericScalar Y> friend decltype(auto) operator+=(X& x, Y const& y) { return x=add(x,factory(x).create(y)); }
+    template<GenericScalar Y> friend decltype(auto) operator-=(X& x, Y const& y) { return x=sub(x,factory(x).create(y)); }
+    template<GenericScalar Y> friend decltype(auto) operator*=(X& x, Y const& y) { return x=mul(x,factory(x).create(y)); }
+    template<GenericScalar Y> friend decltype(auto) operator/=(X& x, Y const& y) { return x=div(x,factory(x).create(y)); }
 };
 template<class X> struct ProvideConcreteGenericFieldOperations<X,Void> : ProvideConcreteGenericFieldOperators<X,Void> {
-    template<class Y, EnableIf<IsGenericScalar<Y>> =dummy> friend decltype(auto) add(X const& x, Y const& y) { return add(x,factory(x).create(y)); }
-    template<class Y, EnableIf<IsGenericScalar<Y>> =dummy> friend decltype(auto) sub(X const& x, Y const& y) { return sub(x,factory(x).create(y)); }
-    template<class Y, EnableIf<IsGenericScalar<Y>> =dummy> friend decltype(auto) mul(X const& x, Y const& y) { return mul(x,factory(x).create(y)); }
-    template<class Y, EnableIf<IsGenericScalar<Y>> =dummy> friend decltype(auto) div(X const& x, Y const& y) { return div(x,factory(x).create(y)); }
-    template<class Y, EnableIf<IsGenericScalar<Y>> =dummy> friend decltype(auto) add(Y const& y, X const& x) { return add(factory(x).create(y),x); }
-    template<class Y, EnableIf<IsGenericScalar<Y>> =dummy> friend decltype(auto) sub(Y const& y, X const& x) { return sub(factory(x).create(y),x); }
-    template<class Y, EnableIf<IsGenericScalar<Y>> =dummy> friend decltype(auto) mul(Y const& y, X const& x) { return mul(factory(x).create(y),x); }
-    template<class Y, EnableIf<IsGenericScalar<Y>> =dummy> friend decltype(auto) div(Y const& y, X const& x) { return div(factory(x).create(y),x); }
+    template<GenericScalar Y> friend decltype(auto) add(X const& x, Y const& y) { return add(x,factory(x).create(y)); }
+    template<GenericScalar Y> friend decltype(auto) sub(X const& x, Y const& y) { return sub(x,factory(x).create(y)); }
+    template<GenericScalar Y> friend decltype(auto) mul(X const& x, Y const& y) { return mul(x,factory(x).create(y)); }
+    template<GenericScalar Y> friend decltype(auto) div(X const& x, Y const& y) { return div(x,factory(x).create(y)); }
+    template<GenericScalar Y> friend decltype(auto) add(Y const& y, X const& x) { return add(factory(x).create(y),x); }
+    template<GenericScalar Y> friend decltype(auto) sub(Y const& y, X const& x) { return sub(factory(x).create(y),x); }
+    template<GenericScalar Y> friend decltype(auto) mul(Y const& y, X const& x) { return mul(factory(x).create(y),x); }
+    template<GenericScalar Y> friend decltype(auto) div(Y const& y, X const& x) { return div(factory(x).create(y),x); }
 };
 
 template<class X, class Y=Void, class R=X> struct ProvideConcreteGenericArithmeticOperators : ProvideConcreteGenericFieldOperators<X,Y,R> { };
@@ -1143,97 +1143,58 @@ template<class X, class QX=X, class R=X, class QR=QX> class ProvideDirectedSemiF
     // friend QR operator/(QX const&, X const&);
 };
 
-template<class Y> struct IsGenericNumericType;
-template<class Y> using IsGenericNumber = IsGenericNumericType<Y>;
 
 template<class X> struct DefineConcreteGenericArithmeticOperations {
-    template<class Y, EnableIf<IsGenericNumber<Y>> =dummy>
-    friend decltype(auto) add(X const& x, Y const& y) { return add(x,factory(x).create(y)); }
-    template<class Y, EnableIf<IsGenericNumber<Y>> =dummy>
-    friend decltype(auto) sub(X const& x, Y const& y) { return sub(x,factory(x).create(y)); }
-    template<class Y, EnableIf<IsGenericNumber<Y>> =dummy>
-    friend decltype(auto) mul(X const& x, Y const& y) { return mul(x,factory(x).create(y)); }
-    template<class Y, EnableIf<IsGenericNumber<Y>> =dummy>
-    friend decltype(auto) div(X const& x, Y const& y) { return div(x,factory(x).create(y)); }
+    template<GenericNumber Y> friend decltype(auto) add(X const& x, Y const& y) { return add(x,factory(x).create(y)); }
+    template<GenericNumber Y> friend decltype(auto) sub(X const& x, Y const& y) { return sub(x,factory(x).create(y)); }
+    template<GenericNumber Y> friend decltype(auto) mul(X const& x, Y const& y) { return mul(x,factory(x).create(y)); }
+    template<GenericNumber Y> friend decltype(auto) div(X const& x, Y const& y) { return div(x,factory(x).create(y)); }
 
-    template<class Y, EnableIf<IsGenericNumber<Y>> =dummy>
-    friend decltype(auto) add(Y const& y, X const& x) { return add(factory(x).create(y),x); }
-    template<class Y, EnableIf<IsGenericNumber<Y>> =dummy>
-    friend decltype(auto) sub(Y const& y, X const& x) { return sub(factory(x).create(y),x); }
-    template<class Y, EnableIf<IsGenericNumber<Y>> =dummy>
-    friend decltype(auto) mul(Y const& y, X const& x) { return mul(factory(x).create(y),x); }
-    template<class Y, EnableIf<IsGenericNumber<Y>> =dummy>
-    friend decltype(auto) div(Y const& y, X const& x) { return div(factory(x).create(y),x); }
+    template<GenericNumber Y> friend decltype(auto) add(Y const& y, X const& x) { return add(factory(x).create(y),x); }
+    template<GenericNumber Y> friend decltype(auto) sub(Y const& y, X const& x) { return sub(factory(x).create(y),x); }
+    template<GenericNumber Y> friend decltype(auto) mul(Y const& y, X const& x) { return mul(factory(x).create(y),x); }
+    template<GenericNumber Y> friend decltype(auto) div(Y const& y, X const& x) { return div(factory(x).create(y),x); }
 
-    template<class Y, EnableIf<IsGenericNumber<Y>> =dummy>
-    friend decltype(auto) max(X const& x, Y const& y) { return max(x,factory(x).create(y)); }
-    template<class Y, EnableIf<IsGenericNumber<Y>> =dummy>
-    friend decltype(auto) min(X const& x, Y const& y) { return min(x,factory(x).create(y)); }
-    template<class Y, EnableIf<IsGenericNumber<Y>> =dummy>
-    friend decltype(auto) max(Y const& y, X const& x) { return max(factory(x).create(y),x); }
-    template<class Y, EnableIf<IsGenericNumber<Y>> =dummy>
-    friend decltype(auto) min(Y const& y, X const& x) { return min(factory(x).create(y),x); }
-
+    template<GenericNumber Y> friend decltype(auto) max(X const& x, Y const& y) { return max(x,factory(x).create(y)); }
+    template<GenericNumber Y> friend decltype(auto) min(X const& x, Y const& y) { return min(x,factory(x).create(y)); }
+    template<GenericNumber Y> friend decltype(auto) max(Y const& y, X const& x) { return max(factory(x).create(y),x); }
+    template<GenericNumber Y> friend decltype(auto) min(Y const& y, X const& x) { return min(factory(x).create(y),x); }
 };
 
 
 template<class X> struct DefineConcreteGenericArithmeticOperators
     : DefineConcreteGenericArithmeticOperations<X>
 {
-    template<class Y, EnableIf<IsGenericNumber<Y>> =dummy>
-    friend decltype(auto) operator+(X const& x, Y const& y) { return x+factory(x).create(y); }
-    template<class Y, EnableIf<IsGenericNumber<Y>> =dummy>
-    friend decltype(auto) operator-(X const& x, Y const& y) { return x-factory(x).create(y); }
-    template<class Y, EnableIf<IsGenericNumber<Y>> =dummy>
-    friend decltype(auto) operator*(X const& x, Y const& y) { return x*factory(x).create(y); }
-    template<class Y, EnableIf<IsGenericNumber<Y>> =dummy>
-    friend decltype(auto) operator/(X const& x, Y const& y) { return x/factory(x).create(y); }
+    template<GenericNumber Y> friend decltype(auto) operator+(X const& x, Y const& y) { return x+factory(x).create(y); }
+    template<GenericNumber Y> friend decltype(auto) operator-(X const& x, Y const& y) { return x-factory(x).create(y); }
+    template<GenericNumber Y> friend decltype(auto) operator*(X const& x, Y const& y) { return x*factory(x).create(y); }
+    template<GenericNumber Y> friend decltype(auto) operator/(X const& x, Y const& y) { return x/factory(x).create(y); }
 
-    template<class Y, EnableIf<IsGenericNumber<Y>> =dummy>
-    friend decltype(auto) operator+(Y const& y, X const& x) { return factory(x).create(y)+x; }
-    template<class Y, EnableIf<IsGenericNumber<Y>> =dummy>
-    friend decltype(auto) operator-(Y const& y, X const& x) { return factory(x).create(y)-x; }
-    template<class Y, EnableIf<IsGenericNumber<Y>> =dummy>
-    friend decltype(auto) operator*(Y const& y, X const& x) { return factory(x).create(y)*x; }
-    template<class Y, EnableIf<IsGenericNumber<Y>> =dummy>
-    friend decltype(auto) operator/(Y const& y, X const& x) { return factory(x).create(y)/x; }
+    template<GenericNumber Y> friend decltype(auto) operator+(Y const& y, X const& x) { return factory(x).create(y)+x; }
+    template<GenericNumber Y> friend decltype(auto) operator-(Y const& y, X const& x) { return factory(x).create(y)-x; }
+    template<GenericNumber Y> friend decltype(auto) operator*(Y const& y, X const& x) { return factory(x).create(y)*x; }
+    template<GenericNumber Y> friend decltype(auto) operator/(Y const& y, X const& x) { return factory(x).create(y)/x; }
 
-    template<class Y, EnableIf<IsGenericNumber<Y>> =dummy>
-    friend decltype(auto) operator+=(X& x, Y const& y) { return x+=factory(x).create(y); }
-    template<class Y, EnableIf<IsGenericNumber<Y>> =dummy>
-    friend decltype(auto) operator-=(X& x, Y const& y) { return x-=factory(x).create(y); }
-    template<class Y, EnableIf<IsGenericNumber<Y>> =dummy>
-    friend decltype(auto) operator*=(X& x, Y const& y) { return x*=factory(x).create(y); }
-    template<class Y, EnableIf<IsGenericNumber<Y>> =dummy>
-    friend decltype(auto) operator/=(X& x, Y const& y) { return x/=factory(x).create(y); }
+    template<GenericNumber Y> friend decltype(auto) operator+=(X& x, Y const& y) { return x+=factory(x).create(y); }
+    template<GenericNumber Y> friend decltype(auto) operator-=(X& x, Y const& y) { return x-=factory(x).create(y); }
+    template<GenericNumber Y> friend decltype(auto) operator*=(X& x, Y const& y) { return x*=factory(x).create(y); }
+    template<GenericNumber Y> friend decltype(auto) operator/=(X& x, Y const& y) { return x/=factory(x).create(y); }
 };
 
 template<class X> struct DefineConcreteGenericComparisonOperators {
-    template<class Y, EnableIf<IsGenericNumber<Y>> =dummy>
-    friend decltype(auto) operator==(X const& x, Y const& y) { return x==factory(x).create(y); }
-    template<class Y, EnableIf<IsGenericNumber<Y>> =dummy>
-    friend decltype(auto) operator!=(X const& x, Y const& y) { return x!=factory(x).create(y); }
-    template<class Y, EnableIf<IsGenericNumber<Y>> =dummy>
-    friend decltype(auto) operator<=(X const& x, Y const& y) { return x<=factory(x).create(y); }
-    template<class Y, EnableIf<IsGenericNumber<Y>> =dummy>
-    friend decltype(auto) operator>=(X const& x, Y const& y) { return x>=factory(x).create(y); }
-    template<class Y, EnableIf<IsGenericNumber<Y>> =dummy>
-    friend decltype(auto) operator< (X const& x, Y const& y) { return x< factory(x).create(y); }
-    template<class Y, EnableIf<IsGenericNumber<Y>> =dummy>
-    friend decltype(auto) operator> (X const& x, Y const& y) { return x> factory(x).create(y); }
+    template<GenericNumber Y> friend decltype(auto) operator==(X const& x, Y const& y) { return x==factory(x).create(y); }
+    template<GenericNumber Y> friend decltype(auto) operator!=(X const& x, Y const& y) { return x!=factory(x).create(y); }
+    template<GenericNumber Y> friend decltype(auto) operator<=(X const& x, Y const& y) { return x<=factory(x).create(y); }
+    template<GenericNumber Y> friend decltype(auto) operator>=(X const& x, Y const& y) { return x>=factory(x).create(y); }
+    template<GenericNumber Y> friend decltype(auto) operator< (X const& x, Y const& y) { return x< factory(x).create(y); }
+    template<GenericNumber Y> friend decltype(auto) operator> (X const& x, Y const& y) { return x> factory(x).create(y); }
 
-    template<class Y, EnableIf<IsGenericNumber<Y>> =dummy>
-    friend decltype(auto) operator==(Y const& y, X const& x) { return factory(x).create(y)==x; }
-    template<class Y, EnableIf<IsGenericNumber<Y>> =dummy>
-    friend decltype(auto) operator!=(Y const& y, X const& x) { return factory(x).create(y)!=x; }
-    template<class Y, EnableIf<IsGenericNumber<Y>> =dummy>
-    friend decltype(auto) operator<=(Y const& y, X const& x) { return factory(x).create(y)<=x; }
-    template<class Y, EnableIf<IsGenericNumber<Y>> =dummy>
-    friend decltype(auto) operator>=(Y const& y, X const& x) { return factory(x).create(y)>=x; }
-    template<class Y, EnableIf<IsGenericNumber<Y>> =dummy>
-    friend decltype(auto) operator< (Y const& y, X const& x) { return factory(x).create(y)< x; }
-    template<class Y, EnableIf<IsGenericNumber<Y>> =dummy>
-    friend decltype(auto) operator> (Y const& y, X const& x) { return factory(x).create(y)> x; }
+    template<GenericNumber Y> friend decltype(auto) operator==(Y const& y, X const& x) { return factory(x).create(y)==x; }
+    template<GenericNumber Y> friend decltype(auto) operator!=(Y const& y, X const& x) { return factory(x).create(y)!=x; }
+    template<GenericNumber Y> friend decltype(auto) operator<=(Y const& y, X const& x) { return factory(x).create(y)<=x; }
+    template<GenericNumber Y> friend decltype(auto) operator>=(Y const& y, X const& x) { return factory(x).create(y)>=x; }
+    template<GenericNumber Y> friend decltype(auto) operator< (Y const& y, X const& x) { return factory(x).create(y)< x; }
+    template<GenericNumber Y> friend decltype(auto) operator> (Y const& y, X const& x) { return factory(x).create(y)> x; }
 };
 
 template<class X> struct DefineConcreteGenericOperators

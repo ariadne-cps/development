@@ -149,10 +149,10 @@ class Real
 
 #ifdef DOXYGEN
     Real(Int n); //!< Convert from a builtin integer.
+#else
+    template<BuiltinUnsignedIntegral M> Real(M m);
+    template<BuiltinSignedIntegral N> Real(N n);
 #endif
-    template<class M, EnableIf<And<IsBuiltinIntegral<M>,IsBuiltinUnsigned<M>>> = dummy> Real(M m);
-    template<class N, EnableIf<And<IsBuiltinIntegral<N>,IsBuiltinSigned<N>>> = dummy> Real(N n);
-
     Real(ExactDouble d); //!< Construct from a double-precision value representing a number exactly.
     Real(Integer const& n); //!< Construct from an integer.
     Real(Dyadic const& d); //!< Construct from a dyadic number \a d=p/2<sup>q</sup> for integers \a p, \a q.
@@ -302,8 +302,8 @@ class Real
     Real(std::uint64_t m, Void*);
 };
 
-template<class M, EnableIf<And<IsBuiltinIntegral<M>,IsBuiltinUnsigned<M>>>> inline Real::Real(M m) : Real(std::uint64_t(m),nullptr) { }
-template<class N, EnableIf<And<IsBuiltinIntegral<N>,IsBuiltinSigned<N>>>> inline Real::Real(N n) : Real(std::int64_t(n),nullptr) { }
+template<BuiltinUnsignedIntegral M> inline Real::Real(M m) : Real(std::uint64_t(m),nullptr) { }
+template<BuiltinSignedIntegral N> inline Real::Real(N n) : Real(std::int64_t(n),nullptr) { }
 
 Real choose(Case<LowerKleenean,Real> const& c1, Case<LowerKleenean,Real> const& c2);
 Real when(Case<UpperKleenean,Real> const& c1, Case<UpperKleenean,Real> const& c2);
@@ -636,7 +636,7 @@ class PositiveReal : public Real
 {
   public:
     PositiveReal() : Real() { }
-    template<class Y, EnableIf<IsConvertible<Y,Real>> =dummy>
+    template<ConvertibleTo<Real> Y>
         PositiveReal(Positive<Y> const& p) : Real(p) { }
     explicit PositiveReal(Real const& r) : Real(r) { }
     PositiveBounds<Dyadic> compute_get(Effort) const;

@@ -79,7 +79,7 @@ template<class F> class Error
     //! \todo Check error not being negative to allow for NaN as a valid input.
     explicit Error<F>(F const& e) : _e(e) { ARIADNE_PRECONDITION_MSG(!(this->_e<0),"e="<<*this); }
     //! Treat the natural number \a m as an upper-bound for an error, represented with precision \a pr.
-    template<class M, EnableIf<IsBuiltinUnsignedIntegral<M>> =dummy> Error<F>(M m, PR pr) : _e(m,pr) { }
+    template<BuiltinUnsignedIntegral M> Error<F>(M m, PR pr) : _e(m,pr) { }
     explicit Error<F>(UpperBound<F> const& x) : Error<F>(x._u) { }
     //! Treat \a y as an upper-bound for an error, represented with precision \a pr.
     //! \pre Requires that \a y is not definitely strictly negative.
@@ -87,7 +87,7 @@ template<class F> class Error
     explicit Error<F>(const ExactDouble& d, PR pr) : Error<F>(UpperBound<F>(d,pr)) { }
     explicit Error<F>(const TwoExp& t, PR pr) : Error<F>(UpperBound<F>(t,pr)) { }
     //! Assign from the natural number \a m, keeping the same precision.
-    template<class M, EnableIf<IsBuiltinUnsignedIntegral<M>> =dummy> Error<F>& operator=(Nat m) {
+    template<BuiltinUnsignedIntegral M> Error<F>& operator=(Nat m) {
         reinterpret_cast<UpperBound<F>&>(*this)=m; return *this; }
     //! Assign from the generic error bound \a y, keeping the same precision.
     Error<F>& operator=(ValidatedErrorNumber y) { return *this=cast_positive(y.get(this->precision())); }

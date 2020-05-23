@@ -44,9 +44,9 @@
 namespace Ariadne {
 
 namespace {
-template<class FE, class FLT, DisableIf<IsSame<FE,FLT>> =dummy> inline FE _make_error(FLT const& x) {
+template<class FE, class FLT> requires (not SameAs<FE,FLT>) inline FE _make_error(FLT const& x) {
     typename FE::PrecisionType pre; return FE(Dyadic(x),upward,pre); }
-template<class FE, class FLT, EnableIf<IsSame<FE,FLT>> =dummy> inline FE _make_error(FLT const& x) {
+template<class FE, class FLT> requires SameAs<FE,FLT> inline FE _make_error(FLT const& x) {
     return x; }
 template<class FE, class FLT, class PRE> inline FE _make_error(FLT const& x, PRE pre) {
     return FE(Dyadic(x),upward,pre); }

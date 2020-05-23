@@ -70,7 +70,7 @@ template<class F> class UpperBound
     //! A upper bound with value \a u.
     explicit UpperBound<F>(RawType const& u) : _u(u) { }
 
-    template<class N, EnableIf<IsBuiltinIntegral<N>> = dummy> UpperBound<F>(N n, PR pr) : UpperBound<F>(ExactDouble(n),pr) { }
+    template<BuiltinIntegral N> UpperBound<F>(N n, PR pr) : UpperBound<F>(ExactDouble(n),pr) { }
     UpperBound<F>(const ExactDouble& d, PR pr) : _u(d,pr) { }
         UpperBound<F>(const TwoExp& t, PR pr) : _u(t,pr) { }
         UpperBound<F>(const Integer& z, PR pr) : _u(z,up,pr) { }
@@ -83,7 +83,7 @@ template<class F> class UpperBound
     UpperBound<F>(const UpperBound<F>& x, PR pr);
     //! A upper bound of type \p F from a generic upper bound \a y.
     UpperBound<F>(const ValidatedUpperNumber& y, PR pr);
-    template<class FF, EnableIf<IsConstructible<F,FF,RND,PR>> =dummy>
+    template<class FF> requires Constructible<F,FF,RND,PR>
         UpperBound<F>(const UpperBound<FF>& x, PR pr) : _u(x.raw(),up,pr) { }
 
     //! Convert from upper \em and lower bounds on a number.
@@ -206,8 +206,8 @@ template<class F> class Positive<UpperBound<F>> : public UpperBound<F>
     Positive<UpperBound<F>>() : UpperBound<F>() { }
     explicit Positive<UpperBound<F>>(PR const& pr) : UpperBound<F>(pr) { }
     explicit Positive<UpperBound<F>>(F const& x) : UpperBound<F>(x) { }
-    template<class M, EnableIf<IsBuiltinUnsignedIntegral<M>> =dummy> Positive<UpperBound<F>>(M m, PR pr) : UpperBound<F>(m,pr) { }
-    template<class M, EnableIf<IsBuiltinUnsignedIntegral<M>> =dummy> PositiveValue<F> create(M m) const { return PositiveValue<F>(m,this->precision()); }
+    template<BuiltinUnsignedIntegral M> Positive<UpperBound<F>>(M m, PR pr) : UpperBound<F>(m,pr) { }
+    template<BuiltinUnsignedIntegral M> PositiveValue<F> create(M m) const { return PositiveValue<F>(m,this->precision()); }
     explicit Positive<UpperBound<F>>(UpperBound<F> const& x) : UpperBound<F>(x) { ARIADNE_PRECONDITION_MSG(!(this->_u<0),"x="<<x); }
     Positive<UpperBound<F>>(PositiveValidatedUpperNumber const& y, PR pr) : UpperBound<F>(y,pr) { ARIADNE_PRECONDITION_MSG(!(this->_u<0),"y="<<y); }
     Positive<UpperBound<F>>(PositiveValue<F> const& x) : UpperBound<F>(x) { }

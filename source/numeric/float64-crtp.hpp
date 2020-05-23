@@ -23,7 +23,7 @@
  */
 
 /*! \file numeric/float64-crtp.hpp
- *  \brief 
+ *  \brief
  */
 
 
@@ -185,8 +185,8 @@ class FloatDPError : public NumberObject<FloatDPUpperBound> {
     static Void set_output_places(Int);
   public:
     FloatDPError();
-    template<class M, EnableIf<IsSame<M,Nat>> = dummy> FloatDPError(M m);
-    template<class X, EnableIf<IsSame<X,double>> = dummy> explicit FloatDPError(X x);
+    template<BuiltinUnsignedIntegral M> = dummy> FloatDPError(M m);
+    template<BuiltinFloatingPoint X> explicit FloatDPError(X x);
     explicit FloatDPError(double);
     explicit FloatDPError(FloatDP);
     explicit operator FloatDPUpperBound () const;

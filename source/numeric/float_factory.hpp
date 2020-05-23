@@ -56,9 +56,9 @@ template<class PR> class FloatFactory {
     FloatValue<PR> create(ExactDouble const& y);
     FloatValue<PR> create(Dyadic const& y, ExactTag);
     FloatValue<PR> create(Integer const& y, ExactTag);
-    template<class N, EnableIf<IsBuiltinSignedIntegral<N>> =dummy> FloatValue<PR> create(N const& y);
-    template<class M, EnableIf<IsBuiltinUnsignedIntegral<M>> =dummy> PositiveFloatValue<PR> create(M const& y);
-    template<class D, EnableIf<IsBuiltinFloatingPoint<D>> =dummy> FloatApproximation<PR> create(D const& y);
+    template<BuiltinSignedIntegral N> FloatValue<PR> create(N const& y);
+    template<BuiltinUnsignedIntegral M> PositiveFloatValue<PR> create(M const& y);
+    template<BuiltinFloatingPoint D> FloatApproximation<PR> create(D const& y);
     PositiveFloatApproximation<PR> create(PositiveApproximateNumber const& y);
     PositiveFloatLowerBound<PR> create(PositiveValidatedLowerNumber const& y);
     PositiveFloatUpperBound<PR> create(PositiveValidatedUpperNumber const& y);
@@ -114,9 +114,9 @@ template<class F> inline Bounds<F> FloatFactory<PR>::(Integer const& y) { return
 template<class F> inline Value<F> FloatFactory<PR>::(Dyadic const& y, ExactTag) { return Value<F>(y,_pr); }
 template<class F> inline Value<F> FloatFactory<PR>::(Integer const& y, ExactTag) { return Value<F>(y,_pr); }
 
-template<class F> inline template<class N, EnableIf<IsBuiltinSignedIntegral<N>> =dummy> Value<F> FloatFactory<PR>::(N const& y) { return Value<F>(y,_pr); }
-template<class F> inline template<class M, EnableIf<IsBuiltinUnsignedIntegral<M>> =dummy> PositiveValue<F> FloatFactory<PR>::(M const& y) { return PositiveValue<F>(y,_pr); }
-template<class F> inline template<class D, EnableIf<IsBuiltinFloatingPoint<D>> =dummy> Approximation<F> FloatFactory<PR>::(D const& y) { return Approximation<F>(F(y,_pr)); }
+template<class F> inline template<IsBuiltinSignedIntegral N> Value<F> FloatFactory<PR>::(N const& y) { return Value<F>(y,_pr); }
+template<class F> inline template<IsBuiltinUnsignedIntegral M> PositiveValue<F> FloatFactory<PR>::(M const& y) { return PositiveValue<F>(y,_pr); }
+template<class F> inline template<IsBuiltinFloatingPoint D> Approximation<F> FloatFactory<PR>::(D const& y) { return Approximation<F>(F(y,_pr)); }
 */
 
 } // namespace Ariadne

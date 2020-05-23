@@ -37,6 +37,8 @@
 
 namespace Ariadne {
 
+class Real;
+
 /************ Number *********************************************************/
 
 class DivideByZeroError : public std::runtime_error {
@@ -45,7 +47,6 @@ class DivideByZeroError : public std::runtime_error {
 
 
 template<class X> struct IsNumericType : False { };
-template<class X, class T> using EnableIfNumericType = EnableIf<IsNumericType<X>,T>;
 
 template<class X> using NumericType = typename X::NumericType;
 
@@ -66,6 +67,12 @@ template<class X> struct IsConcrete : Has<GenericType,X> { };
 template<class X> struct IsScalar;
 template<class X> struct IsConcreteScalar : And<Has<GenericType,X>,IsScalar<X>> { };
 template<class X> struct IsGenericScalar : And<Not<Has<GenericType,X>>,IsScalar<X>> { };
+
+template<class X> concept GenericScalar = IsGenericScalar<X>::value;
+template<class X> concept ConcreteScalar = IsConcreteScalar<X>::value;
+
+template<class R> struct IsConcreteNumericType : IsConvertible<R,Real> { };
+template<class X> concept ConcreteNumber = IsConcreteNumericType<X>::value;
 
 
 typedef uint Nat;
@@ -119,7 +126,10 @@ template<> struct IsNumericType<Integer>;
 template<> struct IsNumericType<Rational>;
 template<> struct IsNumericType<Real>;
 
-template<class X> struct IsGenericNumericType : IsConvertible<X,Rational> { };
+
+template<class Y> struct IsGenericNumericType;
+
+template<class Y> struct IsGenericNumericType : IsBuiltinIntegral<Y> { };
 template<> struct IsGenericNumericType<ExactDouble> : True { };
 template<> struct IsGenericNumericType<Integer> : True { };
 template<> struct IsGenericNumericType<Dyadic> : True { };
@@ -130,6 +140,9 @@ template<class P> struct IsGenericNumericType<Number<P>> : True { };
 template<class P> struct IsGenericNumericType<UpperNumber<P>> : True { };
 template<class P> struct IsGenericNumericType<LowerNumber<P>> : True { };
 template<class Y> struct IsGenericNumericType<Positive<Y>> : IsGenericNumericType<Y> { };
+
+template<class Y> using IsGenericNumber = IsGenericNumericType<Y>;
+template<class Y> concept GenericNumber = IsGenericNumericType<Y>::value;
 
 
 //! \relates Number

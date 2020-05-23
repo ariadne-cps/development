@@ -69,7 +69,7 @@ class Rational
     ~Rational();
     Rational();
     Rational(const Integer&, const Integer&);
-    template<class N, EnableIf<IsBuiltinIntegral<N>> = dummy> Rational(N n);
+    template<BuiltinIntegral N> Rational(N n);
     Rational(Int64);
     explicit Rational(FloatDP const&);
     Rational(const ExactDouble&);
@@ -131,7 +131,7 @@ template<> struct IsNumericType<Rational> : True { };
 Rational operator"" _q(unsigned long long int n);
 Rational operator"" _q(long double x);
 
-template<class N, EnableIf<IsBuiltinIntegral<N>>> inline Rational::Rational(N n) : Rational(Int64(n)) { }
+template<BuiltinIntegral N> inline Rational::Rational(N n) : Rational(Int64(n)) { }
 
 OutputStream& write(OutputStream& os, mpz_t const z);
 InputStream& operator>>(InputStream& is, Rational& q1);
@@ -143,7 +143,7 @@ template<> class Bounds<Rational> {
   public:
     Bounds<Rational>(Rational q) : _l(q), _u(q) { }
     Bounds<Rational>(Rational l, Rational u) : _l(l), _u(u) { }
-    template<class X, EnableIf<IsConstructible<Rational,X>> =dummy> Bounds<Rational>(Bounds<X> const& x)
+    template<class X> requires Constructible<Rational,X> Bounds<Rational>(Bounds<X> const& x)
         : Bounds<Rational>(Rational(x.lower_raw()),Rational(x.upper_raw())) { }
     operator ValidatedNumber() const;
     Bounds<Rational> pm(Rational e) { return RationalBounds(_l-e,_u+e); }

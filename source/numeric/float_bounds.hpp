@@ -107,17 +107,17 @@ template<class F> class Bounds
     Bounds<F>(ValidatedLowerNumber const& lower, UpperBound<F> const& upper);
     //! Construct from a lower bound \a lower and an upper bound \a upper, using precsion \a pr.
     Bounds<F>(ValidatedLowerNumber const& lower, ValidatedUpperNumber const& upper, PR pr);
-    template<class N1, class N2, EnableIf<And<IsBuiltinIntegral<N1>,IsBuiltinIntegral<N2>>> = dummy> Bounds<F>(N1 n1, N2 n2, PR pr) : _l(n1,pr), _u(n2,pr) { }
+    template<BuiltinIntegral N1, BuiltinIntegral N2> Bounds<F>(N1 n1, N2 n2, PR pr) : _l(n1,pr), _u(n2,pr) { }
     Bounds<F>(ExactDouble const& dl, ExactDouble const& du, PrecisionType pr) : _l(dl,pr), _u(du,pr) { }
     Bounds<F>(Dyadic const& wl, Dyadic const& wu, PrecisionType pr) : _l(wl,down,pr), _u(wu,up,pr) { }
     Bounds<F>(Decimal const& dl, Decimal const& du, PrecisionType pr) : _l(dl,down,pr), _u(du,up,pr) { }
     Bounds<F>(Rational const& ql, Rational const& qu, PrecisionType pr) : _l(ql,down,pr), _u(qu,up,pr) { }
 
-    template<class FF, EnableIf<IsConstructible<F,FF,RND,PR>> =dummy>
+    template<class FF> requires ConstructibleFrom<F,FF,RND,PR>
         Bounds<F>(Bounds<FF> const& x, PR pr) : Bounds<F>(F(x.lower_raw(),downward,pr),F(x.upper_raw(),upward,pr)) { }
     Bounds<F>(const Bounds<F>& x, PR pr) : _l(x._l,down,pr), _u(x._u,up,pr) { }
 
-    template<class N, EnableIf<IsBuiltinIntegral<N>> = dummy> Bounds<F>(N n, PR pr) : _l(n,down,pr), _u(n,up,pr) { }
+    template<BuiltinIntegral N> Bounds<F>(N n, PR pr) : _l(n,down,pr), _u(n,up,pr) { }
     Bounds<F>(ExactDouble const& d, PR pr) : _l(d,pr), _u(d,pr) { }
         Bounds<F>(TwoExp const& t, PR pr) : _l(t,pr), _u(t,pr) { }
         Bounds<F>(const Integer& z, PR pr) : _l(z,down,pr), _u(z,up,pr) { }
@@ -136,7 +136,7 @@ template<class F> class Bounds
         Bounds<F>& operator=(const Value<F>& x) { return *this=Bounds<F>(x); }
     //! Assign from generic validated bounds \a y, keeping the same precision.
     Bounds<F>& operator=(const ValidatedNumber& y) { return *this=Bounds<F>(y,this->precision()); }
-    template<class N, EnableIf<IsBuiltinIntegral<N>> = dummy> Bounds<F>& operator=(N n) { return *this=ValidatedNumber(n); }
+    template<BuiltinIntegral N> Bounds<F>& operator=(N n) { return *this=ValidatedNumber(n); }
 
     //! Downcast to generic validated bounds.
     operator ValidatedNumber () const;
@@ -348,7 +348,7 @@ template<class F> class Positive<Bounds<F>> : public Bounds<F>
   public:
     Positive<Bounds<F>>() : Bounds<F>() { }
     explicit Positive<Bounds<F>>(PR const& pr) : Bounds<F>(pr) { }
-    template<class M, EnableIf<IsBuiltinUnsignedIntegral<M>> =dummy> Positive<Bounds<F>>(M m, PR pr) : Bounds<F>(m,pr) { }
+    template<BuiltinUnsignedIntegral M> Positive<Bounds<F>>(M m, PR pr) : Bounds<F>(m,pr) { }
     explicit Positive<Bounds<F>>(F const& x) : Bounds<F>(x) { }
     explicit Positive<Bounds<F>>(F const& l, F const& u) : Bounds<F>(l,u) { }
     explicit Positive<Bounds<F>>(Bounds<F> const& x) : Bounds<F>(x) { }

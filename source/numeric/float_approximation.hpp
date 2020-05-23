@@ -85,7 +85,7 @@ template<class F> class Approximation
     Approximation<F>(const ApproximateNumber& y, PR pr); // : _a(y.get(ApproximateTag(),pr)) { }
 
     //! <p/>
-    template<class FF, EnableIf<IsConstructible<F,FF,RND,PR>> =dummy>
+    template<class FF> requires Constructible<F,FF,RND,PR>
         Approximation<F>(const Approximation<FF>& x, PR pr) : _a(x.raw(),near,pr) { }
 
     //! <p/>
@@ -102,9 +102,9 @@ template<class F> class Approximation
     Approximation<F>(LowerBound<F> const& x);
 
     //! <p/>
-    template<class N, EnableIf<IsBuiltinIntegral<N>> =dummy> Approximation<F>& operator=(N n) { this->_a=n; return *this; }
+    template<BuiltinIntegral N> Approximation<F>& operator=(N n) { this->_a=n; return *this; }
     //! <p/>
-    template<class D, EnableIf<IsBuiltinFloatingPoint<D>> =dummy> Approximation<F>& operator=(D x) { this->_a=ExactDouble(x); return *this; }
+    template<BuiltinFloatingPoint D> Approximation<F>& operator=(D x) { this->_a=ExactDouble(x); return *this; }
         Approximation<F>& operator=(const LowerBound<F>& x) { return *this=Approximation<F>(x); }
         Approximation<F>& operator=(const UpperBound<F>& x) { return *this=Approximation<F>(x); }
         Approximation<F>& operator=(const Bounds<F>& x) { return *this=Approximation<F>(x); }
@@ -276,7 +276,7 @@ template<class F> Approximation(F) -> Approximation<F>;
 template<class F> inline FloatFactory<PrecisionType<F>> factory(Approximation<F> const& flt) { return FloatFactory<PrecisionType<F>>(flt.precision()); }
 template<class PR> inline FloatApproximation<PR> FloatFactory<PR>::create(ApproximateNumber const& y) { return FloatApproximation<PR>(y,_pr); }
 template<class PR> inline PositiveFloatApproximation<PR> FloatFactory<PR>::create(PositiveApproximateNumber const& y) { return PositiveFloatApproximation<PR>(y,_pr); }
-template<class PR> template<class D, EnableIf<IsBuiltinFloatingPoint<D>>> inline
+template<class PR> template<BuiltinFloatingPoint D> inline
     FloatApproximation<PR> FloatFactory<PR>::create(D const& y) { return FloatApproximation<PR>(y,_pr); }
 
 template<class F> class Positive<Approximation<F>> : public Approximation<F>
@@ -287,7 +287,7 @@ template<class F> class Positive<Approximation<F>> : public Approximation<F>
     using typename Approximation<F>::PR;
   public:
     Positive<Approximation<F>>() : Approximation<F>() { }
-    template<class M, EnableIf<IsBuiltinUnsignedIntegral<M>> =dummy>
+    template<BuiltinUnsignedIntegral M>
         Positive<Approximation<F>>(M m) : Approximation<F>(m) { }
     explicit Positive<Approximation<F>>(PR const& pr) : Approximation<F>(pr) { }
     explicit Positive<Approximation<F>>(F const& x) : Approximation<F>(x) { }

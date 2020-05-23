@@ -96,7 +96,6 @@ template<class P> using LessThan = P;
 template<class P1, class P2=P1> struct ParadigmTraits;
 
 
-
 template<> struct ParadigmTraits<ExactTag,ExactTag> {
     using Weaker = ExactTag;
     using Stronger = ExactTag;
@@ -161,6 +160,9 @@ template<class P1, class P2> struct IsWeaker : IsConvertible<P2,P1> { };
 
 //! \brief Inherits from \c TrueType if paradigm \a P1 is stronger than \a P2.
 template<class P1, class P2> struct IsStronger : IsWeaker<P2,P1> { };
+
+template<class P1, class P2> concept WeakerThan = IsWeaker<P1,P2>::value;
+template<class P1, class P2> concept StrongerThan = IsWeaker<P2,P1>::value;
 
 
 template<class T> using IsParadigm = IsConvertible<T,ApproximateTag>;

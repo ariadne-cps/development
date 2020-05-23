@@ -39,9 +39,9 @@
 
 namespace Ariadne {
 
-template<class PRE, class PR, EnableIf<IsDefaultConstructible<PRE>> = dummy> inline
+template<class PRE, class PR> requires DefaultConstructible<PRE> inline
     PRE _error_precision(PR const&) { return PRE(); }
-template<class PRE, class PR, DisableIf<IsDefaultConstructible<PRE>> = dummy, EnableIf<IsConstructible<PRE,PR>> = dummy> inline
+template<class PRE, class PR> requires (not DefaultConstructible<PRE>) and Constructible<PRE,PR> inline
     PRE _error_precision(PR const& pr) { return PRE(pr); }
 
 //! \ingroup NumericModule
@@ -296,7 +296,7 @@ template<class F, class FE> class Positive<Ball<F,FE>> : public Ball<F,FE> {
     using PRE = typename Ball<F,FE>::ErrorPrecisionType;
   public:
     Positive<Ball<F,FE>>() : Bounds<F>() { }
-    template<class M, EnableIf<IsBuiltinUnsignedIntegral<M>> =dummy>
+    template<BuiltinUnsignedIntegral M>
         Positive<Ball<F,FE>>(M m, PRE pre) : Ball<F,FE>(m,pre) { }
     explicit Positive<Ball<F,FE>>(PR pr, PRE pre) : Ball<F,FE>(pr,pre) { }
     explicit Positive<Ball<F,FE>>(Ball<F,FE> const& x) : Ball<F,FE>(x) { }
@@ -311,9 +311,9 @@ template<class F, class FE> struct Operations<Ball<F,FE>> {
     typedef typename FE::PrecisionType PRE;
 
     static FE _make_error(F const& e) {
-        static_assert(IsSame<F,FE>::value or IsDefaultConstructible<PRE>::value);
-        if constexpr (IsSame<F,FE>()) { return e; }
-        else if constexpr (IsDefaultConstructible<PRE>()) { return FE(e,up,PRE()); }
+        static_assert(SameAs<F,FE> or DefaultConstructible<PRE>);
+        if constexpr (SameAs<F,FE>) { return e; }
+        else if constexpr (DefaultConstructible<PRE>) { return FE(e,up,PRE()); }
     }
 
     static Ball<F,FE> _nul(Ball<F,FE> const& x) {

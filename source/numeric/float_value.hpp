@@ -82,7 +82,7 @@ template<class F> class Value
     //! Treat \a v as an exact numeric value.
     explicit Value<F>(RawType const& v) : _v(v) { }
 
-    template<class N, EnableIf<IsBuiltinIntegral<N>> = dummy> Value<F>(N n, PR pr) : Value<F>(Integer(n),pr) { }
+    template<BuiltinIntegral N> Value<F>(N n, PR pr) : Value<F>(Integer(n),pr) { }
     Value<F>(const ExactDouble& d, PR pr);
     Value<F>(const TwoExp& t, PR pr);
     Value<F>(const Integer& z, PR pr);
@@ -91,7 +91,7 @@ template<class F> class Value
     Value<F>(const Dyadic& w, PR pr);
     Value<F>(const Value<F>& x, PR pr);
 
-    template<class N, EnableIf<IsBuiltinIntegral<N>> = dummy> Value<F>& operator=(N n) { _v=n; return *this; }
+    template<BuiltinIntegral N> Value<F>& operator=(N n) { _v=n; return *this; }
     Value<F>& operator=(const Integer& z);
     Value<F>& operator=(const TwoExp& t);
     //! Assign from a dyadic number \a w, keeping the same precision.
@@ -268,10 +268,10 @@ template<class PR> inline FloatValue<PR> FloatFactory<PR>::create(Dyadic const& 
 template<class PR> inline FloatValue<PR> FloatFactory<PR>::create(Integer const& y, ExactTag) { return FloatValue<PR>(y,_pr); }
 template<class PR> inline FloatValue<PR> FloatFactory<PR>::create(ExactDouble const& y) { return FloatValue<PR>(y,_pr); }
 
-template<class PR> template<class N, EnableIf<IsBuiltinSignedIntegral<N>>> inline
+template<class PR> template<BuiltinSignedIntegral N> inline
 FloatValue<PR> FloatFactory<PR>::create(N const& y) { return FloatValue<PR>(y,_pr); }
 
-template<class PR> template<class M, EnableIf<IsBuiltinUnsignedIntegral<M>>> inline
+template<class PR> template<BuiltinUnsignedIntegral M> inline
 PositiveFloatValue<PR> FloatFactory<PR>::create(M const& y) { return PositiveFloatValue<PR>(y,_pr); }
 
 template<class F> class Positive<Value<F>> : public Value<F> {
@@ -279,7 +279,7 @@ template<class F> class Positive<Value<F>> : public Value<F> {
   public:
     Positive<Value<F>>() : Value<F>() { }
     explicit Positive<Value<F>>(PR const& pr) : Value<F>(pr) { }
-    template<class M, EnableIf<IsBuiltinUnsignedIntegral<M>> =dummy> Positive<Value<F>>(M m, PR pr) : Value<F>(m,pr) { }
+    template<BuiltinUnsignedIntegral M> Positive<Value<F>>(M m, PR pr) : Value<F>(m,pr) { }
     Positive<Value<F>>(TwoExp const& ex, PR pr) : Value<F>(ex,pr) { }
     explicit Positive<Value<F>>(Dyadic const& w, PR pr) : Value<F>(w,pr) { }
     explicit Positive<Value<F>>(F const& x) : Value<F>(x) { }

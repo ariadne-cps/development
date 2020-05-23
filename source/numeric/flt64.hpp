@@ -67,7 +67,7 @@ extern const RoundingModeType ROUND_ZERO;
 
 // ----------------- RawTag FloatDP class ---------------------------------------------------------
 
-template<class Z, EnableIf<IsBuiltinIntegral<Z>> =dummy> Z integer_cast(Flt64);
+template<BuiltinIntegral Z> Z integer_cast(Flt64);
 
 // ----------------- RawTag FloatDP class ---------------------------------------------------------
 

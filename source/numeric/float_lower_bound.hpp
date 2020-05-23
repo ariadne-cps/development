@@ -70,7 +70,7 @@ template<class F> class LowerBound
     //! A lower bound with value \a l.
     explicit LowerBound<F>(RawType const& l) : _l(l) { }
 
-    template<class N, EnableIf<IsBuiltinIntegral<N>> = dummy> LowerBound<F>(N n, PR pr) : LowerBound<F>(ExactDouble(n),pr) { }
+    template<BuiltinIntegral N> LowerBound<F>(N n, PR pr) : LowerBound<F>(ExactDouble(n),pr) { }
     LowerBound<F>(const ExactDouble& d, PR pr) : _l(d,pr) { }
         LowerBound<F>(const TwoExp& t, PR pr) : _l(t,pr) { }
         LowerBound<F>(const Integer& z, PR pr) : _l(z,down,pr) { }
@@ -83,7 +83,7 @@ template<class F> class LowerBound
     LowerBound<F>(const LowerBound<F>& x, PR pr);
     //! A lower bound of type \p F from a generic lower bound \a y.
     LowerBound<F>(const ValidatedLowerNumber& y, PR pr);
-    template<class FF, EnableIf<IsConstructible<F,FF,RND,PR>> =dummy>
+    template<class FF> requires Constructible<F,FF,RND,PR>
         LowerBound<F>(const LowerBound<FF>& x, PR pr) : _l(x.raw(),down,pr) { }
 
     //! Convert from lower \em and upper bounds on a number.
@@ -208,7 +208,7 @@ template<class F> class Positive<LowerBound<F>> : public LowerBound<F>
     using typename LowerBound<F>::PR;
   public:
     Positive<LowerBound<F>>() : LowerBound<F>() { }
-    template<class M, EnableIf<IsBuiltinUnsignedIntegral<M>> =dummy>
+    template<BuiltinUnsignedIntegral M>
         Positive<LowerBound<F>>(M m, PR const& pr) : LowerBound<F>(m,pr) { }
     explicit Positive<LowerBound<F>>(PR const& pr) : LowerBound<F>(pr) { }
     explicit Positive<LowerBound<F>>(F const& x) : LowerBound<F>(x) { }

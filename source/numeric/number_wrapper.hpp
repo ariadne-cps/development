@@ -434,18 +434,15 @@ template<class X> class NumberGetterMixin : public virtual NumberInterface {
     virtual OutputStream& _write(OutputStream& os) const override { return os << _cast(*this); }
 
   private:
-    template<class R, EnableIf<IsConstructible<R,X>> = dummy>
-        inline R _get_as() const { return static_cast<R>(_cast(*this)); }
-    template<class R, DisableIf<IsConstructible<R,X>> = dummy>
-        inline R _get_as() const { std::cerr<<"Warning: Cannot convert " << _cast(*this) << " of type " << this->_class_name() << " to " << class_name<R>() << "\n"; throw ParadigmError(); }
-    template<class R, class PR, EnableIf<IsConstructible<R,X,PR>> = dummy>
-        inline R _get_as(PR pr) const { return R(_cast(*this),pr); }
-    template<class R, class PR, DisableIf<IsConstructible<R,X,PR>> = dummy>
-        inline R _get_as(PR pr) const { std::cerr<<"Warning: Cannot convert " << _cast(*this) << " of type " << this->_class_name() << " to " << class_name<R>() << " with precision " << pr << "\n"; throw ParadigmError(); }
-    template<class R, class PR, class PRE, EnableIf<IsConstructible<R,X,PR,PRE>> = dummy>
-        inline R _get_as(PR pr, PRE pre) const { return R(_cast(*this),pr,pre); }
-    template<class R, class PR, class PRE, DisableIf<IsConstructible<R,X,PR,PRE>> = dummy>
-        inline R _get_as(PR pr, PRE pre) const { std::cerr<<"Warning: Cannot convert " << _cast(*this) << " of type " << this->_class_name() << " to " << class_name<R>() << " with precision " << pr << " and error precision " << pre << "\n"; throw ParadigmError(); }
+    template<class R> inline R _get_as() const {
+        if constexpr (Constructible<R,X>) { return static_cast<R>(_cast(*this)); }
+        else { std::cerr<<"Warning: Cannot convert " << _cast(*this) << " of type " << this->_class_name() << " to " << class_name<R>() << "\n"; throw ParadigmError(); } }
+    template<class R, class PR> inline R _get_as(PR pr) const {
+        if constexpr (Constructible<R,X,PR>) { return R(_cast(*this),pr); }
+        else { std::cerr<<"Warning: Cannot convert " << _cast(*this) << " of type " << this->_class_name() << " to " << class_name<R>() << " with precision " << pr << "\n"; throw ParadigmError(); } }
+    template<class R, class PR, class PRE> inline R _get_as(PR pr, PRE pre) const {
+        if constexpr (Constructible<R,X,PR,PRE>) { return R(_cast(*this),pr,pre); }
+        else { std::cerr<<"Warning: Cannot convert " << _cast(*this) << " of type " << this->_class_name() << " to " << class_name<R>() << " with precision " << pr << " and error precision " << pre << "\n"; throw ParadigmError(); } }
 };
 
 template<class X> class NumberMixin

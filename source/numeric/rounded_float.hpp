@@ -85,20 +85,20 @@ template<> class Rounded<FloatDP>
     explicit Rounded(PrecisionType pr) : dbl() { }
     explicit Rounded(FloatType x) : dbl(x.dbl) { }
 
-    template<class N, EnableIf<IsBuiltinIntegral<N>> =dummy>
+    template<BuiltinIntegral N>
         Rounded(N n, PrecisionType pr) : dbl(n) { }
     Rounded(ExactDouble d, PrecisionType pr) : dbl(d.get_d()) { }
     Rounded(Dyadic const& w, PrecisionType pr) : Rounded(FloatType(w,pr)) { }
     Rounded(FloatType x, PrecisionType) : dbl(x.dbl) { }
     Rounded(Rounded<FloatType> x, PrecisionType) : dbl(x.dbl) { }
-    template<class Y, EnableIf<And<IsConstructible<FloatType,Y,RoundingModeType,PrecisionType>,Not<IsBuiltinIntegral<Y>>>> =dummy>
+    template<class Y> requires Constructible<FloatType,Y,RoundingModeType,PrecisionType> and (not BuiltinIntegral<Y>)
         Rounded(Y const& y, PrecisionType pr) : Rounded(FloatType(y,FloatType::get_rounding_mode(),pr)) { }
 
-    template<class N, EnableIf<IsBuiltinIntegral<N>> =dummy>
+    template<BuiltinIntegral N>
         Rounded<FloatType>& operator=(N n) { this->dbl=n; return *this; }
     Rounded<FloatType>& operator=(FloatType x) { this->dbl=x.dbl; return *this; }
     Rounded<FloatType>& operator=(ExactDouble x) { this->dbl=x.get_d(); return *this; }
-    template<class Y, EnableIf<And<IsConstructible<FloatType,Y,RoundingModeType,PrecisionType>,Not<IsBuiltinIntegral<Y>>>> =dummy>
+    template<class Y> requires Constructible<FloatType,Y,RoundingModeType,PrecisionType> and (not BuiltinIntegral<Y>)
         Rounded<FloatType> operator=(Y const& y) { return (*this)=FloatType(y,FloatType::get_rounding_mode(),this->precision()); }
 
     Rounded(Value<FloatDP> const& x);
@@ -231,10 +231,10 @@ template<class FLT> class Rounded
     explicit Rounded(PrecisionType pr) : _flt(pr) { }
     explicit Rounded(FloatType x) : _flt(x) { }
 
-    template<class Y, EnableIf<IsConstructible<FloatType,Y,RoundingModeType,PrecisionType>> =dummy>
+    template<class Y> requires Constructible<FloatType,Y,RoundingModeType,PrecisionType>
         Rounded(Y const& y, PrecisionType pr) : Rounded(FloatType(y,FloatType::get_rounding_mode(),pr)) { }
 
-    template<class Y, EnableIf<IsConstructible<FloatType,Y,RoundingModeType,PrecisionType>> =dummy>
+    template<class Y> requires Constructible<FloatType,Y,RoundingModeType,PrecisionType>
         Rounded<FloatType> operator=(Y const& y) { this->_flt=FloatType(y,FloatType::get_rounding_mode(),this->precision()); return *this; }
 
     explicit operator FloatType() const { return FloatType(this->_flt); }
