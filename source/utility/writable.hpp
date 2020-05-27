@@ -54,7 +54,7 @@ template<class T, class = decltype(declval<T>()._write(declval<OutputStream>()))
 template<class T> False has_write(...);
 template<class T, class = Fallback> struct IsWritable : decltype(has_write<T>(1)) { };
 
-template<class T> EnableIf<IsWritable<T>,OutputStream&> operator<<(OutputStream& os, const T& t) {
+template<class T> requires IsWritable<T>::value OutputStream& operator<<(OutputStream& os, const T& t) {
     return t._write(os);
 }
 

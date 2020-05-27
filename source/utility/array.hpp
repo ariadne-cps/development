@@ -85,14 +85,14 @@ class Array {
     Array(InitializerList<T> lst) : _size(lst.size()), _ptr(uninitialized_new(_size)) {
         this->_uninitialized_fill(lst.begin()); }
     //! \brief Constructs an Array from an initializer list of doubles and a precision parameter.
-    template<class PR, EnableIf<IsConstructible<T,double,PR>> = dummy>
+    template<class PR> requires Constructible<T,double,PR>
     Array(InitializerList<double> lst, PR pr) : _size(lst.size()), _ptr(uninitialized_new(_size)) {
         this->_uninitialized_fill(lst.begin(),pr); }
-    template<class PR, EnableIf<IsConstructible<T,ExactDouble,PR>> = dummy>
+    template<class PR> requires Constructible<T,ExactDouble,PR>
     Array(InitializerList<ExactDouble> lst, PR pr) : _size(lst.size()), _ptr(uninitialized_new(_size)) {
         this->_uninitialized_fill(lst.begin(),pr); }
     //! \brief Generate from a function (object) \a g of type \a G mapping an index to a value.
-    template<class G, EnableIf<IsInvocableReturning<ValueType,G,SizeType>> = dummy>
+    template<class G> requires IsInvocableReturning<ValueType,G,SizeType>::value
     Array(SizeType n, G const& g) : _size(n), _ptr(uninitialized_new(_size)) {
         this->_uninitialized_generate(g); }
 
@@ -104,17 +104,17 @@ class Array {
         this->_uninitialized_fill(first); }
 
     //! \brief Conversion constructor.
-    template<class TT, EnableIf<IsConvertible<TT,T>> = dummy>
+    template<ConvertibleTo<T> TT>
     Array(const Array<TT>& a) : _size(a.size()), _ptr(uninitialized_new(_size)) {
         this->_uninitialized_fill(a.begin()); }
 
     //! \brief Explicit conversion constructor.
-    template<class TT, EnableIf<IsConstructible<T,TT>> = dummy, DisableIf<IsConvertible<TT,T>> =dummy>
+    template<ExplicitlyConvertibleTo<T> TT>
     explicit Array(const Array<TT>& a) : _size(a.size()), _ptr(uninitialized_new(_size)) {
         this->_uninitialized_fill(a.begin()); }
 
     //! \brief Explicit construction with properties parameter.
-    template<class TT, class PR, EnableIf<IsConstructible<T,TT,PR>> = dummy>
+    template<class TT, class PR> requires Constructible<T,TT,PR>
     Array(const Array<TT>& a, PR pr) : _size(a.size()), _ptr(uninitialized_new(_size)) {
         this->_uninitialized_fill(a.begin(),pr); }
 

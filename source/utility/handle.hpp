@@ -69,8 +69,8 @@ template<class I> class Handle {
     Handle(SharedPointer<I> p) : _ptr(p) { }
     Handle(I&& r) : _ptr(r._move()) { }
     Handle(const I& r) : _ptr(r._copy()) { }
-    template<class T, EnableIf<IsBaseOf<I,T>> =dummy> Handle(T&& t) : _ptr(new T(std::move(t))) { }
-    template<class T, EnableIf<IsBaseOf<I,T>> =dummy, EnableIf<IsCopyConstructible<T>> =dummy> Handle(const T& t)
+    template<DerivedFrom<I> T> Handle(T&& t) : _ptr(new T(std::move(t))) { }
+    template<DerivedFrom<I> T> requires CopyConstructible<T> Handle(const T& t)
         : _ptr(new T(t)) { }
     //Handle(const Handle<I>& h) : _ptr(h._ptr) { }
     //Handle(Handle<I>&& h) : _ptr(h._ptr) { }

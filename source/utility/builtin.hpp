@@ -23,7 +23,7 @@
  */
 
 /*! \file utility/builtin.hpp
- *  \brief 
+ *  \brief
  */
 
 
@@ -38,7 +38,7 @@ namespace Ariadne {
 class builtin_uint {
     long unsigned int _m;
   public:
-    template<class M> builtin_uint(M m, EnableIf<IsBuiltinUnsigned<M>> =dummy) : _m(m) { }
+    template<BuiltinUnsigned M> builtin_uint(M m) : _m(m) { }
     explicit operator long unsigned int() const { return _m; }
     long unsigned int get_ui() const { return _m; }
 };
@@ -46,7 +46,7 @@ class builtin_uint {
 class builtin_int {
     long int _n;
   public:
-    template<class N> builtin_int(N n, EnableIf<IsBuiltinIntegral<N>> =dummy) : _n(n) { }
+    template<BuiltinIntegral N> builtin_int(N n) : _n(n) { }
     explicit operator long int () const { return _n; }
     long int get_si() const { return _n; }
 };
@@ -54,7 +54,7 @@ class builtin_int {
 class builtin_double {
     double _x;
   public:
-    template<class X> builtin_double(X x, EnableIf<IsBuiltinFloatingPoint<X>> =dummy) : _x(x) { }
+    template<BuiltinFloatingPoint X> builtin_double(X x) : _x(x) { }
     explicit operator double () const { return _x; }
     double get_d() const { return _x; }
 };

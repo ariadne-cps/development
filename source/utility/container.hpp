@@ -77,9 +77,9 @@ template<class T> class List : public std::vector<T> {
     List() : std::vector<T>() { }
     List(std::vector<T> const& lst) : std::vector<T>(lst) { }
     List(T const& t) : std::vector<T>(1u,t) { }
-    template<class TT, EnableIf<IsConvertible<TT,T>> =dummy>
+    template<ConvertibleTo<T> TT>
         List(const std::vector<TT>& l) : std::vector<T>(l.begin(),l.end()) { }
-    template<class TT, EnableIf<IsConstructible<T,TT>> =dummy, DisableIf<IsConvertible<TT,T>> =dummy>
+    template<ExplicitlyConvertibleTo<T> TT>
         explicit List(const std::vector<TT>& l) : std::vector<T>(l.begin(),l.end()) { }
     void append(const T& t) { this->push_back(t); }
     void append(const std::vector<T>& t) {
@@ -99,7 +99,7 @@ template<class T> inline List<T> catenate(const List<T>& l1, const T& t2) {
     r.append(t2);
     return r;
 }
-template<class T, class F, EnableIf<IsInvocable<F,T>> =dummy> inline
+template<class T, Invocable<T> F> inline
 List<InvokeResult<F,T>> apply(F&& f, List<T> const& lst) {
     typedef InvokeResult<F,T> R; List<R> res; res.reserve(lst.size());
     for (auto itm : lst) { res.append(f(itm)); } return res;
@@ -145,13 +145,13 @@ template<class T> class Set : public std::set<T> {
     typedef typename std::set<T>::const_iterator ConstIterator;
     using std::set<T>::set;
     Set() : std::set<T>() { }
-    template<class TT, EnableIf<IsConvertible<TT,T>> =dummy>
+    template<ConvertibleTo<T> TT>
         Set(const InitializerList<TT>& s) : std::set<T>(s.begin(),s.end()) { }
-    template<class TT, EnableIf<IsConvertible<TT,T>> =dummy>
+    template<ConvertibleTo<T> TT>
         Set(const std::vector<TT>& s) : std::set<T>(s.begin(),s.end()) { }
-    template<class TT, EnableIf<IsConvertible<TT,T>> =dummy>
+    template<ConvertibleTo<T> TT>
         Set(const std::set<TT>& s) : std::set<T>(s.begin(),s.end()) { }
-    template<class TT, EnableIf<IsConstructible<T,TT>> =dummy, DisableIf<IsConvertible<TT,T>> =dummy>
+    template<ExplicitlyConvertibleTo<T> TT>
         explicit Set(const std::set<TT>& s) { for(auto x : s) { this->insert(T(x)); } }
     explicit operator List<T> () const { return List<T>(this->begin(),this->end()); }
     bool contains(const T& t) const {
@@ -184,7 +184,7 @@ template<class T> class Set : public std::set<T> {
             this->std::set<T>::erase(static_cast<const T&>(*iter)); }
         return *this; }
 };
-template<class T, class F, EnableIf<IsInvocable<F,T>> =dummy> inline
+template<class T, Invocable<T> F> inline
 Set<InvokeResult<F,T>> apply(F&& f, Set<T> const& set) {
     typedef InvokeResult<F,T> R; Set<R> res; for (auto itm : set) { res.adjoin(f(itm)); } return res; }
 template<class T> inline Set<T> join(Set<T> s1, Set<T> const& s2) {
@@ -231,7 +231,7 @@ template<class K, class T> class Map : public std::map<K,T> {
   public:
     typedef typename std::map<K,T>::iterator Iterator;
     typedef typename std::map<K,T>::const_iterator ConstIterator;
-    template<class TT, EnableIf<IsConvertible<TT,T>> =dummy>
+    template<ConvertibleTo<T> TT>
         Map(const std::map<K,TT>& m) : std::map<K,T>(m.begin(),m.end()) { }
     using std::map<K,T>::map;
     using std::map<K,T>::insert;

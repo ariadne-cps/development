@@ -44,7 +44,7 @@ template<class C, class... TS> class CodedVariant {
     C _code;
   public:
     explicit CodedVariant(C code) : _code(code) { }
-    template<class T, EnableIf<IsOneOf<T,TS...>> =dummy> CodedVariant(T const&) : _code(T::code()) { }
+    template<OneOf<TS...> T> CodedVariant(T const&) : _code(T::code()) { }
     template<class V> inline decltype(auto) accept(V const& v) const;
     C code() const { return _code; }
 };
