@@ -127,7 +127,7 @@ template<class T, class VAR> constexpr decltype(auto) variant_index_of() { retur
 
 template<class T> struct ExpressionNode : public ExpressionVariantType<T> {
   public:
-    template<class... AS, EnableIf<IsConstructible<ExpressionVariantType<T>,AS...>> =dummy>
+    template<class... AS> requires Constructible<ExpressionVariantType<T>,AS...>
         ExpressionNode(AS... as) : ExpressionVariantType<T>(as...) { }
 
     ExpressionVariantType<T> const& base() const { return *this; }

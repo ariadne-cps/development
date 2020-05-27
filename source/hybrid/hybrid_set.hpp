@@ -184,9 +184,9 @@ template<class X> class HybridPoint
     HybridPoint<X>(const DiscreteLocation& q, const List<Assignment<RealVariable,X>>& val);
     HybridPoint<X>(const DiscreteLocation& q, const InitializerList<Assignment<RealVariable,X>>& val);
 
-    template<class XX, EnableIf<IsConvertible<XX,X>> =dummy> HybridPoint<X>(HybridPoint<XX> hpt)
+    template<class XX> requires Convertible<XX,X> HybridPoint<X>(HybridPoint<XX> hpt)
         : HybridPoint<X>(hpt.location(),hpt.space(),Point<X>(hpt.euclidean_set())) { }
-    template<class Y, class PR, EnableIf<IsConstructible<X,Y,PR>> =dummy> HybridPoint<X>(HybridPoint<Y> hpt, PR pr)
+    template<class Y, class PR> requires Constructible<X,Y,PR> HybridPoint<X>(HybridPoint<Y> hpt, PR pr)
         : HybridPoint<X>(hpt.location(),hpt.space(),Point<X>(hpt.euclidean_set(),pr)) { }
 
     Point<X>& point() { return this->euclidean_set(); }

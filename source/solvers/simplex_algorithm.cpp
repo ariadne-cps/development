@@ -39,7 +39,7 @@
 
 namespace Ariadne {
 
-template<class X1, class X2, EnableIf<IsSame<X1,RawFloatDP>> =dummy, EnableIf<IsSame<X2,FloatDPValue>> =dummy>
+template<SameAs<RawFloatDP> X1, SameAs<FloatDPValue> X2>
     bool operator<(X1 x1, X2 x2) { return x1<x2.raw(); }
 
 // Threshold for matrix diagonal elements below which it may be considered singular

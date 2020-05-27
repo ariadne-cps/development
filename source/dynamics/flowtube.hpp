@@ -41,7 +41,7 @@ class FlowTube {
     List<Identifier> _variable_names;
   public:
     SizeType number_of_state_variables() const { return _phi.result_size(); }
-    template<class X, class T, EnableIf<IsSame<X,T>> =dummy> decltype(auto) operator()(Vector<X> const& x, Scalar<T> const& t) {
+    template<class X, class T> requires Same<X,T> decltype(auto) operator()(Vector<X> const& x, Scalar<T> const& t) {
         return phi(join(x,t)); }
     decltype(auto) space_domain() const { SizeType n=this->number_of_state_variables(); return _phi.domain()[range(0,n)]; }
     decltype(auto) time_range() const { SizeType n=this->number_of_state_variables(); return _phi.domain()[n]; }

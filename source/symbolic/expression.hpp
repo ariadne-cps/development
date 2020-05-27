@@ -87,14 +87,14 @@ class Expression
     typedef Variable<T> VariableType;
   public:
     // Use template formulation to avoid ambiguity treating Expression(0) as a pointer construction.
-    template<class P, EnableIf<IsConvertible<P,SharedPointer<const ExpressionNode<T>>>> =dummy>
+    template<ConvertibleTo<SharedPointer<const ExpressionNode<T>>> P>
         explicit Expression(P const& eptr) : _root(eptr) { }
   public:
     //! \brief Default expression is a constant with default value.
     Expression();
     //! \brief Construct an expression from a numerical value.
     Expression(const T& c);
-    template<class U, EnableIf<IsConvertible<U,T>> =dummy> Expression(const U& c) : Expression(T(c)) { }
+    template<ConvertibleTo<T> U> Expression(const U& c) : Expression(T(c)) { }
     //! \brief Construct an expression from a named constant.
     Expression(const Constant<T>& c);
     //! \brief Construct an expression from a variable.
@@ -129,7 +129,7 @@ class Expression
     //! \brief A write for Expression objects using infix notation.
     friend class InfixExpressionWriter<T>;
   public:
-    template<class X, EnableIf<And<IsSame<T,Real>,IsSame<X,Real>>> =dummy> operator ElementaryAlgebra<X>() const;
+    template<class X> requires AreSame<T,X,Real> operator ElementaryAlgebra<X>() const;
   public:
     //! \brief The variables needed to compute the expression.
     Set<UntypedVariable> arguments() const;

@@ -57,12 +57,17 @@ ErrorType zeroparam_component_error(ErrorConstants const& n, ErrorType const& v,
 ErrorType oneparam_component_error(ErrorConstants const& n, ErrorType const& v, ErrorType const& w, PositiveFloatDPValue const& h, SizeType j);
 template<class R> ErrorType twoparam_component_error(ErrorConstants const& n, ErrorType const& v, ErrorType const& w, PositiveFloatDPValue const& h, SizeType j);
 
-template<class A, class R, EnableIf<IsSame<A,ZeroApproximation>> = dummy> ErrorType worstcase_error(ErrorConstants const& n, BoxDomainType const& inputs, PositiveFloatDPValue const& h) { return zeroparam_worstcase_error(n, vstar(inputs), wstar<A>(inputs), h); }
-template<class A, class R, EnableIf<IsSame<A,ConstantApproximation>> = dummy> ErrorType worstcase_error(ErrorConstants const& n, BoxDomainType const& inputs, PositiveFloatDPValue const& h) { return oneparam_worstcase_error(n, vstar(inputs), wstar<A>(inputs), h); }
-template<class A, class R, EnableIf<Not<Or<IsSame<A,ZeroApproximation>,IsSame<A,ConstantApproximation>>>> = dummy> ErrorType worstcase_error(ErrorConstants const& n, BoxDomainType const& inputs, PositiveFloatDPValue const& h) { return twoparam_worstcase_error<R>(n, vstar(inputs), wstar<A>(inputs), h); }
-template<class A, class R, EnableIf<IsSame<A,ZeroApproximation>> = dummy> ErrorType component_error(ErrorConstants const& n, BoxDomainType const& inputs, PositiveFloatDPValue const& h, SizeType j) { return zeroparam_component_error(n, vstar(inputs), wstar<A>(inputs), h, j); }
-template<class A, class R, EnableIf<IsSame<A,ConstantApproximation>> = dummy> ErrorType component_error(ErrorConstants const& n, BoxDomainType const& inputs, PositiveFloatDPValue const& h, SizeType j) { return oneparam_component_error(n, vstar(inputs), wstar<A>(inputs), h, j); }
-template<class A, class R, EnableIf<Not<Or<IsSame<A,ZeroApproximation>,IsSame<A,ConstantApproximation>>>> = dummy> ErrorType component_error(ErrorConstants const& n, BoxDomainType const& inputs, PositiveFloatDPValue const& h, SizeType j) { return twoparam_component_error<R>(n, vstar(inputs), wstar<A>(inputs), h, j); }
+template<class A, class R> ErrorType worstcase_error(ErrorConstants const& n, BoxDomainType const& inputs, PositiveFloatDPValue const& h) {
+    if constexpr (Same<A,ZeroApproximation>) { return zeroparam_worstcase_error(n, vstar(inputs), wstar<A>(inputs), h); }
+    else if constexpr (Same<A,ConstantApproximation>) { return oneparam_worstcase_error(n, vstar(inputs), wstar<A>(inputs), h); }
+    else { return twoparam_worstcase_error<R>(n, vstar(inputs), wstar<A>(inputs), h); }
+}
+
+template<class A, class R> ErrorType component_error(ErrorConstants const& n, BoxDomainType const& inputs, PositiveFloatDPValue const& h, SizeType j) {
+    if constexpr (Same<A,ZeroApproximation>) { return zeroparam_component_error(n, vstar(inputs), wstar<A>(inputs), h, j); }
+    else if constexpr (Same<A,ConstantApproximation>) { return oneparam_component_error(n, vstar(inputs), wstar<A>(inputs), h, j); }
+    else { return twoparam_component_error<R>(n, vstar(inputs), wstar<A>(inputs), h, j); }
+}
 
 ErrorConstants::ErrorConstants(ErrorType const& K_, Vector<ErrorType> const& Kj_, ErrorType const& pK_, ErrorType const& pKv_, ErrorType const& pKw_, Vector<ErrorType> const& pKj_, Vector<ErrorType> const& pKjv_, Vector<ErrorType> const& pKjw_,
                                ErrorType const& L_, Vector<ErrorType> const& Lj_, ErrorType const& pL_, ErrorType const& pLv_, ErrorType const& pLw_, Vector<ErrorType> const& pLj_, Vector<ErrorType> const& pLjv_, Vector<ErrorType> const& pLjw_,
