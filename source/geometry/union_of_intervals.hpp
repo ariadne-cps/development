@@ -50,15 +50,15 @@ template<class U> class UnionOfIntervals {
 
     explicit UnionOfIntervals(List<Interval<U>> const& ivls) : _data(ivls) { this->_sort(); this->_combine(); }
 
-    template<class UU, EnableIf<IsConstructible<U,UU>> =dummy>
+    template<class UU> requires Constructible<U,UU>
         UnionOfIntervals(UnionOfIntervals<UU> ivls)
             : _data(ivls._data) { }
-    template<class UU, class... PRS, EnableIf<IsConstructible<U,UU,PRS...>> =dummy>
+    template<class UU, class... PRS> requires Constructible<U,UU,PRS...>
         UnionOfIntervals(List<Interval<UU>> ivls, PRS... prs)
             : _data(Ariadne::apply([&](Interval<UU>const& ivl){return Interval<U>(ivl,prs...);},ivls)) { }
 
     UnionOfIntervals(InitializerList<Interval<U>> ivls) : UnionOfIntervals(List<Interval<U>>(ivls)) { }
-    template<class... PRS, EnableIf<IsConstructible<U,Dyadic,PRS...>> =dummy>
+    template<class... PRS> requires Constructible<U,Dyadic,PRS...>
         UnionOfIntervals(InitializerList<Interval<Dyadic>> ivls, PRS... prs) :
             UnionOfIntervals(List<Interval<Dyadic>>(ivls),prs...) { }
 

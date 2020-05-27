@@ -103,30 +103,30 @@ class Box
     Box(const Vector<I>& bx) : _vec(bx) { }
 
     //! Convert from a box of a different type
-    template<class II, EnableIf<IsConvertible<II,I>> = dummy>
+    template<class II> requires Convertible<II,I>
         Box(const Box<II>& bx) : _vec(cast_vector(bx)) { }
 
     //! Construct from a box of a different type
-    template<class II, EnableIf<And<IsConstructible<I,II>,Not<IsConvertible<II,I>>>> = dummy>
+    template<class II> requires ExplicitlyConvertible<II,I>
         explicit Box(const Box<II>& bx) : _vec(cast_vector(bx)) { }
 
     //! Convert from a box of a different type
-    template<class II, EnableIf<IsConvertible<II,I>> = dummy>
+    template<class II> requires Convertible<II,I>
         Box(const Vector<II>& vec) : _vec(vec) { }
 
     //! Construct from a box of a different type
-    template<class II, EnableIf<And<IsConstructible<I,II>,Not<IsConvertible<II,I>>>> = dummy>
+    template<class II> requires ExplicitlyConvertible<II,I>
         explicit Box(const Vector<II>& vec) : _vec(vec) { }
 
-    template<class II, class PR, EnableIf<IsConstructible<I,II,PR>> = dummy>
+    template<class II, class PR> requires Constructible<I,II,PR>
         Box(const Box<II>& bx, PR pr) : _vec(cast_vector(bx),pr) { }
 
     //! \brief Construct from an interval of a different type using a default precision.
-    template<class II, EnableIf<IsConstructibleGivenDefaultPrecision<I,II>> =dummy, DisableIf<IsConstructible<I,II>> =dummy>
+    template<class II> requires ConstructibleGivenDefaultPrecision<I,II> and (not Constructible<I,II>)
         explicit Box(Box<II> const& x) : Box(x,PrecisionType<II>()) { }
 
     /*! \brief Generate from a function (object) \a g of type \a G mapping an index to a value. */
-    template<class G, EnableIf<IsInvocableReturning<I,G,SizeType>> =dummy>
+    template<class G> requires InvocableReturning<I,G,SizeType>
     Box(SizeType n, G const& g) : _vec(n,g) { }
 
     friend Vector<I> const& cast_vector(Box<I> const& bx) { return bx._vec; }

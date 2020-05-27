@@ -72,6 +72,8 @@ template<class S, class P, class T> struct IsLowerMeasurableSet {
     static const bool value = decltype(test<S>(1))::value;
 };
 
+template<class S, class P, class T> concept ALowerMeasurableSet = IsLowerMeasurableSet<S,P,T>::value;
+
 template<class P, class T> class LowerMeasurableSetInterface {
   public:
     typedef typename SetTraits<T>::BasicSetType BasicSetType;
@@ -87,7 +89,7 @@ template<class P, class T> class LowerMeasurableSet : public Handle<const LowerM
     using typename Handle<const LowerMeasurableSetInterface<P,T>>::Interface;
     typedef typename SetTraits<T>::BasicSetType BasicSetType;
     using Handle<Interface>::Handle;
-    template<class S, EnableIf<IsLowerMeasurableSet<S,P,T>> =dummy> LowerMeasurableSet(S const& s);
+    template<ALowerMeasurableSet<P,T> S> LowerMeasurableSet(S const& s);
     PositiveLowerNumber<P> measure_in(BasicSetType const& bs) const { return this->reference()._measure_in(bs); }
     PositiveLowerNumber<P> measure() const { return this->reference()._measure(); }
     friend LowerMeasurableSet<P,T> intersection(LowerMeasurableSet<P,T>, OpenSet<P,T>);
@@ -121,7 +123,7 @@ template<class S> decltype(auto) wrap_lower_measurable(S const& s) {
     return LowerMeasurableSet<P,T>(std::make_shared<LowerMeasurableSetWrapper<S,P,T>>(s));
 }
 
-template<class P, class T> template<class S, EnableIf<IsLowerMeasurableSet<S,P,T>>>
+template<class P, class T> template<ALowerMeasurableSet<P,T> S>
 LowerMeasurableSet<P,T>::LowerMeasurableSet(S const& s)
     : LowerMeasurableSet(std::make_shared<LowerMeasurableSetWrapper<S,P,T>>(s)) {
 }
@@ -138,7 +140,7 @@ template<class S, class E> class LowerMeasurableSetModel {
     typedef decltype(cast_positive(measure(declval<S>())-declval<E>())) MeasureType;
 
     explicit LowerMeasurableSetModel(S s, E e) : _set(s), _error(min(max(e,nul(e)),measure(s))) { }
-    template<class... PRES, EnableIf<IsConstructible<E,Nat,PRES...>> =dummy>
+    template<class... PRES> requires Constructible<E,Nat,PRES...>
         explicit LowerMeasurableSetModel(S s, PRES... pres) : _set(s), _error(0u,pres...) { }
     friend MeasureType measure(LowerMeasurableSetModel<S,E> const& lms) {
         return lms._measure(); }

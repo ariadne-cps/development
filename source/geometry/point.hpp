@@ -67,24 +67,24 @@ class Point
     //! A point in zero dimensions
     explicit Point() : Vector<RealType>() { }
     //! The origin in \a n dimensions.
-    template<class... PRS, EnableIf<IsConstructible<X,Nat,PRS...>> =dummy>
+    template<class... PRS> requires Constructible<X,Nat,PRS...>
     explicit Point(SizeType n, PRS... prs) : Vector<RealType>(n,X(0u,prs...)) { }
     Point(const Vector<RealType>& v) : Vector<RealType>(v) { }
-    template<class T, EnableIf<IsConvertible<T,X>> =dummy> Point(const Point<T>& pt) : Vector<RealType>(pt.vector()) { }
-    template<class Y, class... PRS, EnableIf<IsConstructible<X,Y,PRS...>> =dummy>
+    template<class T> requires Convertible<T,X> Point(const Point<T>& pt) : Vector<RealType>(pt.vector()) { }
+    template<class Y, class... PRS> requires Constructible<X,Y,PRS...>
     Point(const Point<Y>& pt, PRS... prs) : Vector<RealType>(pt.vector(),prs...) { }
     //! Construct from an initializer list of floating-point values.
-    template<class T, EnableIf<IsConvertible<T,X>> =dummy> Point(SizeType n, const T& t) : Vector<RealType>(n,RealType(t)) { }
+    template<class T> requires Convertible<T,X> Point(SizeType n, const T& t) : Vector<RealType>(n,RealType(t)) { }
     //! Construct from an initializer list of floating-point values.
     explicit Point(InitializerList<X> lst);
     //! Construct from a size and an element generator
-    template<class G, EnableIf<IsInvocableReturning<X,G,SizeType>> =dummy>
-    Point(SizeType n, G const& g) : Vector<X>(n,g) { }
+    template<class G> requires InvocableReturning<X,G,SizeType>
+        Point(SizeType n, G const& g) : Vector<X>(n,g) { }
     //! Construct from an initializer list of floating-point values.
-    template<class... PRS, EnableIf<IsConstructible<X,ExactDouble,PRS...>> =dummy>
+    template<class... PRS> requires Constructible<X,ExactDouble,PRS...>
     explicit Point(InitializerList<ExactDouble> lst, PRS... prs);
     //! The origin in \a n dimensions.
-    template<class... PRS, EnableIf<IsConstructible<X,Int,PRS...>> =dummy>
+    template<class... PRS> requires Constructible<X,Int,PRS...>
     static Point origin(SizeType n, PRS... prs) { return Point(n,RealType(0,prs...)); }
     //! A dynamically-allocated copy.
     virtual Point<X>* clone() const;
@@ -108,7 +108,7 @@ class Point
 
 template<class X> Point(Vector<X>) -> Point<X>;
 
-template<class X> template<class... PRS, EnableIf<IsConstructible<X,ExactDouble,PRS...>>>
+template<class X> template<class... PRS> requires Constructible<X,ExactDouble,PRS...>
 Point<X>::Point(InitializerList<ExactDouble> lst, PRS... prs) : Vector<X>(lst,prs...) { }
 
 //Point<Real> make_point(const StringType&);
