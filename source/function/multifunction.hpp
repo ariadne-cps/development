@@ -109,6 +109,9 @@ template<class F, class P, class SIG> struct IsMultifunction {
     static const bool value = decltype(test<F>(1))::value;
 };
 
+template<class F, class P, class SIG> concept AMultifunction = IsMultifunction<F,P,SIG>::value;
+
+
 //! \ingroup Function
 //! \brief Functions \f$\X\mvto\Y\f$ returning a \ref LocatedSet at each point.
 template<class P, class SIG> class Multifunction
@@ -124,7 +127,7 @@ template<class P, class SIG> class Multifunction
 
     using Handle<Interface>::Handle;
     //! \brief <p/>
-    template<class MF, EnableIf<IsMultifunction<MF,P,SIG>> =dummy> explicit Multifunction(MF const& mf);
+    template<AMultifunction<P,SIG> MF> explicit Multifunction(MF const& mf);
     //! \brief <p/>
     LocatedSet<P,RES> operator() (Argument<Number<P>> const& x) const { return this->reference()._call(x); }
     //! \brief <p/>
@@ -152,7 +155,7 @@ template<class MF, class P, class SIG> class MultifunctionWrapper
     MF _mf;
 };
 
-template<class P, class SIG> template<class MF, EnableIf<IsMultifunction<MF,P,SIG>>>
+template<class P, class SIG> template<AMultifunction<P,SIG> MF>
 Multifunction<P,SIG>::Multifunction(MF const& mf)
     : Multifunction<P,SIG>(std::make_shared<MultifunctionWrapper<MF,P,SIG>>(mf)) {
 }
@@ -189,7 +192,7 @@ MultifunctionPatch<P,RealVector(RealVector)>::operator() (Vector<ValidatedNumber
     return ValidatedImageSet(this->error_domain(),fim);
 }
 
-static_assert(IsMultifunction<MultifunctionPatch<ValidatedTag,RealVector(RealVector)>,ValidatedTag,RealVector(RealVector)>::value);
+static_assert(AMultifunction<MultifunctionPatch<ValidatedTag,RealVector(RealVector)>,ValidatedTag,RealVector(RealVector)>);
 
 
 
@@ -227,7 +230,7 @@ MultifunctionModel<P,RealVector(RealVector),PR>::operator() (Vector<ValidatedNum
     return ValidatedImageSet(this->error_domain(),fim);
 }
 
-static_assert(IsMultifunction<MultifunctionModel<ValidatedTag,RealVector(RealVector),DoublePrecision>,ValidatedTag,RealVector(RealVector)>::value);
+static_assert(AMultifunction<MultifunctionModel<ValidatedTag,RealVector(RealVector),DoublePrecision>,ValidatedTag,RealVector(RealVector)>);
 
 } // namespace Ariadne
 

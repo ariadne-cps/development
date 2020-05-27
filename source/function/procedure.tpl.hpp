@@ -133,7 +133,7 @@ Procedure<Y>::Procedure(const ScalarMultivariateFunction<P>& f)
 
 
 
-template<class Y> template<class X, EnableIf<IsConvertible<X,Y>>>
+template<class Y> template<ConvertibleTo<Y> X>
 Procedure<Y>::Procedure(const Expansion<MultiIndex,X>& e)
     : Procedure(e.argument_size(),horner_evaluate(e,Formula<Y>::identity(e.argument_size())))
 {

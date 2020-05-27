@@ -84,19 +84,19 @@ template<class X> class UnivariateChebyshevPolynomial
         return cm1._terms==cm2._terms; }
 
   private: // FIXME: Put these concrete-generic operations in proper place
-    template<class Y, EnableIf<IsAssignable<X,Y>> =dummy>
+    template<AssignableTo<X> Y>
         friend ChebyshevPolynomial<X> operator+(ChebyshevPolynomial<X> p, const Y& c) {
             X xc=p.zero_coefficient(); xc=c; return p+xc; }
-    template<class Y, EnableIf<IsAssignable<X,Y>> =dummy>
+    template<AssignableTo<X> Y>
         friend ChebyshevPolynomial<X> operator-(ChebyshevPolynomial<X> p, const Y& c) {
             X xc=p.zero_coefficient(); xc=c; return p-xc; }
-    template<class Y, EnableIf<IsAssignable<X,Y>> =dummy>
+    template<AssignableTo<X> Y>
         friend ChebyshevPolynomial<X> operator*(const Y& c, ChebyshevPolynomial<X> p) {
             X xc=p.zero_coefficient(); xc=c; return xc*p; }
-    template<class Y, EnableIf<IsAssignable<X,Y>> =dummy>
+    template<AssignableTo<X> Y>
         friend ChebyshevPolynomial<X> operator*(ChebyshevPolynomial<X> p, const Y& c) {
             X xc=p.zero_coefficient(); xc=c; return p*xc; }
-    template<class Y, EnableIf<IsAssignable<X,Y>> =dummy>
+    template<AssignableTo<X> Y>
         friend ChebyshevPolynomial<X> operator/(ChebyshevPolynomial<X> p, const Y& c) {
             X xc=p.zero_coefficient(); xc=c; return p/xc; }
 

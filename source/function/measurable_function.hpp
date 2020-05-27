@@ -75,6 +75,8 @@ template<class F, class P, class R, class A> struct IsMeasurableFunction<F,P,R(A
     static const bool value = decltype(test<F>(1))::value;
 };
 
+template<class F, class P, class SIG> concept AMeasurableFunction = IsMeasurableFunction<F,P,SIG>::value;
+
 template<class P, class RES, class ARG> class MeasurableFunction<P,RES(ARG)>
     : public Handle<const MeasurableFunctionInterface<P,RES(ARG)>>
 {
@@ -83,7 +85,7 @@ template<class P, class RES, class ARG> class MeasurableFunction<P,RES(ARG)>
   public:
     using Handle<const Interface>::Handle;
     SizeType ref_count() const { return this->_ptr.ref_count(); }
-    template<class F, EnableIf<IsMeasurableFunction<F,P,SIG>> =dummy> MeasurableFunction(F const&);
+    template<AMeasurableFunction<P,SIG> F> MeasurableFunction(F const&);
     LowerMeasurableSet<P,ARG> preimage(OpenSet<P,RES> const& u) const { return this->_ptr->_preimage(u); }
 };
 
@@ -113,7 +115,7 @@ template<class RES, class ARG> class FastFanSequence<RES(ARG)>
         return ffs.preimage(ops); }
 };
 
-static_assert(IsMeasurableFunction<FastFanSequence<Real(Real)>,EffectiveTag,Real(Real)>::value);
+static_assert(AMeasurableFunction<FastFanSequence<Real(Real)>,EffectiveTag,Real(Real)>);
 
 
 template<class SIG, class PR, class PRE=PR> class FanModel;
@@ -141,7 +143,7 @@ template<class PR, class PRE> class FanModel<Real(Real),PR,PRE> {
 
 };
 
-static_assert(IsMeasurableFunction<FanModel<Real(Real),DoublePrecision,DoublePrecision>,ValidatedTag,Real(Real)>::value);
+static_assert(AMeasurableFunction<FanModel<Real(Real),DoublePrecision,DoublePrecision>,ValidatedTag,Real(Real)>);
 
 // TODO: Move to Interval
 template<class PR> Interval<UpperBound<PR>> image(Interval<UpperBound<PR>> const& ivl, ValidatedContinuousFunction<Real(Real)> const& f) {

@@ -96,19 +96,19 @@ template<class X> struct ProvideAlgebraOperations<Affine<X>,X> {
     //! \brief The derivative of an affine expression gives a constant.
     friend inline X derivative(const Affine<X>& f, Nat k) { return f.derivative(k); }
 
-    template<class Y, EnableIf<IsGenericNumericType<Y>> =dummy>
+    template<GenericNumber Y>
         friend decltype(auto) operator+(Affine<X> const& x, Y const& y) { return x+factory(x).create(y); }
-    template<class Y, EnableIf<IsGenericNumericType<Y>> =dummy>
+    template<GenericNumber Y>
         friend decltype(auto) operator-(Affine<X> const& x, Y const& y) { return x-factory(x).create(y); }
-    template<class Y, EnableIf<IsGenericNumericType<Y>> =dummy>
+    template<GenericNumber Y>
         friend decltype(auto) operator*(Affine<X> const& x, Y const& y) { return x*factory(x).create(y); }
-    template<class Y, EnableIf<IsGenericNumericType<Y>> =dummy>
+    template<GenericNumber Y>
         friend decltype(auto) operator/(Affine<X> const& x, Y const& y) { return x/factory(x).create(y); }
-    template<class Y, EnableIf<IsGenericNumericType<Y>> =dummy>
+    template<GenericNumber Y>
         friend decltype(auto) operator+(Y const& y, Affine<X> const& x) { return factory(x).create(y)+x; }
-    template<class Y, EnableIf<IsGenericNumericType<Y>> =dummy>
+    template<GenericNumber Y>
         friend decltype(auto) operator-(Y const& y, Affine<X> const& x) { return factory(x).create(y)-x; }
-    template<class Y, EnableIf<IsGenericNumericType<Y>> =dummy>
+    template<GenericNumber Y>
         friend decltype(auto) operator*(Y const& y, Affine<X> const& x) { return factory(x).create(y)*x; }
 };
 
@@ -116,17 +116,17 @@ template<class X> FloatFactory<PrecisionType<X>> factory(Affine<X> const& a) {
     return FloatFactory<PrecisionType<X>>(a.value().precision()); }
 
 /*
-template<class X, class Y, EnableIf<IsFloat<X>> =dummy, EnableIf<IsGenericNumericType<Y>> =dummy>
+template<ConcreteNumber X, GenericNumber Y>
 decltype(auto) operator+(Affine<X> const& x, Y const& y) { return x+factory(x).create(y); }
-template<class X, class Y, EnableIf<IsFloat<X>> =dummy, EnableIf<IsGenericNumericType<Y>> =dummy>
+template<ConcreteNumber X, GenericNumber Y>
 decltype(auto) operator-(Affine<X> const& x, Y const& y) { return x-factory(x).create(y); }
-template<class X, class Y, EnableIf<IsFloat<X>> =dummy, EnableIf<IsGenericNumericType<Y>> =dummy>
+template<ConcreteNumber X, GenericNumber Y>
 decltype(auto) operator*(Affine<X> const& x, Y const& y) { return x*factory(x).create(y); }
-template<class X, class Y, EnableIf<IsFloat<X>> =dummy, EnableIf<IsGenericNumericType<Y>> =dummy>
+template<ConcreteNumber X, GenericNumber Y>
 decltype(auto) operator/(Affine<X> const& x, Y const& y) { return x/factory(x).create(y); }
-template<class X, class Y, EnableIf<IsFloat<X>> =dummy, EnableIf<IsGenericNumericType<Y>> =dummy>
+template<ConcreteNumber X, GenericNumber Y>
 decltype(auto) operator+(Y const& y, Affine<X> const& x) { return factory(x).create(y)+y; }
-template<class X, class Y, EnableIf<IsFloat<X>> =dummy, EnableIf<IsGenericNumericType<Y>> =dummy>
+template<ConcreteNumber X, GenericNumber Y>
 decltype(auto) operator*(Y const& y, Affine<X> const& x) { return factory(x).create(y)*y; }
 */
 
@@ -139,7 +139,7 @@ class Affine
   public:
     typedef X NumericType;
   public:
-    template<class... PRS, EnableIf<IsConstructible<X,PRS...>> =dummy>
+    template<class... PRS> requires Constructible<X,PRS...>
         explicit Affine(SizeType n, PRS... prs) : _c(0,prs...), _g(n,prs...) { }
     explicit Affine(const Covector<X>& g, const X& c) : _c(c), _g(g) { }
     explicit Affine(X c, InitializerList<X> g) : _c(c), _g(g) { }
@@ -150,15 +150,15 @@ class Affine
         this->_c=c; for(SizeType i=0; i!=this->_g.size(); ++i) { this->_g[i]=0; } return *this; }
     static Affine<X> constant(SizeType n, X c) {
         return Affine<X>(Covector<X>(n,nul(c)),c); }
-    template<class... PRS, EnableIf<IsConstructible<X,Nat,PRS...>> =dummy>
+    template<class... PRS> requires Constructible<X,Nat,PRS...>
         static Affine<X> coordinate(SizeType n, SizeType j, PRS... prs) {
             return Affine<X>(Covector<X>::unit(n,j,prs...),X(0u,prs...)); }
-    template<class... PRS, EnableIf<IsConstructible<X,Nat,PRS...>> =dummy>
+    template<class... PRS> requires Constructible<X,Nat,PRS...>
         static Vector< Affine<X> > coordinates(SizeType n, PRS... prs) {
             return Vector< Affine<X> >(n,[&](SizeType i){return Affine<X>::coordinate(n,i,prs...);}); }
-    template<class... PRS, EnableIf<IsConstructible<X,Nat,PRS...>> =dummy>
+    template<class... PRS> requires Constructible<X,Nat,PRS...>
     static Affine<X> variable(SizeType n, SizeType j, PRS... prs) { return coordinate(n,j,prs...); }
-    template<class... PRS, EnableIf<IsConstructible<X,Nat,PRS...>> =dummy>
+    template<class... PRS> requires Constructible<X,Nat,PRS...>
     static Vector< Affine<X> > variables(SizeType n, PRS... prs) { return coordinates(n,prs...); }
 
     const X& operator[](SizeType i) const { return this->_g[i]; }

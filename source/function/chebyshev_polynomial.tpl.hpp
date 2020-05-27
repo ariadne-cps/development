@@ -114,7 +114,7 @@ UnivariateChebyshevPolynomial<X>::apply(Sqr, ChebyshevPolynomial<X> cm) -> Cheby
 }
 
 /*
-template<class X> template<class Y, EnableIf<IsConvertible<SumType<X,Y>,X>>> auto
+template<class X> template<class Y> requires Convertible<SumType<X,Y>,X> auto
 UnivariateChebyshevPolynomial<X>::_add(ChebyshevPolynomial<X> cm, Y const& s) -> ChebyshevPolynomial<X> {
     if (cm._terms.empty()) { cm._terms.append(0u,cm._terms.zero_coefficient()+s); }
     else if (cm._terms.front().index()==0) { cm._terms.front().coefficient()+=s; }
@@ -122,7 +122,7 @@ UnivariateChebyshevPolynomial<X>::_add(ChebyshevPolynomial<X> cm, Y const& s) ->
     return cm;
 }
 
-template<class X> template<class Y, EnableIf<IsConvertible<DifferenceType<X,Y>,X>>> auto
+template<class X> template<class Y> requires Convertible<DifferenceType<X,Y>,X> auto
 UnivariateChebyshevPolynomial<X>::_sub(ChebyshevPolynomial<X> cm, Y const& s) -> ChebyshevPolynomial<X> {
     if (cm._terms.empty()) { cm._terms.append(0u,cm._terms.zero_coefficient()-s); }
     else if (cm._terms.front().index()==0) { cm._terms.front().coefficient()-=s; }
@@ -130,13 +130,13 @@ UnivariateChebyshevPolynomial<X>::_sub(ChebyshevPolynomial<X> cm, Y const& s) ->
     return cm;
 }
 
-template<class X> template<class Y, EnableIf<IsConvertible<ProductType<X,Y>,X>>> auto
+template<class X> template<class Y> requires Convertible<ProductType<X,Y>,X> auto
 UnivariateChebyshevPolynomial<X>::_mul(ChebyshevPolynomial<X> cm, Y const& s) -> ChebyshevPolynomial<X> {
     for(auto term : cm._terms) { term.coefficient() *= s; }
     return cm;
 }
 
-template<class X> template<class Y, EnableIf<IsConvertible<QuotientType<X,Y>,X>>> auto
+template<class X> template<class Y> requires Convertible<QuotientType<X,Y>,X> auto
 UnivariateChebyshevPolynomial<X>::_div(ChebyshevPolynomial<X> cm, Y const& s) -> ChebyshevPolynomial<X> {
     for(auto term : cm._terms) { term.coefficient() = term.coefficient()/s; }
     return cm;

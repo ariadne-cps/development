@@ -57,16 +57,15 @@ class Constraint {
     Constraint(FunctionType const& f, BoundType const& x)
         : _function(f), _lower_bound(x), _upper_bound(x) { }
 
-    // FIXME: Should require convertibility of RR to R
-    template< class FF, class RR, EnableIf<IsConvertible<FF,F>> =dummy, EnableIf<IsConstructible<R,RR>> =dummy>
+    template< ConvertibleTo<F> FF, ConvertibleTo<R> RR>
     Constraint(const Constraint<FF,RR>& c)
         : _function(static_cast<F>(c.function())), _lower_bound(c.lower_bound()), _upper_bound(c.upper_bound()) { }
 
-    template< class FF, class RR, EnableIf<IsConvertible<FF,F>> =dummy, EnableIf<IsConstructible<R,RR,DoublePrecision>> =dummy>
+    template< ConvertibleTo<F> FF, class RR> requires Constructible<R,RR,DoublePrecision>
     Constraint(const RR& l, const FF& f, const RR& u)
         : _function(static_cast<F>(f)), _lower_bound(l,dp), _upper_bound(u,dp) { }
 
-    template< class FF, class RR, EnableIf<IsConvertible<FF,F>> =dummy, EnableIf<IsConstructible<R,RR,DoublePrecision>> =dummy>
+    template< ConvertibleTo<F> FF, class RR> requires Constructible<R,RR,DoublePrecision>
     Constraint(const Constraint<FF,RR>& c)
         : _function(static_cast<F>(c.function())), _lower_bound(c.lower_bound(),dp), _upper_bound(c.upper_bound(),dp) { }
 

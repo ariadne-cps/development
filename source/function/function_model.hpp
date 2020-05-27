@@ -672,8 +672,13 @@ template<class T> class HasRepr {
     static const bool value = decltype(test<T>(1))::value;
 };
 
-template<class T, EnableIf<HasRepr<T>> =dummy> inline OutputStream& operator<<(OutputStream& os, const Representation<T>& obj) { obj.reference().repr(os); return os; }
-template<class T, DisableIf<HasRepr<T>> =dummy> inline OutputStream& operator<<(OutputStream& os, const Representation<T>& obj) { return os << obj.reference(); }
+template<class T> inline OutputStream& operator<<(OutputStream& os, const Representation<T>& obj) {
+    if constexpr (HasRepr<T>::value) {
+        obj.reference().repr(os); return os;
+    } else {
+        return os << obj.reference();
+    }
+}
 
 } // namespace Ariadne
 

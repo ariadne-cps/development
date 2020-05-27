@@ -80,11 +80,11 @@ template<class X> class PolynomialConstructors<UniIndex,X> {
   public:
     static Polynomial<I,X> constant(X const& c) { return Polynomial<I,X>::_constant(SizeOne(),c); }
     static Polynomial<I,X> coordinate(X const& z) { return Polynomial<I,X>::_coordinate(SizeOne(),IndexZero(),z); }
-    template<class... PRS, EnableIf<IsConstructible<X,Nat,PRS...>> =dummy> static Polynomial<I,X> coordinate(PRS... prs) { return Polynomial<I,X>::_coordinate(SizeOne(),IndexZero(),X(0u,prs...)); }
+    template<class... PRS> requires Constructible<X,Nat,PRS...> static Polynomial<I,X> coordinate(PRS... prs) { return Polynomial<I,X>::_coordinate(SizeOne(),IndexZero(),X(0u,prs...)); }
 //    static Polynomial<I,X> variable() { return Polynomial<I,X>::_coordinate(SizeOne(),IndexZero()); }
     static Polynomial<I,X> constant(SizeOne as, X const& c) { return Polynomial<I,X>::_constant(as,c); }
     static Polynomial<I,X> coordinate(SizeOne as, IndexZero j, X const& z) { return Polynomial<I,X>::_coordinate(as,j,z); }
-    template<class... PRS, EnableIf<IsConstructible<X,Nat,PRS...>> =dummy> static Polynomial<I,X> coordinate(SizeOne as, IndexZero j, PRS... prs) { return Polynomial<I,X>::_coordinate(as,j,X(0u,prs...)); }
+    template<class... PRS> requires Constructible<X,Nat,PRS...> static Polynomial<I,X> coordinate(SizeOne as, IndexZero j, PRS... prs) { return Polynomial<I,X>::_coordinate(as,j,X(0u,prs...)); }
 //    static Polynomial<I,X> variable(SizeOne as, IndexZero j) { return Polynomial<I,X>::_coordinate(as,j); }
 };
 
@@ -96,7 +96,7 @@ template<class X> class PolynomialConstructors<MultiIndex,X> {
     //! \brief Create a polynomial in \a as variables which returns the value of the \a j<sup>th</sup> variable.
     static Polynomial<I,X> coordinate(SizeType as, SizeType j, X const& z) { return
         Polynomial<I,X>::_coordinate(as,j,z); }
-    template<class... PRS, EnableIf<IsConstructible<X,Nat,PRS...>> =dummy> static Polynomial<I,X> coordinate(SizeType as, SizeType j, PRS... prs) { return
+    template<class... PRS> requires Constructible<X,Nat,PRS...> static Polynomial<I,X> coordinate(SizeType as, SizeType j, PRS... prs) { return
         Polynomial<I,X>::_coordinate(as,j,X(0u,prs...)); }
     template<class... PRS> static Polynomial<I,X> variable(SizeType as, SizeType j, PRS... prs) { return Polynomial<I,X>::_coordinate(as,j,X(0u,prs...)); }
 };
@@ -143,16 +143,16 @@ class Polynomial
     //! \brief The zero polynomial in \a as variables, with zero taking properties from \a z.
     explicit Polynomial(ArgumentSizeType as, X const& z);
     //! \brief The zero polynomial in \a as variables.
-    template<class... PRS, EnableIf<IsConstructible<X,Nat,PRS...>> =dummy>
+    template<class... PRS> requires Constructible<X,PRS...>
         explicit Polynomial(ArgumentSizeType as, PRS... prs);
     //! \brief Copy/conversion constructor.
-    template<class XX, EnableIf<IsConvertible<XX,X>> =dummy> Polynomial(const Polynomial<I,XX>& p);
+    template<ConvertibleTo<X> XX> Polynomial(const Polynomial<I,XX>& p);
     //! \brief Copy/conversion constructor.
-    template<class XX> explicit Polynomial(const Expansion<I,XX>& e);
+    template<ConvertibleTo<X> XX> explicit Polynomial(const Expansion<I,XX>& e);
     //! \brief A sparse polynomial with coefficients given by an initializer list of indices and coefficients.
     Polynomial(InitializerList<Pair<IndexInitializerType,X>> lst);
     //! \brief Construct a differential of degree \a deg from an initializer list of (index,coefficient) pairs.
-    template<class... PRS, EnableIf<IsConstructible<X,ExactDouble,PRS...>> =dummy>
+    template<class... PRS> requires Constructible<X,ExactDouble,PRS...>
         explicit Polynomial(InitializerList<Pair<IndexInitializerType,ExactDouble>> lst, PRS... prs);
     //!@}
 
@@ -166,8 +166,8 @@ class Polynomial
     //! the i<sup>th</sup> of  which returns the value of the i<sup>th</sup> variable.
     static Argument<Polynomial<I,X>> coordinates(ArgumentSizeType as, X const& z);
     static Argument<Polynomial<I,X>> variables(ArgumentSizeType as, X const& z);
-    template<class... PRS, EnableIf<IsConstructible<X,Nat,PRS...>> =dummy> Argument<Polynomial<I,X>> static coordinates(ArgumentSizeType as, PRS... prs) { return coordinates(as,X(0u,prs...)); }
-    template<class... PRS, EnableIf<IsConstructible<X,Nat,PRS...>> =dummy> Argument<Polynomial<I,X>> static variables(ArgumentSizeType as, PRS... prs) { return variables(as,X(0u,prs...)); }
+    template<class... PRS> requires Constructible<X,Nat,PRS...> Argument<Polynomial<I,X>> static coordinates(ArgumentSizeType as, PRS... prs) { return coordinates(as,X(0u,prs...)); }
+    template<class... PRS> requires Constructible<X,Nat,PRS...> Argument<Polynomial<I,X>> static variables(ArgumentSizeType as, PRS... prs) { return variables(as,X(0u,prs...)); }
 
     //! \brief %Set equal to a constant.
     Polynomial<I,X>& operator=(const X& x);
@@ -283,19 +283,19 @@ class Polynomial
   private:
     SortedExpansion<I,X,ReverseLexicographicIndexLess> _expansion;
   private: // FIXME: Put these concrete-generic operations in proper place
-    template<class Y, EnableIf<IsAssignable<X,Y>> =dummy>
+    template<AssignableTo<X> Y>
         friend Polynomial<I,X> operator+(Polynomial<I,X> p, const Y& c) {
             X xc=p.value(); xc=c; return p+xc; }
-    template<class Y, EnableIf<IsAssignable<X,Y>> =dummy>
+    template<AssignableTo<X> Y>
         friend Polynomial<I,X> operator-(Polynomial<I,X> p, const Y& c) {
             X xc=p.value(); xc=c; return p-xc; }
-    template<class Y, EnableIf<IsAssignable<X,Y>> =dummy>
+    template<AssignableTo<X> Y>
         friend Polynomial<I,X> operator*(const Y& c, Polynomial<I,X> p) {
             X xc=p.value(); xc=c; return xc*p; }
-    template<class Y, EnableIf<IsAssignable<X,Y>> =dummy>
+    template<AssignableTo<X> Y>
         friend Polynomial<I,X> operator*(Polynomial<I,X> p, const Y& c) {
             X xc=p.value(); xc=c; return p*xc; }
-    template<class Y, EnableIf<IsAssignable<X,Y>> =dummy>
+    template<AssignableTo<X> Y>
         friend Polynomial<I,X> operator/(Polynomial<I,X> p, const Y& c) {
             X xc=p.value(); xc=c; return p/xc; }
 
@@ -320,16 +320,16 @@ template<class I, class X> struct AlgebraOperations<Polynomial<I,X>> {
 };
 
 
-template<class I, class X> template<class XX, EnableIf<IsConvertible<XX,X>>> Polynomial<I,X>::Polynomial(const Polynomial<I,XX>& p)
+template<class I, class X> template<ConvertibleTo<X> XX> Polynomial<I,X>::Polynomial(const Polynomial<I,XX>& p)
     : _expansion(p._expansion) { }
 
-template<class I, class X> template<class XX> Polynomial<I,X>::Polynomial(const Expansion<I,XX>& e)
+template<class I, class X> template<ConvertibleTo<X> XX> Polynomial<I,X>::Polynomial(const Expansion<I,XX>& e)
     : _expansion(e) { this->cleanup(); }
 
-template<class I, class X> template<class... PRS, EnableIf<IsConstructible<X,Nat,PRS...>>>
-Polynomial<I,X>::Polynomial(ArgumentSizeType as, PRS... prs) : Polynomial(as,X(0u,prs...)) { }
+template<class I, class X> template<class... PRS> requires Constructible<X,PRS...>
+Polynomial<I,X>::Polynomial(ArgumentSizeType as, PRS... prs) : Polynomial(as,X(prs...)) { }
 
-template<class I, class X> template<class... PRS, EnableIf<IsConstructible<X,ExactDouble,PRS...>>>
+template<class I, class X> template<class... PRS> requires Constructible<X,ExactDouble,PRS...>
 Polynomial<I,X>::Polynomial(InitializerList<Pair<IndexInitializerType,ExactDouble>> lst, PRS... prs)
     : _expansion(lst,prs...) { this->cleanup(); }
 

@@ -116,7 +116,7 @@ class Procedure {
     explicit Procedure<Y>(SizeType as);
     explicit Procedure<Y>(ScalarMultivariateFunction<P> const& f);
     explicit Procedure<Y>(SizeType as, const Formula<Y>& f);
-    template<class X, EnableIf<IsConvertible<X,Y>> =dummy> explicit Procedure<Y>(const Expansion<MultiIndex,X>& e);
+    template<ConvertibleTo<Y> X> explicit Procedure<Y>(const Expansion<MultiIndex,X>& e);
     friend OutputStream& operator<<(OutputStream& os, Procedure<Y> const& p) { return p._write(os); }
   public:
     SizeType argument_size() const { return this->_argument_size; }

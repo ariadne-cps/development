@@ -77,19 +77,19 @@ struct Index {
 template<class Y> class FormulaNode;
 
 class FormulaOperations {
-    template<class Y, class R, EnableIf<IsConstructible<Y,R>> =dummy> friend Formula<Y> operator+(Formula<Y> f, R c) { return f + Y(c); }
-    template<class Y, class R, EnableIf<IsConstructible<Y,R>> =dummy> friend Formula<Y> operator-(Formula<Y> f, R c) { return f - Y(c); }
-    template<class Y, class R, EnableIf<IsConstructible<Y,R>> =dummy> friend Formula<Y> operator*(Formula<Y> f, R c) { return f * Y(c); }
-    template<class Y, class R, EnableIf<IsConstructible<Y,R>> =dummy> friend Formula<Y> operator/(Formula<Y> f, R c) { return f / Y(c); }
-    template<class Y, class R, EnableIf<IsConstructible<Y,R>> =dummy> friend Formula<Y> operator+(R c, Formula<Y> f) { return Y(c)+f; }
-    template<class Y, class R, EnableIf<IsConstructible<Y,R>> =dummy> friend Formula<Y> operator-(R c, Formula<Y> f) { return Y(c)-f; }
-    template<class Y, class R, EnableIf<IsConstructible<Y,R>> =dummy> friend Formula<Y> operator*(R c, Formula<Y> f) { return Y(c)*f; }
-    template<class Y, class R, EnableIf<IsConstructible<Y,R>> =dummy> friend Formula<Y> operator/(R c, Formula<Y> f) { return Y(c)/f; }
+    template<class Y, class R> requires Constructible<Y,R> friend Formula<Y> operator+(Formula<Y> f, R c) { return f + Y(c); }
+    template<class Y, class R> requires Constructible<Y,R> friend Formula<Y> operator-(Formula<Y> f, R c) { return f - Y(c); }
+    template<class Y, class R> requires Constructible<Y,R> friend Formula<Y> operator*(Formula<Y> f, R c) { return f * Y(c); }
+    template<class Y, class R> requires Constructible<Y,R> friend Formula<Y> operator/(Formula<Y> f, R c) { return f / Y(c); }
+    template<class Y, class R> requires Constructible<Y,R> friend Formula<Y> operator+(R c, Formula<Y> f) { return Y(c)+f; }
+    template<class Y, class R> requires Constructible<Y,R> friend Formula<Y> operator-(R c, Formula<Y> f) { return Y(c)-f; }
+    template<class Y, class R> requires Constructible<Y,R> friend Formula<Y> operator*(R c, Formula<Y> f) { return Y(c)*f; }
+    template<class Y, class R> requires Constructible<Y,R> friend Formula<Y> operator/(R c, Formula<Y> f) { return Y(c)/f; }
 
-    template<class Y, class R, EnableIf<IsConstructible<Y,R>> =dummy> friend Formula<Y>& operator+=(Formula<Y>& f, const R& c) { return f+=Y(c); }
-    template<class Y, class R, EnableIf<IsConstructible<Y,R>> =dummy> friend Formula<Y>& operator-=(Formula<Y>& f, const R& c) { return f-=Y(c); }
-    template<class Y, class R, EnableIf<IsConstructible<Y,R>> =dummy> friend Formula<Y>& operator*=(Formula<Y>& f, const R& c) { return f*=Y(c); }
-    template<class Y, class R, EnableIf<IsConstructible<Y,R>> =dummy> friend Formula<Y>& operator/=(Formula<Y>& f, const R& c) { return f/=Y(c); }
+    template<class Y, class R> requires Constructible<Y,R> friend Formula<Y>& operator+=(Formula<Y>& f, const R& c) { return f+=Y(c); }
+    template<class Y, class R> requires Constructible<Y,R> friend Formula<Y>& operator-=(Formula<Y>& f, const R& c) { return f-=Y(c); }
+    template<class Y, class R> requires Constructible<Y,R> friend Formula<Y>& operator*=(Formula<Y>& f, const R& c) { return f*=Y(c); }
+    template<class Y, class R> requires Constructible<Y,R> friend Formula<Y>& operator/=(Formula<Y>& f, const R& c) { return f/=Y(c); }
 };
 
 template<class Y> struct AlgebraOperations<Formula<Y>,Y> {
@@ -135,7 +135,7 @@ class Formula
     explicit Formula(Index const& i);
     //! \brief Set equal to a constant.
     Formula<Y>& operator=(const Y& c);
-    template<class X, EnableIf<IsConstructible<Y,X>> =dummy> Formula<Y>& operator=(const X& c) { return *this=Y(c); }
+    template<class X> requires Constructible<Y,X> Formula<Y>& operator=(const X& c) { return *this=Y(c); }
   public:
     //! \brief Return the constant formula zero.
     Formula<Y> create_zero() const;
@@ -220,9 +220,9 @@ inline Real make_constant(const EffectiveNumber& c, const Real& x) {
     return Real(c); }
 inline Formula<Real> make_constant(const EffectiveNumber& c, const Formula<Real>& x) {
     return Formula<Real>::constant(Real(c)); }
-template<class X, EnableIf<IsSame<X,Real>> =dummy> Algebra<X> make_constant(const EffectiveNumber& c, const Algebra<X>& x) {
+template<SameAs<Real> X> Algebra<X> make_constant(const EffectiveNumber& c, const Algebra<X>& x) {
     return make_constant(Real(c),x); }
-template<class X, EnableIf<IsSame<X,Real>> =dummy> ElementaryAlgebra<X> make_constant(const EffectiveNumber& c, const ElementaryAlgebra<X>& x) {
+template<SameAs<Real> X> ElementaryAlgebra<X> make_constant(const EffectiveNumber& c, const ElementaryAlgebra<X>& x) {
     return make_constant(Real(c),x); }
 
 // Make a constant of type Y with value c based on a prototype vector v

@@ -50,7 +50,7 @@ namespace Ariadne {
 
 template<class F> class ZeroError {
   public:
-    template<class... PRS, EnableIf<IsConstructible<Error<F>,PRS...>> =dummy> ZeroError(PRS...) { }
+    template<class... PRS> requires Constructible<Error<F>,PRS...> ZeroError(PRS...) { }
     F raw() const;
     typename F::PrecisionType precision() const;
     operator Error<F> () const;
@@ -58,7 +58,7 @@ template<class F> class ZeroError {
 
 template<class F> class UnknownError {
   public:
-//    template<class... PRS, EnableIf<IsConstructible<Error<F>,PRS...>> =dummy> UnknownError(PRS...) { }
+//    template<class... PRS> requires Constructible<Error<F>,PRS...> UnknownError(PRS...) { }
     template<class... PRS> UnknownError(PRS...) { }
     F raw() const;
     typename F::PrecisionType precision() const;
@@ -395,7 +395,7 @@ class TaylorModel
         return TaylorModel<P,F>::_evaluate(f,x); }
     friend ArithmeticType<CoefficientType,ValidatedNumericType> evaluate(const TaylorModel<P,F>& f, const Vector<ValidatedNumericType>& x) {
         return TaylorModel<P,F>::_evaluate(f,x); }
-    template<class X=NumericType, DisableIf<IsSame<X,ValidatedNumericType>> =dummy> friend ArithmeticType<CoefficientType,ValidatedNumericType> evaluate(const TaylorModel<P,F>& f, const Vector<X>& x) {
+    template<class X=NumericType> requires (not Same<X,ValidatedNumericType>) friend ArithmeticType<CoefficientType,ValidatedNumericType> evaluate(const TaylorModel<P,F>& f, const Vector<X>& x) {
         return TaylorModel<P,F>::_evaluate(f,x); }
     //! \brief Evaluate the gradient over the interval of points \a x.
     friend Covector<NumericType> gradient(const TaylorModel<P,F>& f, const Vector<NumericType>& x) {
