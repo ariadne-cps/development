@@ -131,15 +131,15 @@ template<class I, class X> class Expansion {
     typedef typename UniformList<X>::ConstReference CoefficientConstReference;
 
     ~Expansion();
-    template<class... PRS, EnableIf<IsConstructible<X,Nat,PRS...>> =dummy>
+    template<class... PRS> requires Constructible<X,Nat,PRS...>
         explicit Expansion(ArgumentSizeType as, PRS... prs) : Expansion(as,X(0u,prs...)) { } // DEPRECATED
     explicit Expansion(ArgumentSizeType as, X const& z, SizeType cap=DEFAULT_CAPACITY);
     Expansion(InitializerList<Pair<IndexInitializerType,X>> lst);
-    template<class PR, EnableIf<IsConstructible<X,Nat,PR>> =dummy>
+    template<class PR> requires Constructible<X,Nat,PR>
         explicit Expansion(ArgumentSizeType as, PR pr, SizeType cap=DEFAULT_CAPACITY);
-    template<class... PRS, EnableIf<IsConstructible<X,ExactDouble,PRS...>> =dummy>
+    template<class... PRS> requires Constructible<X,ExactDouble,PRS...>
         Expansion(InitializerList<Pair<IndexInitializerType,ExactDouble>> lst, PRS... prs);
-    template<class Y, class... PRS, EnableIf<IsConstructible<X,Y,PRS...>> =dummy>
+    template<class Y, class... PRS> requires Constructible<X,Y,PRS...>
         explicit Expansion(Expansion<I,Y> const&, PRS... prs);
     Expansion(const Expansion<I,X>&);
     Expansion<I,X>& operator=(const Expansion<I,X>&);
@@ -181,7 +181,7 @@ template<class I, class X> class Expansion {
     Void append(const IndexType& a, const CoefficientType& x);
     Void append_sum(const IndexType& a1, const IndexType& a2, const CoefficientType& x);
 
-    template<class Y, EnableIf<IsAssignable<X,Y>> =dummy> Void append(const IndexType& a, const Y& y) {
+    template<class Y> requires Assignable<X,Y> Void append(const IndexType& a, const Y& y) {
         X x=this->_zero_coefficient; x=y; this->append(a,x); }
 
     Iterator find(const IndexType& a);
@@ -241,13 +241,13 @@ public:
 };
 
 
-template<class I, class X> template<class PR, EnableIf<IsConstructible<X,Nat,PR>>>
+template<class I, class X> template<class PR> requires Constructible<X,Nat,PR>
 Expansion<I,X>::Expansion(ArgumentSizeType as, PR pr, SizeType cap)
     : Expansion(as,X(0u,pr),cap)
 {
 }
 
-template<class I, class X> template<class... PRS, EnableIf<IsConstructible<X,ExactDouble,PRS...>>>
+template<class I, class X> template<class... PRS> requires Constructible<X,ExactDouble,PRS...>
 Expansion<I,X>::Expansion(InitializerList<Pair<IndexInitializerType,ExactDouble>> lst, PRS... prs)
     : Expansion(ArgumentSizeType(),X(0.0_x,prs...))
 {

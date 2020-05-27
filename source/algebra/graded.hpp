@@ -89,12 +89,13 @@ template<class A> class Graded : public List<A>
     Graded(const A& a) : List<A>(1u,a) { }
     Graded(const List<A>& lst) : List<A>(lst) { }
     Graded(const InitializerList<A>& lst) : List<A>(lst) { }
-    template<class... PRS, EnableIf<IsConstructible<A,ExactDouble,PRS...>> =dummy> Graded(const InitializerList<ExactDouble>& lst, PRS... prs)
+    template<class... PRS> requires Constructible<A,ExactDouble,PRS...> Graded(const InitializerList<ExactDouble>& lst, PRS... prs)
         : List<A>() { for(auto x : lst) { this->List<A>::append(A(x,prs...)); } }
     Graded<A>(const Graded<A>& a) : List<A>(a) { }
     Graded<A>& operator=(const Graded<A>& a) { this->List<A>::operator=(a); return *this; }
     Graded<A>& operator=(Graded<A>&& a) { this->List<A>::operator=(a); return *this; }
-    template<class X, EnableIf<IsAssignable<A,X>> =dummy> Graded<A>& operator=(const X& x) { (*this)[0]=x; return *this; }
+    template<AssignableTo<A> X> Graded<A>& operator=(const X& x) {
+        (*this)[0]=x; return *this; }
     template<class Op> Void operator=(const ClosureExpression<Op,SelfType>& expr);
     template<class Op> Void operator=(const ClosureExpression<Op,SelfType,SelfType>& expr);
     template<class Op, class N> Void operator=(const ClosureExpression<Op,SelfType,N>& expr);

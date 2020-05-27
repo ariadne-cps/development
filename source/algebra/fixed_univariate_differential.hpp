@@ -53,7 +53,7 @@ class UnivariateFirstDifferential
     //! \brief The type of used to represent the coefficients.
     typedef X ValueType;
 
-    template<class... PRS, EnableIf<IsConstructible<X,Nat,PRS...>> =dummy>
+    template<class... PRS> requires Constructible<X,Nat,PRS...>
     explicit UnivariateFirstDifferential(PRS... prs) : _value(X(0u,prs...)), _gradient(_value) { }
 
     //! \brief Constructs a first differential with constant value \a c.
@@ -241,7 +241,7 @@ class UnivariateSecondDifferential
     //! \brief The type of used to represent the coefficients.
     typedef X ValueType;
 
-    template<class... PRS, EnableIf<IsConstructible<X,Nat,PRS...>> =dummy>
+    template<class... PRS> requires Constructible<X,Nat,PRS...>
     explicit UnivariateSecondDifferential(PRS... prs) : _value(X(0u,prs...)), _gradient(_value), _half_hessian(_value) { }
 
     //! \brief Constructs a constant differential with value \a c.
@@ -267,7 +267,7 @@ class UnivariateSecondDifferential
     //! \brief Set the differential equal to a constant, without changing the degree or number of arguments.
     UnivariateSecondDifferential<X>& operator=(const X& c) {
         _value=c; _gradient=nul(c); _half_hessian=nul(c); return *this; }
-    template<class W, EnableIf<IsAssignable<X,W>> =dummy>
+    template<AssignableTo<X> W>
         UnivariateSecondDifferential<X>& operator=(const W& c) { X xc=nul(this->value()); xc=c; return (*this)=xc; }
 
     //! \brief A constant differential of degree \a deg in \a as arguments with value \a c.

@@ -159,10 +159,10 @@ template<class X> class DiagonalMatrix
     X _zero;
     Array<X> _ary;
   public:
-    template<class... PRS, EnableIf<IsConstructible<X,Int,PRS...>> =dummy> explicit DiagonalMatrix(SizeType n, PRS...);
+    template<class... PRS> requires Constructible<X,Nat,PRS...> explicit DiagonalMatrix(SizeType n, PRS...);
     explicit DiagonalMatrix(Array<X>);
     explicit DiagonalMatrix(Vector<X>);
-    template<class Y, class... PRS, EnableIf<IsConstructible<X,Y,PRS...>> =dummy> explicit DiagonalMatrix(DiagonalMatrix<Y> const&, PRS...);
+    template<class Y, class... PRS> requires Constructible<X,Y,PRS...> explicit DiagonalMatrix(DiagonalMatrix<Y> const&, PRS...);
     SizeType size() const;
     SizeType row_size() const;
     SizeType column_size() const;
@@ -179,9 +179,9 @@ template<class X> class DiagonalMatrix
     OutputStream& _write(OutputStream&) const;
 };
 
-template<class X> template<class... PRS, EnableIf<IsConstructible<X,Int,PRS...>>>
+template<class X> template<class... PRS> requires Constructible<X,Nat,PRS...>
 DiagonalMatrix<X>::DiagonalMatrix(SizeType n, PRS... prs)
-    : _zero(0,prs...), _ary(n,_zero)
+    : _zero(0u,prs...), _ary(n,_zero)
 { }
 
 template<class X> DiagonalMatrix<X>::DiagonalMatrix(Array<X> ary)
@@ -192,7 +192,7 @@ template<class X> DiagonalMatrix<X>::DiagonalMatrix(Vector<X> vec)
     : _zero(vec.zero_element()), _ary(vec.array())
 { }
 
-template<class X> template<class Y, class... PRS, EnableIf<IsConstructible<X,Y,PRS...>>>
+template<class X> template<class Y, class... PRS> requires Constructible<X,Y,PRS...>
 DiagonalMatrix<X>::DiagonalMatrix(DiagonalMatrix<Y> const& D, PRS... prs)
     : _zero(D.zero_element(),prs...), _ary(D.diagonal().array(),prs...)
 { }

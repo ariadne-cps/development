@@ -49,7 +49,7 @@ class UniIndex {
     UniIndex operator+(UniIndex const& other) const { return UniIndex(this->_a+other._a); }
     short int operator-(UniIndex const& other) const { return (short int)this->_a-(short int)other._a; }
     UniIndex& operator+=(UniIndex const& other) { this->_a+=other._a; return *this; }
-    template<class D, EnableIf<std::is_integral<D>> = dummy> UniIndex operator+(D d) const { return UniIndex(this->_a+d); }
+    template<BuiltinIntegral D> UniIndex operator+(D d) const { return UniIndex(this->_a+d); }
     DegreeType& operator[] (IndexZero) { return _a; }
     DegreeType const& operator[] (IndexZero) const { return _a; }
     SizeOne size() const { return SizeOne(); }

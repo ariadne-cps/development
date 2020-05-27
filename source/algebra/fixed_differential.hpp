@@ -47,14 +47,6 @@ template<class X> class Vector;
 template<class X> class Matrix;
 template<class X> class Series;
 
-template<class X, class T> struct EnableIfScalar { typedef T Type; };
-template<class X, class T> struct EnableIfScalar<Vector<X>,T> { };
-template<class X, class T> struct EnableIfScalar<Matrix<X>,T> { };
-template<class X, class T> struct EnableIfVector { };
-template<class X, class T> struct EnableIfVector<Vector<X>,T> { typedef T Type; };
-template<class X, class T> struct EnableIfMatrix { };
-template<class X, class T> struct EnableIfMatrix<Matrix<X>,T> { typedef T Type; };
-
 struct SeriesTag { };
 
 template<class X> class SecondDifferential;
@@ -129,7 +121,7 @@ template<class X> class SecondDifferential;
 template<class X> class FixedDifferentialCharacteristics {
     SizeType _argument_size; X _zero_coefficient;
   public:
-    template<class... PRS, EnableIf<IsConstructible<X,Nat,PRS...>> =dummy>
+    template<class... PRS> requires Constructible<X,Nat,PRS...>
         FixedDifferentialCharacteristics(SizeType as, PRS... prs) : _argument_size(as), _zero_coefficient(0u,prs...) { }
     FixedDifferentialCharacteristics(SizeType as, X const& z) : _argument_size(as), _zero_coefficient(nul(z)) { }
     FixedDifferentialCharacteristics(const FirstDifferential<X>& d);
@@ -163,7 +155,7 @@ class FirstDifferential
     typedef X ValueType;
 
     //! \brief Constructs a differential with degree one in \a as variables, and zero element based on \a prs.
-    template<class... PRS, EnableIf<IsConstructible<X,Nat,PRS...>> =dummy> explicit FirstDifferential(SizeType as, PRS... prs)
+    template<class... PRS> requires Constructible<X,Nat,PRS...> explicit FirstDifferential(SizeType as, PRS... prs)
         : FirstDifferential(as,X(0u,prs...)) { }
 
     //! \brief Constructs a differential with degree one in \a as variables, initialising to the zero value z.
@@ -178,6 +170,8 @@ class FirstDifferential
 
     //! \brief Set the differential equal to a constant, without changing the degree or number of arguments.
     FirstDifferential<X>& operator=(const X& c) { _value=c; X z(c); z=0; for(SizeType i=0; i!=_gradient.size(); ++i) { _gradient[i]=z; } return *this; }
+    template<AssignableTo<X> W>
+        FirstDifferential<X>& operator=(const W& c) { X xc=nul(this->value()); xc=c; return (*this)=xc; }
 
     //! \brief A constant differential of degree \a deg in \a as arguments with value \a c.
     static FirstDifferential<X> constant(SizeType as, const X& c) {
@@ -441,7 +435,7 @@ class SecondDifferential
     typedef X ValueType;
 
     //! \brief Constructs the zero second differential in \a as variables, with elements constructed from parameters \a prs.
-    template<class... PRS, EnableIf<IsConstructible<X,Nat,PRS...>> =dummy> explicit SecondDifferential(SizeType as, PRS... prs) : SecondDifferential<X>(as,X(0u,prs...)) { }
+    template<class... PRS> requires Constructible<X,Nat,PRS...> explicit SecondDifferential(SizeType as, PRS... prs) : SecondDifferential<X>(as,X(0u,prs...)) { }
 
     //! \brief Constructs a constant second differential in \a as variables with value \a c.
     explicit SecondDifferential(SizeType as, const X& c) : _value(c), _gradient(as,nul(c)), _half_hessian(as,as,nul(c)) { }
@@ -463,7 +457,7 @@ class SecondDifferential
     SecondDifferential<X>& operator=(const X& c) {
         X z=c; z=0; _value=c; for(SizeType j=0; j!=this->argument_size(); ++j) { _gradient[j]=z;
             for(SizeType k=0; k!=this->argument_size(); ++k) { _half_hessian[j][k]=z; } } return *this; }
-    template<class W, EnableIf<IsAssignable<X,W>> =dummy>
+    template<AssignableTo<X> W>
         SecondDifferential<X>& operator=(const W& c) { X xc=nul(this->value()); xc=c; return (*this)=xc; }
 
     //! \brief A constant differential of degree \a deg in \a as arguments with value \a c.
@@ -710,7 +704,7 @@ class Vector< SecondDifferential<X> >
     // The type used for scalars.
     typedef X ScalarType;
 
-    template<class... PRS, EnableIf<IsConstructible<X,Nat,PRS...>> =dummy> Vector(SizeType rs, SizeType as, PRS... prs)
+    template<class... PRS> requires Constructible<X,Nat,PRS...> Vector(SizeType rs, SizeType as, PRS... prs)
         : _chars(as,prs...), _ary(rs, SecondDifferential<X>(as,prs...)) { }
     Vector(SizeType rs, const SecondDifferential<X>& d) : _chars(d), _ary(rs,d) { }
     Vector(SizeType rs, const SecondDifferential<X>* p) : _chars(p[0]), _ary(rs,p) { }
@@ -760,7 +754,7 @@ template<class X> class FixedDifferentialFactory {
     PR _pr;
   public:
     FixedDifferentialFactory<X>(PR const& pr) : _pr(pr) { }
-    template<class Y, EnableIf<IsConstructible<X,Y,PR>> =dummy> X create(Y const& y) { return X(y,_pr); }
+    template<class Y> requires Constructible<X,Y,PR> X create(Y const& y) { return X(y,_pr); }
     template<class Y> FirstDifferential<X> create(FirstDifferential<Y> const&);
     template<class Y> SecondDifferential<X> create(SecondDifferential<Y> const&);
 };

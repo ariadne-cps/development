@@ -73,7 +73,7 @@ template<class X> class SymmetricMatrix
     SymmetricMatrix(SizeType n, X const& z);
 
     //! Construct a symmetric matrix with \a n rows and \a n columns with values initialised to zero.
-    template<class... PRS, EnableIf<IsConstructible<X,Nat,PRS...>> =dummy>
+    template<class... PRS> requires Constructible<X,Nat,PRS...>
     SymmetricMatrix(SizeType n, PRS... prs) : SymmetricMatrix(n,X(0u,prs...)) { }
 
     //! Construct a matrix using initializer lists.
@@ -83,10 +83,10 @@ template<class X> class SymmetricMatrix
     //! \name Static constructors
 
     //! \brief The zero matrix with \a n rows and \a n columns.
-    template<class... PRS, EnableIf<IsConstructible<X,Nat,PRS...>> =dummy>
+    template<class... PRS> requires Constructible<X,Nat,PRS...>
     static SymmetricMatrix<X> zero(SizeType n, PRS... prs);
     //! \brief The itentity matrix with \a n rows and \a n columns.
-    template<class... PRS, EnableIf<IsConstructible<X,Nat,PRS...>> =dummy>
+    template<class... PRS> requires Constructible<X,Nat,PRS...>
     static SymmetricMatrix<X> identity(SizeType n, PRS... prs);
     //!@}
 
@@ -168,12 +168,12 @@ template<class X> SymmetricMatrix<X>::SymmetricMatrix(Matrix<X> const& A)
     }
 }
 
-template<class X> template<class... PRS, EnableIf<IsConstructible<X,Nat,PRS...>>>
+template<class X> template<class... PRS> requires Constructible<X,Nat,PRS...>
 SymmetricMatrix<X> SymmetricMatrix<X>::zero(SizeType n, PRS... prs) {
     return SymmetricMatrix<X>(n,X(0u,prs...));
 }
 
-template<class X> template<class... PRS, EnableIf<IsConstructible<X,Nat,PRS...>>>
+template<class X> template<class... PRS> requires Constructible<X,Nat,PRS...>
 SymmetricMatrix<X> SymmetricMatrix<X>::identity(SizeType n, PRS... prs) {
     SymmetricMatrix<X> S(n,X(0u,prs...));
     for(SizeType i=0; i!=n; ++i) {

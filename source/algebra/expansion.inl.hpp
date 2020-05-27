@@ -244,7 +244,7 @@ template<class I, class X> class ExpansionValueReference {
     operator const X& () const { return _e.get(_a); }
     //operator X& () { return _e.at(_a); }
     ExpansionValueReference<I,X>& operator=(const X& x) { _e.at(_a)=x; return *this; }
-    template<class Y, EnableIf<IsAssignable<X,Y>> =dummy> ExpansionValueReference<I,X>& operator=(const Y& y) { _e.at(_a)=y; return *this; }
+    template<class Y> requires Assignable<X,Y> ExpansionValueReference<I,X>& operator=(const Y& y) { _e.at(_a)=y; return *this; }
     ExpansionValueReference<I,X>& operator+=(X const& c) { _e.at(_a)+=c; return *this; }
     ExpansionValueReference<I,X>& operator-=(X const& c) { _e.at(_a)-=c; return *this; }
     ExpansionValueReference<I,X>& operator*=(X const& c) { _e.at(_a)*=c; return *this; }
@@ -252,7 +252,7 @@ template<class I, class X> class ExpansionValueReference {
 };
 
 
-template<class I, class X> template<class Y, class... PRS, EnableIf<IsConstructible<X,Y,PRS...>>>
+template<class I, class X> template<class Y, class... PRS> requires Constructible<X,Y,PRS...>
 Expansion<I,X>::Expansion(Expansion<I,Y> const& other, PRS... prs)
     : Expansion(other.argument_size(),X(other.zero_coefficient(),prs...))
 {

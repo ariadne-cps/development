@@ -217,26 +217,26 @@ template<class X, class Y> struct CanInplaceAdd {
     static const bool value = decltype(test<X,Y>(1))::value;
 };
 
-template<class I, class X, EnableIf<CanInplaceAdd<X,X>> =dummy> Void combine_terms(Expansion<I,X>& e) {
-    auto begin=e.begin();
-    auto end=e.end();
-    auto curr=begin;
-    auto adv=begin;
-    while (adv!=end) {
-        curr->index()=adv->index();
-        curr->coefficient()=adv->coefficient();
-        ++adv;
-        while (adv!=end && adv->index()==curr->index()) {
-            curr->coefficient() += adv->coefficient();
+template<class I, class X>Void combine_terms(Expansion<I,X>& e) {
+    if constexpr (CanInplaceAdd<X,X>::value) {
+        auto begin=e.begin();
+        auto end=e.end();
+        auto curr=begin;
+        auto adv=begin;
+        while (adv!=end) {
+            curr->index()=adv->index();
+            curr->coefficient()=adv->coefficient();
             ++adv;
+            while (adv!=end && adv->index()==curr->index()) {
+                curr->coefficient() += adv->coefficient();
+                ++adv;
+            }
+            ++curr;
         }
-        ++curr;
+        e.resize(static_cast<SizeType>(curr-begin));
+    } else {
+        ARIADNE_ASSERT_MSG(false, "Cannot combine terms of an expansion if the coefficients do not support inplace addition.");
     }
-    e.resize(static_cast<SizeType>(curr-begin));
-}
-
-template<class I, class X, DisableIf<CanInplaceAdd<X,X>> =dummy> Void combine_terms(Expansion<I,X>& e) {
-    ARIADNE_ASSERT_MSG(false, "Cannot combine terms of an expansion if the coefficients do not support inplace addition.");
 }
 
 template<class I, class X> Void Expansion<I,X>::combine_terms() {

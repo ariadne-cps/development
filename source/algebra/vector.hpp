@@ -68,6 +68,14 @@ template<class X> struct IsScalar { static const Bool value = !IsVector<X>::valu
 
 template<class V> using ScalarType=typename V::ScalarType;
 
+template<class X> concept AScalar = IsScalar<X>::value;
+template<class V> concept AVector = IsVector<V>::value;
+template<class V> concept AMatrix = IsMatrix<V>::value;
+template<class V> concept AVectorExpression = IsVectorExpression<V>::value;
+template<class V> concept AMatrixExpression = IsMatrixExpression<V>::value;
+
+template<class M, class X> concept AMatrixExpressionOver = IsMatrixExpression<M>::value and IsConvertible<typename M::ScalarType,X>::value;
+
 template<class X> struct HasCreateZero {
     template<class XX, class=decltype(std::declval<XX>().create_zero())> static std::true_type test(int);
     template<class XX> static std::false_type test(...);
@@ -79,10 +87,12 @@ template<class X> struct HasNul {
     static const bool value = decltype(test<X>(1))::value;
 };
 
-template<class X, EnableIf<HasCreateZero<X>> = dummy> X create_zero(const X& x) { return x.create_zero(); }
-template<class X, DisableIf<HasCreateZero<X>> = dummy, EnableIf<HasNul<X>> = dummy> X create_zero(const X& x) { return nul(x); }
-// FIXME: Below should use a non-integral numeric type to prevent constructor of zero-sized object.
-template<class X, DisableIf<HasCreateZero<X>> = dummy, DisableIf<HasNul<X>> = dummy> X create_zero(const X& x) { return static_cast<X>(0u); }
+
+template<class X> X create_zero(const X& x) {
+    if constexpr (HasCreateZero<X>::value) { return x.create_zero(); }
+    else if constexpr (HasNul<X>::value)  { return nul(x); }
+    else { return static_cast<X>(0u); }
+}
 
 template<class T> inline T zero_element(Matrix<T> const& m) { return m.zero_element(); }
 template<class T> inline T zero_element(Covector<T> const& u) { return u.zero_element(); }
@@ -171,7 +181,7 @@ class Vector
     //! \brief Construct a vector of size \a n, with elements initialised to \a t.
     explicit Vector(SizeType n, const X& t) : _ary(n,t) {  }
     //! Construct a vector from parameters of \a X.
-    template<class... PRS, EnableIf<IsConstructible<X,PRS...>> =dummy> explicit Vector(SizeType n, PRS... prs) : Vector(n,X(prs...)) { }
+    template<class... PRS> requires Constructible<X,PRS...> explicit Vector(SizeType n, PRS... prs) : Vector(n,X(prs...)) { }
     //! \brief Construct from an array of the same type.
     explicit Vector(const Array<X>& ary) : _ary(ary) { }
     explicit Vector(Array<X>&& ary) : _ary(ary) { }
@@ -181,30 +191,30 @@ class Vector
     Vector(InitializerList<X> lst) : _ary(lst.begin(),lst.end()) { }
 
     //! \brief Convert from an initializer list of generic type and a precision parameter.
-    template<class PR, EnableIf<IsConstructible<X,Real,PR>> =dummy>
+    template<class PR> requires Constructible<X,Real,PR>
         Vector(InitializerList<Real> const& lst, PR pr);
-    template<class... PRS, EnableIf<IsConstructible<X,ExactDouble,PRS...>> =dummy, DisableIf<IsConstructible<X,Real,PRS...>> =dummy>
+    template<class... PRS> requires Constructible<X,ExactDouble,PRS...> and (not Constructible<X,Real,PRS...>)
         Vector(InitializerList<ExactDouble> const& lst, PRS... prs);
-    template<class... PRS, EnableIf<IsConstructible<X,Dbl,PRS...>> =dummy>
+    template<class... PRS> requires Constructible<X,Dbl,PRS...>
         Vector(InitializerList<Dbl> const& lst, PRS... prs);
-    template<class PR, EnableIf<IsConstructible<X,ExactDouble,ExactDouble,PR>> =dummy>
+    template<class PR> requires Constructible<X,ExactDouble,ExactDouble,PR>
         Vector(InitializerList<Pair<ExactDouble,ExactDouble>> const& lst, PR pr);
 
     //! \brief Convert from an array of generic type and a precision parameter.
-    template<class Y, class PR, EnableIf<IsConstructible<X,Y,PR>> =dummy> Vector(Array<Y> const& ary, PR pr) : _ary(ary,pr) { }
+    template<class Y, class PR> requires Constructible<X,Y,PR> Vector(Array<Y> const& ary, PR pr) : _ary(ary,pr) { }
     //! \brief Convert from an vector of generic type and a precision parameter.
-    template<class Y, class PR, EnableIf<IsConstructible<X,Y,PR>> =dummy> Vector(Vector<Y> const& v, PR pr) : _ary(v.array(),pr) { }
+    template<class Y, class PR> requires Constructible<X,Y,PR> Vector(Vector<Y> const& v, PR pr) : _ary(v.array(),pr) { }
     //! \brief Convert from an %VectorExpression of a different type.
-    template<class VE, EnableIf<IsConvertible<typename VE::ScalarType,X>> =dummy>
+    template<class VE> requires Convertible<typename VE::ScalarType,X>
     Vector(VectorExpression<VE> const& ve) : _ary(ve().size(),ve().zero_element()) {
             for(SizeType i=0; i!=this->size(); ++i) { this->_ary[i]=ve()[i]; } }
 
     /*! \brief Generate from a function (object) \a g of type \a G mapping an index to a value. */
-    template<class G, EnableIf<IsInvocableReturning<X,G,SizeType>> =dummy>
+    template<class G> requires InvocableReturning<X,G,SizeType>
     Vector(SizeType n, G const& g) : _ary(n,g) { }
 
     //! \brief Construct from an %VectorExpression of a different type.
-    template<class VE, EnableIf<IsConstructible<X,typename VE::ScalarType>> =dummy, DisableIf<IsConvertible<typename VE::ScalarType,X>> =dummy>
+    template<class VE> requires ExplicitlyConvertible<typename VE::ScalarType,X>
     explicit Vector(VectorExpression<VE> const& ve) : _ary(ve().size(),X(ve().zero_element())) {
             for(SizeType i=0; i!=this->size(); ++i) { this->_ary[i]=X(ve()[i]); } }
 
@@ -221,17 +231,17 @@ class Vector
     //! \name Static constructors
 
     //! \brief The zero vector of size \a n.
-    template<class... PRS, EnableIf<IsConstructible<X,Nat,PRS...>> =dummy>
+    template<class... PRS> requires Constructible<X,Nat,PRS...>
     static Vector<X> zero(SizeType n, PRS... prs) { return Vector<X>(n,X(0u,prs...)); }
     //! \brief The vector of size \a n with all entries equal to one.
-    template<class... PRS, EnableIf<IsConstructible<X,Nat,PRS...>> =dummy>
+    template<class... PRS> requires Constructible<X,Nat,PRS...>
     static Vector<X> one(SizeType n, PRS... prs) { return Vector<X>(n,X(1u,prs...)); }
     //! \brief The unit vector \f$e_i\f$ with value one in the \a i<sup>th</sup> entry, and zero otherwise.
-    template<class... PRS, EnableIf<IsConstructible<X,Nat,PRS...>> =dummy>
+    template<class... PRS> requires Constructible<X,Nat,PRS...>
     static Vector<X> unit(SizeType n, SizeType i, PRS... prs) {
         ARIADNE_ASSERT(i<n); Vector<X> result(n,X(0u,prs...)); result[i]=X(1u,prs...); return result; }
     //! \brief The unit vector \f$e_i\f$ with value one in the \a i<sup>th</sup> entry, and zero otherwise.
-    template<class... PRS, EnableIf<IsConstructible<X,Nat,PRS...>> =dummy>
+    template<class... PRS> requires Constructible<X,Nat,PRS...>
     static Array< Vector<X> > basis(SizeType n, PRS... prs) {
         Array<Vector<X>> result(n,Vector<X>(n,prs...));
         for(SizeType i=0; i!=n; ++i) { result[i]=unit(n,i,prs...); } return result; }
@@ -304,7 +314,7 @@ class Vector
     //! \brief Join a scalar and a vector.
     friend template<class X> Vector<X> join(const X& s1, const Vector<X>& v2);
     //! \brief Join two scalars. // FIXME: Removed due to poor detection of scalar types
-    // friend template<class X, EnableIf<IsScalar<X>> =dummy> Vector<X> join(const X& s1, const X& s2);
+    // friend template<class X> requires IsScalar<X>::value Vector<X> join(const X& s1, const X& s2);
 
     //! \brief Write to an output stream.
     friend template<class X> OutputStream& operator<<(OutputStream& os, const Vector<X>& v);
@@ -345,7 +355,7 @@ template<class X> inline VectorRange<Vector<X>> Vector<X>::operator[](Range rng)
 template<class X> inline VectorRange<const Vector<X>> Vector<X>::operator[](Range rng) const {
     return project(*this,rng); }
 
-template<class V, EnableIf<IsVectorExpression<V>> =dummy> OutputStream& operator<<(OutputStream& os, const V& v) {
+template<AVectorExpression V> OutputStream& operator<<(OutputStream& os, const V& v) {
     typedef decltype(v[0]) X;
     return os << Vector<X>(v);
 }
@@ -460,9 +470,7 @@ template<class X1, class X2> decltype(declval<X1>()!=declval<X2>()) operator!=(c
 
 #else
 
-template<class V, EnableIf<IsVectorExpression<V>> =dummy> inline
-const V& operator+(const V& v) {
-    return v; }
+template<AVectorExpression V> inline const V& operator+(const V& v) { return v; }
 
 
 template<class V> struct VectorNegation {
@@ -474,10 +482,11 @@ template<class V> struct VectorNegation {
     ScalarType operator[](SizeType i) const { return -_v[i]; }
 };
 template<class V> struct IsVectorExpression<VectorNegation<V>> : True { };
--Woverloaded-virtual
-template<class V, EnableIf<IsVectorExpression<V>> =dummy> inline
+
+template<AVectorExpression V> inline
 VectorNegation<V> operator-(const V& v) {
     return VectorNegation<V>(v); }
+
 
 
 template<class V1, class V2> struct VectorSum  {
@@ -490,7 +499,7 @@ template<class V1, class V2> struct VectorSum  {
 };
 template<class V1, class V2> struct IsVectorExpression<VectorSum<V1,V2>> : True { };
 
-template<class V1, class V2, EnableIf<And<IsVectorExpression<V1>,IsVectorExpression<V2>>> =dummy> inline
+template<AVectorExpression V1, AVectorExpression V2> inline
 VectorSum<V1,V2> operator+(const V1& v1, const V2& v2) {
     ARIADNE_PRECONDITION(v1.size()==v2.size());
     return VectorSum<V1,V2>(v1,v2); }
@@ -506,7 +515,7 @@ template<class V1, class V2> struct VectorDifference {
 };
 template<class V1, class V2> struct IsVectorExpression<VectorDifference<V1,V2>> : True { };
 
-template<class V1, class V2, EnableIf<And<IsVectorExpression<V1>,IsVectorExpression<V2>>> =dummy> inline
+template<AVectorExpression V1, AVectorExpression V2> inline
 VectorDifference<V1,V2> operator-(const V1& v1, const V2& v2) {
     ARIADNE_PRECONDITION(v1.size()==v2.size());
     return VectorDifference<V1,V2>(v1,v2); }
@@ -522,11 +531,11 @@ template<class V1, class X2> struct VectorScalarProduct {
 };
 template<class V1, class X2> struct IsVectorExpression<VectorScalarProduct<V1,X2>> : True { };
 
-template<class X1, class V2, EnableIf<And<IsScalar<X1>,IsVectorExpression<V2>>> =dummy> inline
+template<AScalar X1, AVectorExpression V2> inline
 VectorScalarProduct<V2,X1> operator*(const X1& x1, const V2& v2) {
     return VectorScalarProduct<V2,X1>(v2,x1); }
 
-template<class V1, class X2, EnableIf<And<IsVectorExpression<V1>,IsScalar<X2>>> =dummy> inline
+template<AVectorExpression V1, AScalar X2> inline
 VectorScalarProduct<V1,X2> operator*(const V1& v1, const X2& x2) {
     return VectorScalarProduct<V1,X2>(v1,x2); }
 
@@ -540,7 +549,7 @@ template<class V1, class X2> struct VectorScalarQuotient {
 };
 template<class V1, class X2> struct IsVectorExpression<VectorScalarQuotient<V1,X2>> : True { };
 
-template<class V1, class X2, EnableIf<And<IsVectorExpression<V1>,IsScalar<X2>>> =dummy> inline
+template<AVectorExpression V1, AScalar X2>> inline
 VectorScalarQuotient<V1,X2> operator/(const V1& v1, const X2& x2) {
     return VectorScalarQuotient<V1,X2>(v1,x2); }
 
@@ -610,7 +619,7 @@ Vector<X> join(const Vector<X>& v1, const typename Vector<X>::ScalarType& x2)
     return r;
 }
 
-//template<class X, EnableIf<IsScalar<X>> =dummy>
+//template<AScalar X>
 //Vector<X> join(const X& x1, const X& x2)
 //{
 //    Vector<X> r(2u);
@@ -751,19 +760,19 @@ template<class X> inline Vector<ExactType<X>> cast_exact(const Vector<X>& v) {
     return r;
 }
 
-template<class X> template<class... PRS, EnableIf<IsConstructible<X,ExactDouble,PRS...>>, DisableIf<IsConstructible<X,Real,PRS...>>>
+template<class X> template<class... PRS> requires Constructible<X,ExactDouble,PRS...> and (not Constructible<X,Real,PRS...>)
 Vector<X>::Vector(InitializerList<ExactDouble> const& lst, PRS... prs)
     : _ary(Array<ExactDouble>(lst),prs...)
 {
 }
 
-template<class X> template<class PR, EnableIf<IsConstructible<X,Real,PR>>>
+template<class X> template<class PR> requires Constructible<X,Real,PR>
 Vector<X>::Vector(InitializerList<Real> const& lst, PR pr)
     : _ary(Array<Real>(lst),pr)
 {
 }
 
-template<class X> template<class PR, EnableIf<IsConstructible<X,ExactDouble,ExactDouble,PR>>>
+template<class X> template<class PR> requires Constructible<X,ExactDouble,ExactDouble,PR>
 Vector<X>::Vector(InitializerList<Pair<ExactDouble,ExactDouble>> const& lst, PR pr)
     : _ary(lst.size(),X(pr))
 {
@@ -773,7 +782,7 @@ Vector<X>::Vector(InitializerList<Pair<ExactDouble,ExactDouble>> const& lst, PR 
     }
 }
 
-template<class X> template<class... PRS, EnableIf<IsConstructible<X,Dbl,PRS...>>>
+template<class X> template<class... PRS> requires Constructible<X,Dbl,PRS...>
 Vector<X>::Vector(InitializerList<Dbl> const& lst, PRS... prs)
     : _ary(Array<Dbl>(lst),prs...)
 {

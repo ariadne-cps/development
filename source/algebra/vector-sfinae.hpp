@@ -23,7 +23,7 @@
  */
 
 /*! \file algebra/vector-sfinae.hpp
- *  \brief 
+ *  \brief
  */
 
 
@@ -78,7 +78,7 @@ template<class V1, class V2> struct VectorSum {
 };
 template<class V1, class V2> struct IsVector<VectorSum<V1,V2>> : True { };
 
-template<class V1, class V2, EnableIf<And<IsVector<V1>,IsVector<V2>>> =dummy>
+template<AVector V1, AVector V2>
 inline VectorSum<V1,V2> operator+(const V1& v1, const V2& v2) { return VectorSum<V1,V2>(v1,v2); }
 
 template<class X1, class V2> struct ScalarVectorProduct {
@@ -89,7 +89,7 @@ template<class X1, class V2> struct ScalarVectorProduct {
 };
 template<class X1, class V2> struct IsVector<ScalarVectorProduct<X1,V2>> : True { };
 
-template<class X1, class V2, EnableIf<And<IsScalar<X1>,IsVector<V2>>> =dummy>
+template<AScaler X1, AVector V2>
 inline ScalarVectorProduct<X1,V2> operator*(const X1& x1, const V2& v2) { return ScalarVectorProduct<X1,V2>(x1,v2); }
 
 

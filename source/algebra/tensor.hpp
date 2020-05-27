@@ -52,7 +52,7 @@ template<SizeType N, class X> class Tensor {
   public:
     typedef X ValueType;
     Tensor(Array<SizeType> const& ns, X const& z) : _ns(ns), _a(_total_size(),z) { }
-    template<class G, EnableIf<IsInvocableReturning<X,G,Array<SizeType>>> =dummy> Tensor(Array<SizeType> const& ns, G const& g);
+    template<class G> requires InvocableReturning<X,G,Array<SizeType>> Tensor(Array<SizeType> const& ns, G const& g);
     constexpr SizeType rank() const { return _ns.size(); }
     Array<SizeType> sizes() const { return _ns; }
     SizeType size(SizeType i) const { return _ns[i]; }
@@ -69,13 +69,13 @@ template<SizeType N, class X> class Tensor {
     OutputStream& _write(OutputStream& os) const;
 };
 
-template<class X, class F, EnableIf<IsInvocable<F,X>> =dummy> auto transform(Tensor<2,X> const& t, F const& f) -> Tensor<2,ResultOf<F(X)>> {
+template<class X, class F> requires Invocable<F,X> auto transform(Tensor<2,X> const& t, F const& f) -> Tensor<2,ResultOf<F(X)>> {
     Tensor<2,ResultOf<F(X)>> r(t.sizes(), f(t[{0,0}]));
     for(SizeType i0=0; i0!=r.size(0); ++i0) { for(SizeType i1=0; i1!=r.size(1); ++i1) { r[{i0,i1}]=f(t[{i0,i1}]); } }
     return r;
 }
 
-template<SizeType N, class X> template<class G, EnableIf<IsInvocableReturning<X,G,Array<SizeType>>>>
+template<SizeType N, class X> template<class G> requires InvocableReturning<X,G,Array<SizeType>>
 Tensor<N,X>::Tensor(Array<SizeType> const& ns, G const& g)
     : _ns(ns), _a(_total_size(),g({0,0}))
 {

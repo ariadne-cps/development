@@ -118,7 +118,7 @@ class Series
     OutputStream& _write(OutputStream& os) const;
   public:
     template<class OP> Series(OP op, X const& x);
-    template<class OP, class XX, EnableIf<IsConstructible<X,XX>> =dummy> Series(OP op, XX const& x) : Series(op,X(x)) { }
+    template<class OP, class XX> requires Constructible<X,XX> Series(OP op, XX const& x) : Series(op,X(x)) { }
     const X& operator[](DegreeType n) const;
     const List<X>& coefficients(DegreeType n) const;
     friend OutputStream& operator<<(OutputStream& os, Series<X> const& s) { return s._write(os); }

@@ -32,8 +32,9 @@ namespace Ariadne {
 
 template<class A> class IsNormedAlgebra : False { };
 template<class A> class IsGradedAlgebra : False { };
-template<class A> using EnableIfNormedAlgebra = EnableIf<IsNormedAlgebra<A>,A>;
-template<class A> using EnableIfGradedAlgebra = EnableIf<IsGradedAlgebra<A>,A>;
+
+template<class A> concept ANormedAlgebra = IsNormedAlgebra<A>::value;
+template<class A> concept AGradedAlgebra = IsNormedAlgebra<A>::value;
 
 struct Factorial {
     Nat _n;
@@ -42,7 +43,7 @@ struct Factorial {
     friend FloatDPBounds rec(Factorial x) { return rec(FloatDPBounds(x)); }
 };
 
-template<class A> EnableIfGradedAlgebra<A>
+template<AGradedAlgebra A> A
 compose(const Series<typename A::NumericType>& x, const A& y)
 {
     Nat d=y.degree();
@@ -60,7 +61,7 @@ compose(const Series<typename A::NumericType>& x, const A& y)
 
 template<class X> class TaylorSeries;
 
-template<class A> EnableIfNormedAlgebra<A> compose(const TaylorSeries<FloatDPBounds>& ts, const A& tv, double eps)
+template<ANormedAlgebra A> A compose(const TaylorSeries<FloatDPBounds>& ts, const A& tv, double eps)
 {
     //std::cerr<<"_compose(TaylorSeries,A,ErrorTag)\n";
     //std::cerr<<"\n  ts="<<ts<<"\n  tv="<<tv<<"\n";
@@ -82,7 +83,7 @@ template<class A> EnableIfNormedAlgebra<A> compose(const TaylorSeries<FloatDPBou
     return r;
 }
 
-template<class A> EnableIfNormedAlgebra<A> compose(const TaylorSeries<FloatDPBounds>& ts, const A& tm)
+template<ANormedAlgebra A> A compose(const TaylorSeries<FloatDPBounds>& ts, const A& tm)
 {
     return _compose(ts,tm,tm.tolerance());
 }
@@ -91,7 +92,7 @@ template<class A> EnableIfNormedAlgebra<A> compose(const TaylorSeries<FloatDPBou
 // Compose using the Taylor formula directly. The final term is the Taylor series computed
 // over the range of the series. This method tends to suffer from blow-up of the
 // truncation error
-template<class A> EnableIfNormedAlgebra<A> _compose1(const AnalyticFunction& fn, const A& tm, double eps)
+template<ANormedAlgebra A> A _compose1(const AnalyticFunction& fn, const A& tm, double eps)
 {
     static const Nat DEGREE=18;
     static const double TRUNCATION_ERROR=1e-8;
@@ -123,7 +124,7 @@ template<class A> EnableIfNormedAlgebra<A> _compose1(const AnalyticFunction& fn,
 // is usually better than _compose1 since there is no blow-up of the trunction
 // error. The radius of convergence of this method is still quite low,
 // typically only half of the radius of convergence of the power series itself
-template<class A> EnableIfNormedAlgebra<A> _compose2(const AnalyticFunction& fn, const A& tm, double eps)
+template<ANormedAlgebra A> A _compose2(const AnalyticFunction& fn, const A& tm, double eps)
 {
     static const Nat DEGREE=20;
     static const ExactDouble TRUNCATION_ERROR=1e-8_pr;
@@ -166,7 +167,7 @@ template<class F> Error<F> error_bound(Bounds<F> const& b, Bounds<F> const& c) {
 // is usually better than _compose1 since there is no blow-up of the trunction
 // error. This method is better than _compose2 since the truncation error is
 // assumed at the ends of the intervals
-template<class A> EnableIfNormedAlgebra<A> _compose3(const AnalyticFunction& fn, const A& tm, FloatDP eps)
+template<ANormedAlgebra A> A _compose3(const AnalyticFunction& fn, const A& tm, FloatDP eps)
 {
     static const Nat DEGREE=20;
     static const ExactDouble TRUNCATION_ERROR=1e-8_pr;
@@ -203,7 +204,7 @@ template<class A> EnableIfNormedAlgebra<A> _compose3(const AnalyticFunction& fn,
 }
 
 
-template<class A> EnableIfNormedAlgebra<A> _compose(const AnalyticFunction& fn, const A& tm, FloatDP eps)
+template<ANormedAlgebra A> A _compose(const AnalyticFunction& fn, const A& tm, FloatDP eps)
 {
     return _compose3(fn,tm,eps);
 }

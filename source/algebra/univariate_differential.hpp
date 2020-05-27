@@ -58,10 +58,10 @@ template<class X> class UnivariateDifferential
 
     UnivariateDifferential() = delete;
     explicit UnivariateDifferential(DegreeType d, const NumericType& c);
-    template<class... PRS, EnableIf<IsConstructible<X,Nat,PRS...>> =dummy>
+    template<class... PRS> requires Constructible<X,Nat,PRS...>
         UnivariateDifferential(DegreeType d, PRS... prs) : UnivariateDifferential(d,X(0u,prs...)) { }
     UnivariateDifferential(DegreeType d, InitializerList<X> e);
-    template<class PR, EnableIf<IsConstructible<X,ExactDouble,PR>> =dummy>
+    template<class PR> requires Constructible<X,ExactDouble,PR>
         explicit UnivariateDifferential(DegreeType deg, InitializerList<ExactDouble> lst, PR pr);
     UnivariateDifferential(DegreeType d, Series<X> const& s); // explicit
 
@@ -83,8 +83,8 @@ template<class X> class UnivariateDifferential
     X& operator[](SizeType k);
 
     SelfType& operator=(const NumericType& c);
-    template<class T, EnableIf<IsAssignable<X,T>> =dummy>
-        SelfType& operator=(const T& c) { X xc=nul(this->value()); xc=c; return (*this)=xc; }
+    template<AssignableTo<X> W>
+        SelfType& operator=(const W& c) { X xc=nul(this->value()); xc=c; return (*this)=xc; }
 
     SelfType& operator+=(const SelfType& x);
     SelfType& operator-=(const SelfType& x);
@@ -133,7 +133,7 @@ template<class X> inline const X& UnivariateDifferential<X>::gradient() const { 
 template<class X> inline const X& UnivariateDifferential<X>::half_hessian() const { assert(this->degree()>=2); return _ary[2]; }
 template<class X> inline const X UnivariateDifferential<X>::hessian() const { assert(this->degree()>=2); return _ary[2]*2; }
 
-template<class X> template<class PR, EnableIf<IsConstructible<X,ExactDouble,PR>>>
+template<class X> template<class PR> requires Constructible<X,ExactDouble,PR>
 UnivariateDifferential<X>::UnivariateDifferential(DegreeType d, InitializerList<ExactDouble> lst, PR pr)
     : _ary(d+1u,X(0,pr))
 {

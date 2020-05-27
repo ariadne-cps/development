@@ -246,7 +246,7 @@ template<class V1, class V2> inline auto join(const VectorExpression<V1>& ve1, c
 }
 */
 
-template<class V1, class V2, EnableIf<IsSame<ScalarType<V1>,ScalarType<V2>>> = dummy>
+template<class V1, class V2> requires Same<ScalarType<V1>,ScalarType<V2>>
 Vector<ScalarType<V1>>
 join(const VectorExpression<V1>& ve1, const VectorExpression<V2>& ve2)
 {
@@ -262,7 +262,7 @@ join(const VectorExpression<V1>& ve1, const VectorExpression<V2>& ve2)
 }
 
 
-template<class V1, class V2, class V3, EnableIf<AreSame<ScalarType<V1>,ScalarType<V2>,ScalarType<V3>>> =dummy>
+template<class V1, class V2, class V3> requires AllSame<ScalarType<V1>,ScalarType<V2>,ScalarType<V3>>
 Vector<ScalarType<V1>> join(const VectorExpression<V1>& ve1, const VectorExpression<V2>& ve2, const VectorExpression<V3>& ve3)
 {
     const V1& v1=ve1.upcast(); const V2& v2=ve2.upcast(); const V3& v3=ve3.upcast();
@@ -275,7 +275,7 @@ Vector<ScalarType<V1>> join(const VectorExpression<V1>& ve1, const VectorExpress
     return r;
 }
 
-template<class V1, class X2, EnableIf<IsSame<ScalarType<V1>,X2>> =dummy>
+template<class V1, class X2> requires Same<ScalarType<V1>,X2>
 Vector<ScalarType<V1>> join(const VectorExpression<V1>& ve1, const ScalarObject<X2>& xe2)
 {
     const V1& v1=ve1.upcast(); const X2& x2=xe2.upcast();
@@ -287,7 +287,7 @@ Vector<ScalarType<V1>> join(const VectorExpression<V1>& ve1, const ScalarObject<
     return r;
 }
 
-template<class V1, class V2, class X3, EnableIf<AreSame<ScalarType<V1>,ScalarType<V2>,X3>> =dummy>
+template<class V1, class V2, class X3> requires AreSame<ScalarType<V1>,ScalarType<V2>,X3>
 Vector<ScalarType<V1>> join(const VectorExpression<V1>& ve1, const VectorExpression<V2>& ve2, const ScalarObject<X3>& xe3)
 {
     const V1& v1=ve1.upcast(); const V2& v2=ve2.upcast(); const X3& x3=xe3.upcast();
