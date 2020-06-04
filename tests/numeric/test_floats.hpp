@@ -43,18 +43,18 @@ using namespace Ariadne;
 using namespace std;
 
 namespace Ariadne {
-template<class Q, EnableIf<IsSame<Q,Rational>> =dummy> Bool operator==(FloatDP const& x, Q const& q) { return Rational(x)==q; }
-template<class Q, EnableIf<IsSame<Q,Rational>> =dummy> Bool operator!=(FloatDP const& x, Q const& q) { return Rational(x)!=q; }
-template<class Q, EnableIf<IsSame<Q,Rational>> =dummy> Bool operator<=(FloatDP const& x, Q const& q) { return Rational(x)<=q; }
-template<class Q, EnableIf<IsSame<Q,Rational>> =dummy> Bool operator>=(FloatDP const& x, Q const& q) { return Rational(x)>=q; }
-template<class Q, EnableIf<IsSame<Q,Rational>> =dummy> Bool operator< (FloatDP const& x, Q const& q) { return Rational(x)< q; }
-template<class Q, EnableIf<IsSame<Q,Rational>> =dummy> Bool operator> (FloatDP const& x, Q const& q) { return Rational(x)> q; }
-template<class Q, EnableIf<IsSame<Q,Rational>> =dummy> Bool operator==(FloatMP const& x, Q const& q) { return Rational(x)==q; }
-template<class Q, EnableIf<IsSame<Q,Rational>> =dummy> Bool operator!=(FloatMP const& x, Q const& q) { return Rational(x)!=q; }
-template<class Q, EnableIf<IsSame<Q,Rational>> =dummy> Bool operator<=(FloatMP const& x, Q const& q) { return Rational(x)<=q; }
-template<class Q, EnableIf<IsSame<Q,Rational>> =dummy> Bool operator>=(FloatMP const& x, Q const& q) { return Rational(x)>=q; }
-template<class Q, EnableIf<IsSame<Q,Rational>> =dummy> Bool operator< (FloatMP const& x, Q const& q) { return Rational(x)< q; }
-template<class Q, EnableIf<IsSame<Q,Rational>> =dummy> Bool operator> (FloatMP const& x, Q const& q) { return Rational(x)> q; }
+template<SameAs<Rational> Q> Bool operator==(FloatDP const& x, Q const& q) { return Rational(x)==q; }
+template<SameAs<Rational> Q> Bool operator!=(FloatDP const& x, Q const& q) { return Rational(x)!=q; }
+template<SameAs<Rational> Q> Bool operator<=(FloatDP const& x, Q const& q) { return Rational(x)<=q; }
+template<SameAs<Rational> Q> Bool operator>=(FloatDP const& x, Q const& q) { return Rational(x)>=q; }
+template<SameAs<Rational> Q> Bool operator< (FloatDP const& x, Q const& q) { return Rational(x)< q; }
+template<SameAs<Rational> Q> Bool operator> (FloatDP const& x, Q const& q) { return Rational(x)> q; }
+template<SameAs<Rational> Q> Bool operator==(FloatMP const& x, Q const& q) { return Rational(x)==q; }
+template<SameAs<Rational> Q> Bool operator!=(FloatMP const& x, Q const& q) { return Rational(x)!=q; }
+template<SameAs<Rational> Q> Bool operator<=(FloatMP const& x, Q const& q) { return Rational(x)<=q; }
+template<SameAs<Rational> Q> Bool operator>=(FloatMP const& x, Q const& q) { return Rational(x)>=q; }
+template<SameAs<Rational> Q> Bool operator< (FloatMP const& x, Q const& q) { return Rational(x)< q; }
+template<SameAs<Rational> Q> Bool operator> (FloatMP const& x, Q const& q) { return Rational(x)> q; }
 
 template<class F> Bool models(LowerBound<F> x, Rational q) { return x.raw() <= q; }
 template<class F> Bool models(UpperBound<F> x, Rational q) { return x.raw() >= q; }

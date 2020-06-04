@@ -56,7 +56,7 @@ using std::declval;
 template<class T> String class_name();
 
 // Add signum operation; returns true if x>=0
-template<class N, EnableIf<IsBuiltinIntegral<N>> =dummy> bool signum(N n);
+template<BuiltinIntegral N> bool signum(N n);
 Decidable signum(Integer z);
 Decidable signum(Rational q);
 Quasidecidable signum(Real r);

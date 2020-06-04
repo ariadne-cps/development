@@ -48,8 +48,9 @@ template<class T, class = decltype(declval<T>().clobber())> True has_clobber(int
 template<class T> False has_clobber(...);
 template<class T> using HasClobber = decltype(has_clobber<T>(1));
 
-template<class T, EnableIf<HasClobber<T>> =dummy> void do_clobber(T& t) { t=t.clobber(); }
-template<class T, DisableIf<HasClobber<T>> =dummy> void do_clobber(T& t) { }
+template<class T> void do_clobber(T& t) {
+    if constexpr (HasClobber<T>::value) { t=t.clobber(); }
+}
 
 template<class T, class = decltype(declval<T>().norm())> decltype(declval<T>().norm()) norm(T& t, int=0) { return t.norm(); }
 template<class T> T norm(T const& t) { return t; }
@@ -84,11 +85,11 @@ template<class F> ValidatedTaylorModel<F> ctm(Nat m, Sweeper<F> swp) {
 //template<class F> ValidatedTaylorModel<F> tm(Nat m, Nat i, Sweeper swp) { return ValidatedTaylorModelType::coordinate(m,i,swp); }
 
 // Allow addition and multiplication by double
-template<class F, class D, EnableIf<IsSame<D,double>> =dummy> ValidatedTaylorModel<F> operator+(D d, ValidatedTaylorModel<F> tm) {
+template<class F, SameAs<double> D> ValidatedTaylorModel<F> operator+(D d, ValidatedTaylorModel<F> tm) {
     typedef typename F::PrecisionType PR; return FloatValue<PR>(d)+tm; }
-template<class F, class D, EnableIf<IsSame<D,double>> =dummy> ValidatedTaylorModel<F> operator-(D d, ValidatedTaylorModel<F> tm) {
+template<class F, SameAs<double> D> ValidatedTaylorModel<F> operator-(D d, ValidatedTaylorModel<F> tm) {
     typedef typename F::PrecisionType PR; return FloatValue<PR>(d)-tm; }
-template<class F, class D, EnableIf<IsSame<D,double>> =dummy> ValidatedTaylorModel<F> operator*(D d, ValidatedTaylorModel<F> tm) {
+template<class F, SameAs<double> D> ValidatedTaylorModel<F> operator*(D d, ValidatedTaylorModel<F> tm) {
     typedef typename F::PrecisionType PR; return FloatValue<PR>(d)*tm; }
 
 // Allow carat for power
