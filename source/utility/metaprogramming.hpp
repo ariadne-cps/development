@@ -30,6 +30,7 @@
 #define ARIADNE_METAPROGRAMMING_HPP
 
 #include <type_traits>
+#include <concepts>
 
 namespace Ariadne {
 
@@ -100,8 +101,6 @@ template<class F, class... AS> using InvokeResult = typename std::invoke_result<
 template<class SIG> struct ResultOfTrait;
 template<class F, class... AS> struct ResultOfTrait<F(AS...)> { typedef typename std::invoke_result<F,AS...>::type Type; };
 template<class SIG> using ResultOf = typename ResultOfTrait<SIG>::Type;
-
-template<class T1, class T2, class T3> using AreSame = And<IsSame<T1,T2>,IsSame<T2,T3>>;
 
 struct Fallback { };
 struct DontCare { template<class T> DontCare(T); };
@@ -229,6 +228,44 @@ template<class T> class SuppressConversions {
     template<class TT, EnableIf<IsSame<TT,T>> =dummy> SuppressConversions(TT const& t) : _t(t) { }
     explicit operator T const& () const { return _t; }
 };
+
+
+
+template<class T1, class T2> concept SameAs = std::same_as<T1,T2>;
+template<class T1, class T2> concept Same = std::same_as<T1,T2>;
+template<class T> concept BuiltinArithmetic = std::is_arithmetic<T>::value;
+template<class T> concept BuiltinIntegral = std::integral<T>;
+template<class T> concept BuiltinFloatingPoint = std::floating_point<T>;
+template<class T> concept BuiltinUnsignedIntegral = std::unsigned_integral<T>;
+template<class T> concept BuiltinSignedIntegral = std::signed_integral<T>;
+//template<class F, class T> concept ConvertibleTo = std::convertible_to<F,T>;
+//template<class F, class T> concept Convertible = std::convertible_to<F,T>;
+template<class F, class T> concept Convertible = std::is_convertible<F,T>::value;
+template<class F, class T> concept ConvertibleTo = std::is_convertible<F,T>::value;
+template<class T, class... US> concept ConstructibleFrom = std::constructible_from<T,US...>;
+template<class T, class... US> concept Constructible = std::constructible_from<T,US...>;
+template<class T> concept DefaultInitializable = std::default_initializable<T>;
+template<class T> concept DefaultConstructible = std::default_initializable<T>;
+template<class T> concept CopyConstructible = std::copy_constructible<T>;
+//template<class F, class T> concept ExplicitlyConvertibleTo = std::constructible_from<T,F> and not std::convertible_to<F,T>;
+//template<class F, class T> concept ExplicitlyConvertible = std::constructible_from<T,F> and not std::convertible_to<F,T>;
+template<class F, class T> concept ExplicitlyConvertibleTo = std::is_constructible<T,F>::value and not std::is_convertible<F,T>::value;
+template<class F, class T> concept ExplicitlyConvertible = std::is_constructible<T,F>::value and not std::is_convertible<F,T>::value;
+
+//template<class T, class F> concept AssignableFrom = std::assignable_from<T,F>;
+//template<class F, class T> concept AssignableTo = std::assignable_from<T,F>;
+//template<class T, class F> concept Assignable = std::assignable_from<T,F>;
+template<class T, class F> concept Assignable = std::is_assignable<T,F>::value;
+template<class T, class F> concept AssignableFrom = std::is_assignable<T,F>::value;
+template<class F, class T> concept AssignableTo = std::is_assignable<T,F>::value;
+template<class D, class B> concept DerivedFrom = std::derived_from<D,B>;
+template<class B, class D> concept BaseOf = std::derived_from<D,B>;
+template<class F, class... AS> concept Invocable = std::invocable<F,AS...>;
+
+template<class R, class F, class... AS> concept InvocableReturning = IsInvocableReturning<R,F,AS...>::value;
+template<class T, class... TS> concept OneOf = IsOneOf<T,TS...>::value;
+template<class T1, class T2, class T3> concept AreSame = Same<T1,T2> and Same<T2,T3>;
+
 
 } // namespace Ariadne
 
