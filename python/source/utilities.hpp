@@ -54,15 +54,15 @@ inline uint pyindex(int i, uint n) { return (i>=0) ? static_cast<uint>(i) : (n-s
 
 template<class C, class I, class X=decltype(declval<const C>()[declval<I>()])> inline
 auto __getitem__(const C& c, const I& i) -> X {
-    if constexpr (std::is_same<I,int>::value) { return c[pyindex(i,c.size())]; } else { return c[i]; } }
+    if constexpr (std::same_as<I,int>) { return c[pyindex(i,c.size())]; } else { return c[i]; } }
 
 template<class C, class I0, class I1, class S> inline
 S __getslice__(const C& c, const I0& i0, const I1& i1) {
-        if constexpr (std::is_same<I0,int>::value) { auto n=c.size(); return project(c,range(pyindex(i0,n,pyindex(i1,n)))); } else { return project(c,range(i0,i1)); } }
+        if constexpr (std::same_as<I0,int>) { auto n=c.size(); return project(c,range(pyindex(i0,n,pyindex(i1,n)))); } else { return project(c,range(i0,i1)); } }
 
 template<class C, class I, class X> inline
 Void __setitem__(C& c, const I& i, const X& x) {
-        if constexpr (std::is_same<I,int>::value) { c[pyindex(i,c.size())]=x; } else { c[i]=x; } }
+        if constexpr (std::same_as<I,int>) { c[pyindex(i,c.size())]=x; } else { c[i]=x; } }
 
 
 template<class C, class I, class J, class X> inline
@@ -341,14 +341,14 @@ template<class X> pybind11::class_<X>& define_arithmetic(pybind11::module& modul
     pyclass.def("__add__", &__add__<X,X>, pybind11::is_operator());
     pyclass.def("__sub__", &__sub__<X,X>, pybind11::is_operator());
     pyclass.def("__mul__", &__mul__<X,X>, pybind11::is_operator());
-    if constexpr(CanDivide<X,X>::value) {
+    if constexpr(CanDivide<X,X>) {
         pyclass.def(__py_div__, &__div__<X,X>, pybind11::is_operator());
     }
 
     pyclass.def("__radd__", &__radd__<X,X>, pybind11::is_operator());
     pyclass.def("__rsub__", &__rsub__<X,X>, pybind11::is_operator());
     pyclass.def("__rmul__", &__rmul__<X,X>, pybind11::is_operator());
-    if constexpr(CanDivide<X,X>::value) {
+    if constexpr(CanDivide<X,X>) {
         pyclass.def(__py_rdiv__, &__rdiv__<X,X>, pybind11::is_operator());
     }
 
@@ -362,10 +362,10 @@ template<class X, class Y> pybind11::class_<X>& define_mixed_arithmetic(pybind11
     pyclass.def("__rsub__", &__rsub__<X,Y>, pybind11::is_operator());
     pyclass.def("__mul__", &__mul__<X,Y>, pybind11::is_operator());
     pyclass.def("__rmul__", &__rmul__<X,Y>, pybind11::is_operator());
-    if constexpr(CanDivide<X,Y>::value) {
+    if constexpr(CanDivide<X,Y>) {
         pyclass.def(__py_div__, &__div__<X,Y>, pybind11::is_operator());
     }
-    if constexpr(CanDivide<Y,X>::value) {
+    if constexpr(CanDivide<Y,X>) {
         pyclass.def(__py_rdiv__, &__rdiv__<X,Y>, pybind11::is_operator());
     }
     return pyclass;
@@ -459,7 +459,7 @@ pybind11::class_<V>& define_vector_operations(pybind11::module& module, pybind11
     pyclass.def("__len__", &V::size);
     pyclass.def("__setitem__", &__setitem__<V,Int,X>);
     pyclass.def("__getitem__", &__getitem__<V,Int>);
-    if constexpr(HasEquality<X,X>::value) {
+    if constexpr(HasEquality<X,X>) {
         pyclass.def("__eq__", &__eq__<V,V , Return<EqualityType<X,X>> >);
         pyclass.def("__ne__", &__ne__<V,V , Return<InequalityType<X,X>> >); }
     pyclass.def("__str__",&__cstr__<V>);
@@ -484,7 +484,7 @@ pybind11::class_<V>& define_vector_arithmetic(pybind11::module& module, pybind11
     pyclass.def("__rsub__", &__rsub__<V,V>, pybind11::is_operator());
     pyclass.def("__rmul__", &__rmul__<V,X>, pybind11::is_operator());
     pyclass.def("__mul__", &__mul__<V,X>, pybind11::is_operator());
-    if constexpr(CanDivide<X,X>::value) {
+    if constexpr(CanDivide<X,X>) {
         pyclass.def(__py_div__,__div__<V,X>, pybind11::is_operator());
     }
 //    module.def("dot",  &_dot_<Vector<X>,Vector<X>>);
@@ -501,7 +501,7 @@ pybind11::class_<VX>& define_mixed_vector_arithmetic(pybind11::module& module, p
     pyclass.def("__rsub__", &__rsub__<VX,VY>, pybind11::is_operator());
     pyclass.def("__rmul__", &__rmul__<VX,Y>, pybind11::is_operator());
     pyclass.def("__mul__", &__mul__<VX,Y>, pybind11::is_operator());
-    if constexpr(CanDivide<X,Y>::value) {
+    if constexpr(CanDivide<X,Y>) {
         pyclass.def(__py_div__,__div__<VX,Y>, pybind11::is_operator());
     }
     module.def("dot",  &_dot_<Vector<X>,Vector<Y>>);
@@ -553,13 +553,13 @@ pybind11::class_<VA>& define_vector_algebra_arithmetic(pybind11::module& module,
 
     pyclass.def("__rmul__", &__rmul__<VA,A>, pybind11::is_operator());
     pyclass.def("__mul__", &__mul__<VA,A>, pybind11::is_operator());
-    if constexpr(CanDivide<VA,A>::value) {
+    if constexpr(CanDivide<VA,A>) {
         pyclass.def(__py_div__, &__div__<VA,A>, pybind11::is_operator());
     }
 
     pyclass.def("__rmul__", &__rmul__<VA,X>, pybind11::is_operator());
     pyclass.def("__mul__", &__mul__<VA,X>, pybind11::is_operator());
-    if constexpr(CanDivide<VA,X>::value) {
+    if constexpr(CanDivide<VA,X>) {
         pyclass.def(__py_div__, &__div__<VA,X>, pybind11::is_operator());
     }
     return pyclass;
@@ -578,7 +578,7 @@ pybind11::class_<Ariadne::Vector<X>> export_vector(pybind11::module& module, std
     pybind11::class_<Vector<X>> vector_class(module, name.c_str());
     vector_class.def(pybind11::init<Vector<X>>());
 //    vector_class.def(pybind11::init<Array<X>>());
-    if constexpr (IsDefaultConstructible<X>::value) {
+    if constexpr (DefaultConstructible<X>) {
         vector_class.def(pybind11::init<Nat>());
     }
     vector_class.def(pybind11::init<Nat,X>());
@@ -587,7 +587,7 @@ pybind11::class_<Ariadne::Vector<X>> export_vector(pybind11::module& module, std
     vector_class.def("__setitem__", &__setitem__<Vector<X>,Nat,X>);
     vector_class.def("__getitem__", &__getitem__<Vector<X>,Nat,X>);
     //vector_class.def("__getslice__", &__getslice__<Vector<X>,int,int,Vector<X>>);
-    if constexpr(HasEquality<X,X>::value) {
+    if constexpr(HasEquality<X,X>) {
         vector_class.def("__eq__", &__eq__<Vector<X>,Vector<X> , Return<EqualityType<X,X>> >);
         vector_class.def("__ne__", &__ne__<Vector<X>,Vector<X> , Return<InequalityType<X,X>> >);
     }
@@ -597,7 +597,7 @@ pybind11::class_<Ariadne::Vector<X>> export_vector(pybind11::module& module, std
     vector_class.def("__sub__",__sub__<Vector<X>,Vector<X> , Return<Vector<DifferenceType<X,X>>> >, pybind11::is_operator());
     vector_class.def("__rmul__",__rmul__<Vector<X>,X , Return<Vector<ProductType<X,X>>> >, pybind11::is_operator());
     vector_class.def("__mul__",__mul__<Vector<X>,X , Return<Vector<ProductType<X,X>>> >, pybind11::is_operator());
-    if constexpr(CanDivide<X,X>::value) {
+    if constexpr(CanDivide<X,X>) {
         vector_class.def(__py_div__,__div__<Vector<X>,X , Return<Vector<QuotientType<X,X>>> >, pybind11::is_operator());
     }
     vector_class.def("__str__",&__cstr__<Vector<X>>);

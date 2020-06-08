@@ -614,8 +614,8 @@ LowerReal div(PositiveReal pr1, UpperReal ur2) { return div(make_signed(pr1),cas
 UpperReal div(PositiveReal pr1, LowerReal lr2) { return div(make_signed(pr1),cast_real(lr2)); }
 
 
-static_assert(IsConstructible<FloatDP,Dyadic,FloatDP::RoundingModeType,FloatDP::PrecisionType>::value,"");
-static_assert(IsConstructible<FloatMP,Dyadic,FloatMP::RoundingModeType,FloatMP::PrecisionType>::value,"");
+static_assert(Constructible<FloatDP,Dyadic,FloatDP::RoundingModeType,FloatDP::PrecisionType>);
+static_assert(Constructible<FloatMP,Dyadic,FloatMP::RoundingModeType,FloatMP::PrecisionType>);
 
 ValidatedReal::ValidatedReal(DyadicBounds const& y)
     : Handle<Interface>(std::make_shared<ValidatedRealWrapper<DyadicBounds>>(y)) { }

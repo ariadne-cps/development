@@ -104,7 +104,7 @@ Void export_differential(pybind11::module& module, const String& name)
     differential_class.def_static("constants",(Vector<D>(*)(SizeType, DegreeType, const Vector<X>&))&D::constants);
     differential_class.def_static("variables",(Vector<D>(*)(DegreeType, const Vector<X>&))&D::variables);
 
-    if constexpr (HasGenericType<X>::value) {
+    if constexpr (HasGenericType<X>) {
         typedef typename X::GenericType Y;
         define_mixed_arithmetic<D,Y>(module, differential_class);
     }

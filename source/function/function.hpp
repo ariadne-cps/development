@@ -63,7 +63,7 @@ template<class P, class SIG> class FunctionExpression;
 //! \brief Named (static) constructors for constant and coordinate functions.
 template<class P>
 class FunctionConstructors {
-    static_assert(Or<IsSame<P,ApproximateTag>,IsSame<P,ValidatedTag>,IsSame<P,EffectiveTag>>::value,"P must be an information level/paradigm.");
+    static_assert(Same<P,ApproximateTag> or Same<P,ValidatedTag> or Same<P,EffectiveTag>,"P must be an information level/paradigm.");
     typedef Number<P> Y;
   public:
     typedef Y NumericType;

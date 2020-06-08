@@ -462,8 +462,8 @@ template<class X> class NumberWrapper
     : public X, public NumberMixin<X>
 {
     inline static const X& _cast(const NumberWrapper<X>& x) { return static_cast<const X&>(x); }
-    static_assert(Not<IsSame<X,Handle<NumberInterface>>>::value,"X must be a concrete number, not a handle");
-    static_assert(Not<IsSame<X,Number<Paradigm<X>>>>::value,"X must be a concrete number, not a generic number");
+    static_assert(not Same<X,Handle<NumberInterface>>,"X must be a concrete number, not a handle");
+    static_assert(not Same<X,Number<Paradigm<X>>>,"X must be a concrete number, not a generic number");
   public:
     NumberWrapper(const X& a) : X(a) { }
     NumberWrapper(X&& a) : X(std::forward<X>(a)) { }

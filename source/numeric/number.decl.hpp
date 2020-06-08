@@ -62,11 +62,15 @@ template<class X> using GenericType = typename X::GenericType;
 
 template<class X> using GenericNumericType = GenericType<NumericType<X>>;
 
-template<class X> struct IsConcrete : Has<GenericType,X> { };
+
+template<class T> concept HasGenericType = requires { typename T::GenericType; };
+template<class T> concept HasPrecisionType = requires { typename T::PrecisionType; };
+
+template<class X> struct IsConcrete { static const bool value = HasGenericType<X>; };
 
 template<class X> struct IsScalar;
-template<class X> struct IsConcreteScalar : And<Has<GenericType,X>,IsScalar<X>> { };
-template<class X> struct IsGenericScalar : And<Not<Has<GenericType,X>>,IsScalar<X>> { };
+template<class X> struct IsConcreteScalar { static const bool value = IsConcrete<X>::value and IsScalar<X>::value; };
+template<class X> struct IsGenericScalar { static const bool value = (not IsConcrete<X>::value) and IsScalar<X>::value; };
 
 template<class X> concept GenericScalar = IsGenericScalar<X>::value;
 template<class X> concept ConcreteScalar = IsConcreteScalar<X>::value;

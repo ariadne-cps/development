@@ -98,8 +98,8 @@ void TestInteger::test_constructors() {
     long int ln=n;
     long long int lln=n;
 
-    ARIADNE_TEST_ASSERT((Not<IsConstructible<Integer,float>>::value));
-    ARIADNE_TEST_ASSERT((Not<IsConstructible<Integer,double>>::value));
+    ARIADNE_TEST_ASSERT((not Constructible<Integer,float>));
+    ARIADNE_TEST_ASSERT((not Constructible<Integer,double>));
 
     ARIADNE_TEST_CONSTRUCT(Integer,zum,(um));
     ARIADNE_TEST_EQUALS(zum.get_si(),m);

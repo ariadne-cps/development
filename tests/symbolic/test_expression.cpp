@@ -106,8 +106,8 @@ class TestExpression {
         Real zero(0), one(1);
         RealExpression e(x*y+o);
 
-        ARIADNE_TEST_ASSERT((not IsAssignable<Variable<Real>,Expression<Real>>::value));
-        ARIADNE_TEST_ASSERT((not IsConstructible<Assignment<Variable<Real>,Expression<Real>>,Assignment<Variable<Real>,Real>>::value));
+        ARIADNE_TEST_ASSERT((not Assignable<Variable<Real>,Expression<Real>>));
+        ARIADNE_TEST_ASSERT((not Constructible<Assignment<Variable<Real>,Expression<Real>>,Assignment<Variable<Real>,Real>>));
 
         typedef Assignment<Variable<Real>,Real> ConstantRealAssignment;
         ARIADNE_TEST_CONSTRUCT(ConstantRealAssignment,ac,(x=one));

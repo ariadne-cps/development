@@ -1,4 +1,4 @@
-/***************************************************************************
+// /***************************************************************************
  *            geometry_submodule.cpp
  *
  *  Copyright  2008-20  Pieter Collins
@@ -438,7 +438,7 @@ template<class IVL> Void export_interval(pybind11::module& module, std::string n
     pybind11::implicitly_convertible<pybind11::dict, IntervalType>();
     pybind11::implicitly_convertible<pybind11::list, IntervalType>();
 
-    if constexpr (IsConstructible<IntervalType,DyadicInterval>::value and not IsSame<IntervalType,DyadicInterval>::value) {
+    if constexpr (Constructible<IntervalType,DyadicInterval> and not Same<IntervalType,DyadicInterval>) {
         interval_class.def(pybind11::init<DyadicInterval>());
         interval_class.def(pybind11::init([](Dyadic l, Dyadic u){return IntervalType(DyadicInterval(l,u));}));
     }
@@ -460,7 +460,7 @@ template<class IVL> Void export_interval(pybind11::module& module, std::string n
 
     export_interval_arithmetic(module,interval_class);
 
-    if constexpr (HasEquality<IVL,IVL>::value) {
+    if constexpr (HasEquality<IVL,IVL>) {
         interval_class.def("__eq__",  &__eq__<IVL,IVL , Return<EqualityType<IVL,IVL>> >);
         interval_class.def("__ne__",  &__ne__<IVL,IVL , Return<InequalityType<IVL,IVL>> >);
     }
@@ -552,14 +552,14 @@ template<class BX> Void export_box(pybind11::module& module, std::string name)
     box_class.def(pybind11::init(&box_from_list<BoxType>));
     pybind11::implicitly_convertible<pybind11::list,BoxType>();
 
-    if constexpr (IsConstructible<BoxType,DyadicBox>::value and not IsSame<BoxType,DyadicBox>::value) {
+    if constexpr (Constructible<BoxType,DyadicBox> and not Same<BoxType,DyadicBox>) {
          box_class.def(pybind11::init<Box<Interval<Dyadic>>>());
     }
     if constexpr (IsConstructible<IntervalType,RealInterval>::value and not IsSame<IntervalType,RealInterval>::value) {
         box_class.def(pybind11::init<RealBox>());
     }
 
-    if constexpr (HasEquality<BX,BX>::value) {
+    if constexpr (HasEquality<BX,BX>) {
         box_class.def("__eq__",  __eq__<BX,BX , Return<EqualityType<BX,BX>> >);
         box_class.def("__ne__",  __ne__<BX,BX , Return<InequalityType<BX,BX>> >);
     }

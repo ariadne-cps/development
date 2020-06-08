@@ -212,12 +212,12 @@ template<class X>
 Void define_vector_constructors(pybind11::module& module, pybind11::class_<Vector<X>>& vector_class)
 {
     vector_class.def(pybind11::init<Vector<X>>());
-    if constexpr (IsConstructible<X,Nat>::value) {
+    if constexpr (DefaultConstructible<X>) {
         vector_class.def(pybind11::init<Nat>());
         vector_class.def_static("unit",(Vector<X>(*)(SizeType,SizeType)) &Vector<X>::unit);
         vector_class.def_static("basis",(Array<Vector<X>>(*)(SizeType)) &Vector<X>::basis);
     }
-    if constexpr (HasPrecisionType<X>::value) {
+    if constexpr (HasPrecisionType<X>) {
         typedef typename X::PrecisionType PR;
         if constexpr (IsConstructible<X,Nat,PR>::value) {
             vector_class.def(pybind11::init<Nat,PR>());
@@ -229,9 +229,9 @@ Void define_vector_constructors(pybind11::module& module, pybind11::class_<Vecto
     vector_class.def(pybind11::init([](pybind11::list const& lst){return Vector<X>(pybind11::cast<Array<X>>(lst));}));
 
     // Convert from a Python list and properties
-    if constexpr (HasGenericType<X>::value and HasPrecisionType<X>::value) {
+    if constexpr (HasGenericType<X> and HasPrecisionType<X>) {
         typedef typename X::GenericType Y; typedef typename X::PrecisionType PR;
-        if constexpr(IsConstructible<Vector<X>,Vector<Y>,PR>::value) {
+        if constexpr(Constructible<Vector<X>,Vector<Y>,PR>) {
             vector_class.def(pybind11::init([](pybind11::list const& lst, PR pr){return Vector<X>(vector_from_python<Y>(lst),pr);}));
         } else if (IsConstructible<Vector<X>,Vector<Dyadic>,PR>::value) {
             vector_class.def(pybind11::init([](pybind11::list const& lst, PR pr){return Vector<X>(vector_from_python<Dyadic>(lst),pr);}));
@@ -326,9 +326,9 @@ template<class X>
 Void define_covector(pybind11::module& module, pybind11::class_<Covector<X>>& covector_class)
 {
     covector_class.def(pybind11::init<Covector<X>>());
-    if constexpr (IsDefaultConstructible<X>::value) {
+    if constexpr (DefaultConstructible<X>) {
         covector_class.def(pybind11::init<Nat>()); }
-    if constexpr (HasPrecisionType<X>::value) {
+    if constexpr (HasPrecisionType<X>) {
         typedef typename X::PrecisionType PR;
         covector_class.def(pybind11::init<Nat,PR>());
     }
@@ -355,9 +355,9 @@ Void define_covector(pybind11::module& module, pybind11::class_<Covector<X>>& co
     covector_class.def(pybind11::init([](pybind11::list const& lst){return Covector<X>(pybind11::cast<Array<X>>(lst));}));
 
     // Convert from a Python list and properties
-    if constexpr (HasGenericType<X>::value) {
+    if constexpr (HasGenericType<X>) {
         typedef typename X::GenericType Y; typedef typename X::PrecisionType PR;
-        if constexpr(IsConstructible<Covector<X>,Covector<Y>,PR>::value) {
+        if constexpr(Constructible<Covector<X>,Covector<Y>,PR>) {
             covector_class.def(pybind11::init([](pybind11::list const& lst, PR pr){
                 return Covector<X>(Covector<Y>(pybind11::cast<Array<Y>>(lst)),pr);}));
         }
@@ -390,11 +390,11 @@ template<class X>
 Void define_matrix_class(pybind11::module& module, pybind11::class_<Matrix<X>>& matrix_class)
 {
     matrix_class.def(pybind11::init<Matrix<X>>());
-    if constexpr (IsConstructible<X,Nat>::value) {
+    if constexpr (DefaultConstructible<X>) {
         matrix_class.def(pybind11::init<Nat,Nat>());
         matrix_class.def_static("identity",(Matrix<X>(*)(SizeType)) &Matrix<X>::identity);
     }
-    if constexpr (HasPrecisionType<X>::value) {
+    if constexpr (HasPrecisionType<X>) {
         typedef typename X::PrecisionType PR;
         matrix_class.def(pybind11::init<Nat,Nat,PR>());
         matrix_class.def_static("identity",(Matrix<X>(*)(SizeType,PR)) &Matrix<X>::identity);
@@ -414,9 +414,9 @@ Void define_matrix_class(pybind11::module& module, pybind11::class_<Matrix<X>>& 
     pybind11::implicitly_convertible<pybind11::list,Matrix<X>>();
 
 
-    if constexpr (HasGenericType<X>::value) {
+    if constexpr (HasGenericType<X>) {
         typedef typename X::GenericType Y; typedef typename X::PrecisionType PR;
-        if constexpr(IsConstructible<Matrix<X>,Matrix<Y>,PR>::value) {
+        if constexpr(Constructible<Matrix<X>,Matrix<Y>,PR>) {
             matrix_class.def(pybind11::init([](pybind11::list const& lst, PR pr){return Matrix<X>(matrix_from_python<Y>(lst),pr);}));
         }
     }

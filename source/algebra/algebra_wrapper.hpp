@@ -120,7 +120,7 @@ template<class A, class X> class ElementaryAlgebraWrapper
 
 template<class X> template<class A> A ElementaryAlgebra<X>::extract() const {
     ElementaryAlgebraInterface<X> const* p = this->_ptr.operator->();
-    if constexpr(IsBaseOf<ElementaryAlgebraInterface<X>,A>::value) {
+    if constexpr(BaseOf<ElementaryAlgebraInterface<X>,A>) {
         A const* ap=dynamic_cast<A const*>(p);
         if (!ap) { std::cerr << "*p=" << *p << "; " << typeid(p).name() << ", " << typeid(*p).name() << "\n"; }
         assert(ap); return *ap; }

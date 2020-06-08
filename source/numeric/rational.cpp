@@ -579,7 +579,7 @@ template<class RNDUP, class Y> inline auto _div(RNDUP up, Bounds<Y> const& y1, B
     }
     else {
         //ARIADNE_THROW(DivideByZeroException,"FloatBounds div(FloatBounds y1, FloatBounds y2)","y1="<<y1<<", y2="<<y2);
-        if constexpr(HasPrecisionType<Y>::value) {
+        if constexpr(HasPrecisionType<Y>) {
             auto pr=max(y1.precision(),y2.precision());
             return Bounds<Y>(-Y::inf(pr),+Y::inf(pr));
         } else {
@@ -606,7 +606,7 @@ template<class RNDUP, class Y> Bounds<Y> _rec(RNDUP up, Bounds<Y> const& y) {
     if(yl>0 || yu<0) {
         return Bounds<Y>(rec(down,yu),rec(up,yl));
     } else {
-        if constexpr(HasPrecisionType<Y>::value) {
+        if constexpr(HasPrecisionType<Y>) {
             auto pr=y.precision();
             return Bounds<Y>(-Y::inf(pr),+Y::inf(pr));
         } else {

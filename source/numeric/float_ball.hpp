@@ -55,7 +55,7 @@ template<class F, class FE> class Ball
     , public ProvideConvertedFieldOperations<Ball<F,FE>,Value<F>>
 {
     typedef ValidatedTag P; typedef typename F::PrecisionType PR; typedef typename FE::PrecisionType PRE;
-    static_assert(IsConstructible<PR,PRE>::value or IsDefaultConstructible<PRE>::value,"");
+    static_assert(Constructible<PR,PRE> or DefaultConstructible<PRE>);
   public:
     //! <p/>
     typedef P Paradigm;
