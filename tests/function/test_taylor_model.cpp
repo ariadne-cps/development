@@ -545,7 +545,7 @@ template<class F> Void TestTaylorModel<F>::test_refinement()
     // Test refinement with no roundoff errors
     ARIADNE_TEST_SAME(refinement(1-x*3/4+(x^3)*3+(x^4)*13/4+e/2,1+(x^2)/4+(x^3)*2+(x^4)*3+e),1-x*5/8+(x^3)*11/4+(x^4)*13/4+e/2);
 
-    if (IsSame<F,FloatDP>::value) {
+    if (Same<F,FloatDP>) {
         // Test refinement with roundoff errors
         ARIADNE_TEST_SAME(refinement(0.66666666666666663_pr*x+e/2,1.19999999999999996_pr*x+e/4),
                         1.05833333333333335_pr*x+0.108333333333333393_pr*e);

@@ -209,7 +209,7 @@ TestFloatBounds<PR>::test_correct_rounded_arithmetic()
 template<class PR> Void
 TestFloatBounds<PR>::test_accurate_rounded_arithmetic()
 {
-    if constexpr (IsSame<PR,DoublePrecision>::value) {
+    if constexpr (Same<PR,DoublePrecision>) {
         ARIADNE_TEST_SAME(FloatBoundsType(1,pr)/FloatBoundsType(3,pr),FloatBoundsType(0.33333333333333331_pr,0.33333333333333337_pr,pr));
         ARIADNE_TEST_SAME(FloatBoundsType(2,pr)/FloatBoundsType(5,pr),FloatBoundsType(0.39999999999999997_pr,0.40000000000000002_pr,pr));
 
@@ -462,7 +462,7 @@ template<class PR> Void TestFloatBounds<PR>::test_monotone_functions()
     FloatBoundsType sqr_sqrt_two=sqr(sqrt_two);
     ARIADNE_TEST_PRINT(sqrt_two);
     ARIADNE_TEST_PRINT(sqr_sqrt_two);
-    if (IsSame<PR,DoublePrecision>::value) {
+    if (Same<PR,DoublePrecision>) {
         ARIADNE_TEST_EQUAL(sqrt_two.lower_raw(),1.4142135623730949_pr);
         ARIADNE_TEST_EQUAL(sqrt_two.upper_raw(),1.4142135623730951_pr);
         ARIADNE_TEST_COMPARE(sqrt_two.lower_raw(),<=,1.4142135623730949_pr);
@@ -481,7 +481,7 @@ template<class PR> Void TestFloatBounds<PR>::test_monotone_functions()
     FloatBoundsType log_exp_one=log(exp_one);
     ARIADNE_TEST_PRINT(exp_one);
     ARIADNE_TEST_PRINT(log_exp_one);
-    if (IsSame<PR,DoublePrecision>::value) {
+    if (Same<PR,DoublePrecision>) {
         ARIADNE_TEST_COMPARE(exp_one.lower_raw(),<,2.71828182845905_pr);
         ARIADNE_TEST_COMPARE(exp_one.lower_raw(),>,2.71828182845903_pr);
         ARIADNE_TEST_COMPARE(exp_one.upper_raw(),>,2.71828182845904_pr);
@@ -493,7 +493,7 @@ template<class PR> Void TestFloatBounds<PR>::test_monotone_functions()
     ARIADNE_TEST_COMPARE(log_exp_one.lower_raw(),<,1.0_x);
     ARIADNE_TEST_COMPARE(log_exp_one.lower_raw(),<,1.0_x);
 
-    if (IsSame<PR,DoublePrecision>::value) {
+    if (Same<PR,DoublePrecision>) {
         FloatBoundsType e(2.7182818284590451_pr,2.7182818284590455_pr,pr);
         FloatBoundsType loge=log(e);
         ARIADNE_TEST_PRINT(e);

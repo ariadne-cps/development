@@ -777,7 +777,7 @@ TestFloat<PR>::test_arithmetic()
 
     ARIADNE_TEST_COMPARE(med(near,Float(2,precision),Float(3,precision)),==,2.5_x);
     ARIADNE_TEST_COMPARE(rad(up,Float(2,precision),Float(3,precision)),>=,0.5_x);
-    if constexpr (IsSame<Float,FloatDP>::value) {
+    if constexpr (Same<Float,FloatDP>) {
         ARIADNE_TEST_COMPARE(rad(up,Float(2,precision),Float(3,precision)),<=,0.5000000000000002);
     }
 

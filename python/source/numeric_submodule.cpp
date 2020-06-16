@@ -862,9 +862,9 @@ template<class PR, class PRE=PR> void export_float_ball(pymodule& module)
     float_ball_class.def("precision", &FloatBall<PR,PRE>::precision);
     float_ball_class.def("error_precision", &FloatBall<PR,PRE>::error_precision);
 
-    static_assert(IsSame<decltype(declval<FloatBall<PR,PRE>>()+declval<ValidatedNumber>()),FloatBall<PR,PRE>>::value);
-    static_assert(IsSame<decltype(add(declval<FloatBall<PR,PRE>>(),declval<ValidatedNumber>())),FloatBall<PR,PRE>>::value);
-    static_assert(IsSame<decltype(max(declval<FloatBall<PR,PRE>>(),declval<ValidatedNumber>())),FloatBall<PR,PRE>>::value);
+    static_assert(Same<decltype(declval<FloatBall<PR,PRE>>()+declval<ValidatedNumber>()),FloatBall<PR,PRE>>);
+    static_assert(Same<decltype(add(declval<FloatBall<PR,PRE>>(),declval<ValidatedNumber>())),FloatBall<PR,PRE>>);
+    static_assert(Same<decltype(max(declval<FloatBall<PR,PRE>>(),declval<ValidatedNumber>())),FloatBall<PR,PRE>>);
 
     define_mixed_arithmetic<FloatBall<PR,PRE>,ValidatedNumber>(module,float_ball_class);
     define_mixed_arithmetic<FloatBall<PR,PRE>,Int>(module,float_ball_class);
@@ -914,19 +914,19 @@ template<class PR> void export_float_bounds(pymodule& module)
     float_bounds_class.def("value", &FloatBounds<PR>::value);
     float_bounds_class.def("error", &FloatBounds<PR>::error);
 
-    static_assert(IsSame<decltype(declval<FloatBounds<PR>>()+declval<ValidatedNumber>()),FloatBounds<PR>>::value);
-    static_assert(IsSame<decltype(add(declval<FloatBounds<PR>>(),declval<ValidatedNumber>())),FloatBounds<PR>>::value);
-    static_assert(IsSame<decltype(max(declval<FloatBounds<PR>>(),declval<ValidatedNumber>())),FloatBounds<PR>>::value);
-    static_assert(IsSame<decltype(declval<ValidatedNumber>()+declval<FloatBounds<PR>>()),FloatBounds<PR>>::value);
-    static_assert(IsSame<decltype(add(declval<ValidatedNumber>(),declval<FloatBounds<PR>>())),FloatBounds<PR>>::value);
-    static_assert(IsSame<decltype(max(declval<ValidatedNumber>(),declval<FloatBounds<PR>>())),FloatBounds<PR>>::value);
+    static_assert(Same<decltype(declval<FloatBounds<PR>>()+declval<ValidatedNumber>()),FloatBounds<PR>>);
+    static_assert(Same<decltype(add(declval<FloatBounds<PR>>(),declval<ValidatedNumber>())),FloatBounds<PR>>);
+    static_assert(Same<decltype(max(declval<FloatBounds<PR>>(),declval<ValidatedNumber>())),FloatBounds<PR>>);
+    static_assert(Same<decltype(declval<ValidatedNumber>()+declval<FloatBounds<PR>>()),FloatBounds<PR>>);
+    static_assert(Same<decltype(add(declval<ValidatedNumber>(),declval<FloatBounds<PR>>())),FloatBounds<PR>>);
+    static_assert(Same<decltype(max(declval<ValidatedNumber>(),declval<FloatBounds<PR>>())),FloatBounds<PR>>);
 
-    static_assert(IsSame<decltype(declval<FloatBounds<PR>>()+declval<FloatBall<PR>>()),FloatBounds<PR>>::value);
-    static_assert(IsSame<decltype(add(declval<FloatBounds<PR>>(),declval<FloatBall<PR>>())),FloatBounds<PR>>::value);
-    static_assert(IsSame<decltype(max(declval<FloatBounds<PR>>(),declval<FloatBall<PR>>())),FloatBounds<PR>>::value);
-    static_assert(IsSame<decltype(declval<FloatBall<PR>>()+declval<FloatBounds<PR>>()),FloatBounds<PR>>::value);
-    static_assert(IsSame<decltype(add(declval<FloatBall<PR>>(),declval<FloatBounds<PR>>())),FloatBounds<PR>>::value);
-    static_assert(IsSame<decltype(max(declval<FloatBall<PR>>(),declval<FloatBounds<PR>>())),FloatBounds<PR>>::value);
+    static_assert(Same<decltype(declval<FloatBounds<PR>>()+declval<FloatBall<PR>>()),FloatBounds<PR>>);
+    static_assert(Same<decltype(add(declval<FloatBounds<PR>>(),declval<FloatBall<PR>>())),FloatBounds<PR>>);
+    static_assert(Same<decltype(max(declval<FloatBounds<PR>>(),declval<FloatBall<PR>>())),FloatBounds<PR>>);
+    static_assert(Same<decltype(declval<FloatBall<PR>>()+declval<FloatBounds<PR>>()),FloatBounds<PR>>);
+    static_assert(Same<decltype(add(declval<FloatBall<PR>>(),declval<FloatBounds<PR>>())),FloatBounds<PR>>);
+    static_assert(Same<decltype(max(declval<FloatBall<PR>>(),declval<FloatBounds<PR>>())),FloatBounds<PR>>);
 
     define_mixed_arithmetic<FloatBounds<PR>,ValidatedNumber>(module,float_bounds_class);
     define_mixed_arithmetic<FloatBounds<PR>,Int>(module,float_bounds_class);
