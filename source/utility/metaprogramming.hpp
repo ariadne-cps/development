@@ -146,9 +146,6 @@ template<class X1, class X2=X1> using InplaceProductType = RemoveReference<declt
 template<class X1, class X2=X1> using InplaceQuotientType = RemoveReference<decltype(declval<X1&>()/=declval<X2>())>;
 
 
-template<class SIG> using ResultOf = typename std::result_of<SIG>::type;
-template<class F, class... AS> using InvokeResult = typename std::invoke_result<F,AS...>::type;
-
 template<class F, class... AS> struct IsInvocable;
 template<class R, class F, class... AS> struct IsInvocableReturning;
 

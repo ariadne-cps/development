@@ -437,7 +437,7 @@ template<class M> class ScaledFunctionPatch
         return partial_evaluate(f,k,NumericType(c,f.precision())); }
     friend ArithmeticType<CoefficientType,NumericType> evaluate(const ScaledFunctionPatch<M>& f, const Vector<NumericType>& x) {
         // TODO: Simplify
-        if constexpr (IsInterval<CoefficientType>::value) {
+        if constexpr (AnInterval<CoefficientType>) {
             for(SizeType i=0; i!=x.size(); ++i) {
                 if (!definitely(contains(f.domain()[i],cast_singleton(x[i])))) {
                     ARIADNE_THROW(DomainException,"evaluate(f,x) with f="<<f<<", x="<<x,"x is not a subset of f.domain()="<<f.domain()); } }

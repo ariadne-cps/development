@@ -215,6 +215,7 @@ template<class I, class X> class Expansion {
     friend Expansion<MultiIndex,CoefficientType> embed(SizeType as1, Expansion<IndexType,CoefficientType> const& e2, SizeType as3) { return _embed(as1,e2,as3); }
   private:
     static Expansion<MultiIndex,CoefficientType> _embed(SizeType as1, Expansion<IndexType,CoefficientType> const& e2, SizeType as3);
+    template<class Y, class... PRS> Void _fill(Expansion<I,Y> const& other, PRS... prs);
 };
 
 template<class I, class X, class CMP> class SortedExpansion : public Expansion<I,X> {
@@ -271,6 +272,16 @@ Expansion<I,X>::Expansion(InitializerList<Pair<IndexInitializerType,ExactDouble>
 }
 
 
+template<class I, class X> template<class Y, class... PRS> requires Constructible<X,Y,PRS...>
+Expansion<I,X>::Expansion(Expansion<I,Y> const& other, PRS... prs)
+    : Expansion(other.argument_size(),X(other.zero_coefficient(),prs...))
+{
+    this->_fill(other,prs...);
+}
+
+
 } // namespace Ariadne
+
+#include "expansion.inl.hpp"
 
 #endif

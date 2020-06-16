@@ -129,7 +129,7 @@ class Expression
     //! \brief A write for Expression objects using infix notation.
     friend class InfixExpressionWriter<T>;
   public:
-    template<class X> requires AreSame<T,X,Real> operator ElementaryAlgebra<X>() const;
+    operator ElementaryAlgebra<Real>() const;
   public:
     //! \brief The variables needed to compute the expression.
     Set<UntypedVariable> arguments() const;

@@ -60,7 +60,7 @@ template<class FM, class P, class ARG, class PR, class PRE> class FunctionModelM
     , public ScalarFunctionMixin<FM,P,ARG>
     , public ElementaryAlgebraMixin<FM,CanonicalNumericType<P,PR,PRE>>
 {
-    static_assert(IsSame<ARG,RealScalar>::value or IsSame<ARG,RealVector>::value);
+    static_assert(Same<ARG,RealScalar> or Same<ARG,RealVector>);
     using RES = RealScalar; using SIG=RES(ARG);
     using C=DomainOfType<RES>; using D=DomainOfType<ARG>;
     using X = typename FunctionModelInterface<P,SIG,PR,PRE>::NumericType;

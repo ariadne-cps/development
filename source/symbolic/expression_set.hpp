@@ -120,7 +120,7 @@ template<class UB> class VariableInterval {
 //! \ingroup ExpressionSetSubModule
 //! \brief An interval range for a real variable.
 template<class T> template<class XL, class XU> inline VariableInterval<XU> Variable<T>::in(const XL& l, const XU& u) {
-    //static_assert(IsSame<XL,Real>::value,"Can only make box in Real variables.");
+    //static_assert(Same<XL,Real>,"Can only make box in Real variables.");
     ARIADNE_FAIL_MESSAGE("Can't create interval in non-real variable "<<*this);
     assert(false);
 }
@@ -142,7 +142,7 @@ template<class UB> class VariableLowerInterval
     LB lower_bound() const { return _lower; }
     const RealVariable& variable() const { return _variable; }
     operator Expression<Kleenean>() const {
-        static_assert(IsSame<UB,Real>::value,""); return ( Real(this->_lower) <= RealExpression(this->_variable) ); };
+        static_assert(Same<UB,Real>); return ( Real(this->_lower) <= RealExpression(this->_variable) ); };
     friend OutputStream& operator<<(OutputStream& os, const VariableLowerInterval<UB>& elivl) {
         return os << elivl._lower << "<=" << elivl._variable; }
 };
@@ -158,7 +158,7 @@ template<class UB> class VariableUpperInterval
     const RealVariable& variable() const { return _variable; }
     UB upper_bound() const { return _upper; }
     operator Expression<Kleenean>() const {
-        static_assert(IsSame<UB,Real>::value,""); return ( RealExpression(this->_variable) <= Real(this->_upper) ); }
+        static_assert(Same<UB,Real>); return ( RealExpression(this->_variable) <= Real(this->_upper) ); }
     friend OutputStream& operator<<(OutputStream& os, const VariableUpperInterval<UB>& euivl) {
         return os << euivl._variable << "<=" << euivl._upper; }
 };
@@ -272,7 +272,7 @@ template<class IVL> VariablesBox<IVL>::VariablesBox(const RealSpace& spc, const 
 }
 
 template<class T> template<class IVL> inline VariablesBox<IVL> Variables<T>::in(const List<IVL>& bx) const {
-    static_assert(IsSame<T,Real>::value,"Can only make box in Real variables.");
+    static_assert(Same<T,Real>,"Can only make box in Real variables.");
     assert(false);
 }
 

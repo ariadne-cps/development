@@ -45,8 +45,7 @@
 
 namespace Ariadne {
 
-template<> template<>
-Expression<Real>::operator ElementaryAlgebra<Real>() const {
+template<> Expression<Real>::operator ElementaryAlgebra<Real>() const {
     return ElementaryAlgebra<Real>(new ElementaryAlgebraWrapper<Expression<Real>,Real>(*this));
 }
 

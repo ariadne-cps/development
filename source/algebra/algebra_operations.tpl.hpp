@@ -30,8 +30,8 @@
 
 namespace Ariadne {
 
-template<class A> class IsNormedAlgebra : False { };
-template<class A> class IsGradedAlgebra : False { };
+template<class A> struct IsNormedAlgebra : False { };
+template<class A> struct IsGradedAlgebra : False { };
 
 template<class A> concept ANormedAlgebra = IsNormedAlgebra<A>::value;
 template<class A> concept AGradedAlgebra = IsNormedAlgebra<A>::value;

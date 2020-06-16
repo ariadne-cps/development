@@ -92,7 +92,7 @@ class Array {
     Array(InitializerList<ExactDouble> lst, PR pr) : _size(lst.size()), _ptr(uninitialized_new(_size)) {
         this->_uninitialized_fill(lst.begin(),pr); }
     //! \brief Generate from a function (object) \a g of type \a G mapping an index to a value.
-    template<class G> requires IsInvocableReturning<ValueType,G,SizeType>::value
+    template<class G> requires InvocableReturning<ValueType,G,SizeType>
     Array(SizeType n, G const& g) : _size(n), _ptr(uninitialized_new(_size)) {
         this->_uninitialized_generate(g); }
 
@@ -141,7 +141,7 @@ class Array {
     SizeType max_size() const { return (SizeType) (-1); }
     //! \brief Resizes the Array to hold \a n elements. If \a n is larger than the current size, the extra elements are default initialised.
     void resize(SizeType n) {
-        static_assert(IsDefaultConstructible<T>::value);
+        static_assert(DefaultConstructible<T>);
         if(size()!=n) {
             pointer _new_ptr=uninitialized_new(n);
             for(SizeType i=0; i!=n; ++i) { if(i<_size) { new (_new_ptr+i) T(_ptr[i]); } else { new (_new_ptr+i) T(); } }

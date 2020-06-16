@@ -178,14 +178,14 @@ template<class T> const T& Expression<T>::val() const {
 template<class T> const Identifier& Expression<T>::var() const {
     return std::get<VariableExpressionNode<T>>(node_ref()).name(); }
 template<class T> const Expression<T>& Expression<T>::arg() const {
-    if constexpr (IsSame<T,Real>::value) { if (auto* gn = std::get_if<GradedExpressionNode<T>>(&node_ref())) { return gn->_arg; } }
-    if constexpr (not IsSame<T,String>::value) { return std::get<UnaryExpressionNode<T>>(node_ref())._arg; } else { abort(); } }
+    if constexpr (Same<T,Real>) { if (auto* gn = std::get_if<GradedExpressionNode<T>>(&node_ref())) { return gn->_arg; } }
+    if constexpr (not Same<T,String>) { return std::get<UnaryExpressionNode<T>>(node_ref())._arg; } else { abort(); } }
 template<class T> const Int& Expression<T>::num() const {
-    if constexpr (IsSame<T,Real>::value) { return std::get<GradedExpressionNode<T>>(node_ref())._num; } else { abort(); } }
+    if constexpr (Same<T,Real>) { return std::get<GradedExpressionNode<T>>(node_ref())._num; } else { abort(); } }
 template<class T> const Expression<T>& Expression<T>::arg1() const {
-    if constexpr (not IsSame<T,String>::value) { return std::get<BinaryExpressionNode<T>>(node_ref())._arg1; } else { abort(); } }
+    if constexpr (not Same<T,String>) { return std::get<BinaryExpressionNode<T>>(node_ref())._arg1; } else { abort(); } }
 template<class T> const Expression<T>& Expression<T>::arg2() const {
-    if constexpr (not IsSame<T,String>::value) { return std::get<BinaryExpressionNode<T>>(node_ref())._arg2; } else { abort(); } }
+    if constexpr (not Same<T,String>) { return std::get<BinaryExpressionNode<T>>(node_ref())._arg2; } else { abort(); } }
 template<class R> template<class A> const Expression<A>& Expression<R>::cmp1(A*) const {
     return std::get<Symbolic<OperatorType<R(A,A)>,Expression<A>,Expression<A>>>(node_ref())._arg1; }
 template<class R> template<class A> const Expression<A>& Expression<R>::cmp2(A*) const {

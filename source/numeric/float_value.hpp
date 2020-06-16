@@ -302,7 +302,7 @@ template<class F> class Positive<Value<F>> : public Value<F> {
 template<class F> inline PositiveValue<F> cast_positive(Value<F> const& x) {
     return PositiveValue<F>(x); }
 
-static_assert(IsSame<decltype(declval<FloatDPValue>() < declval<Rational>()),Boolean>::value,"");
+static_assert(Same<decltype(declval<FloatDPValue>() < declval<Rational>()),Boolean>);
 
 extern template Ariadne::Nat Ariadne::Value<Ariadne::FloatDP>::output_places;
 extern template Ariadne::Nat Ariadne::Value<Ariadne::FloatMP>::output_places;

@@ -224,7 +224,7 @@ template<class M> ScaledFunctionPatch<M>::ScaledFunctionPatch(const BoxDomainTyp
 template<class M> ScaledFunctionPatch<M>::ScaledFunctionPatch(const BoxDomainType& d, const ScalarFunctionType<M>& f, PropertiesType prp)
     : _domain(d), _model(f.argument_size(),prp)
 {
-    if constexpr (IsInterval<typename M::NumericType>::value) {
+    if constexpr (AnInterval<typename M::NumericType>) {
         ARIADNE_ERROR("Cannot convert multivalued IntervalTaylorFunctionModel "<<*this<<" to a single-valued function."); abort();
     } else {
         ARIADNE_ASSERT_MSG(d.size()==f.argument_size(),"d="<<d<<" f="<<f);
@@ -416,7 +416,7 @@ template<class M> auto ScaledFunctionPatch<M>::polynomial() const -> Multivariat
 
 template<class M> ScalarFunctionType<M> ScaledFunctionPatch<M>::function() const
 {
-    if constexpr (IsInterval<CoefficientType>::value) {
+    if constexpr (AnInterval<CoefficientType>) {
         ARIADNE_ERROR("IntervalTaylorModel object "<<*this<<" cannot be converted to a function.");
         abort();
     } else {
@@ -471,7 +471,7 @@ template<class M> auto ScaledFunctionPatch<M>::operator()(const Vector<FloatValu
 
 template<class M> auto ScaledFunctionPatch<M>::operator()(const Vector<ValidatedNumber>& x) const -> ValidatedNumber
 {
-    if constexpr (IsInterval<CoefficientType>::value) {
+    if constexpr (AnInterval<CoefficientType>) {
         ARIADNE_ERROR("Cannot evaluate an IntervalTaylorModel on a generic Number");
         abort();
     } else {
@@ -504,7 +504,7 @@ template<class M> OutputStream& write_polynomial(OutputStream& os, ScaledFunctio
     typedef typename ScaledFunctionPatch<M>::PrecisionType PR;
 
     os << "{";
-    if constexpr (IsInterval<CoefficientType>::value) {
+    if constexpr (AnInterval<CoefficientType>) {
         os << fp.polynomial();
     } else {
         os << MultivariatePolynomial<FloatApproximation<PR>>(fp.polynomial());
@@ -802,7 +802,7 @@ template<class M> auto VectorScaledFunctionPatch<M>::error() const -> ErrorType 
 
 template<class M> VectorFunctionType<M> VectorScaledFunctionPatch<M>::function() const
 {
-    if constexpr (IsInterval<CoefficientType>::value) {
+    if constexpr (AnInterval<CoefficientType>) {
         ARIADNE_ERROR("Cannot convert multivalued IntervalTaylorFunctionModel "<<*this<<" to a single-valued function."); abort();
     } else {
         return VectorFunctionType<M>(new VectorScaledFunctionPatch<M>(*this));

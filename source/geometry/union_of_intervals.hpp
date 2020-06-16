@@ -63,8 +63,8 @@ template<class U> class UnionOfIntervals {
             UnionOfIntervals(List<Interval<Dyadic>>(ivls),prs...) { }
 
     UnionOfIntervals<U> create(IntervalDomainType bs) const {
-        static_assert(IsConstructible<Interval<U>,IntervalDomainType>::value or IsAssignable<Interval<U>,DyadicInterval>::value);
-        if constexpr (IsConstructible<Interval<U>,IntervalDomainType>::value) {
+        static_assert(Constructible<Interval<U>,IntervalDomainType> or Assignable<Interval<U>,DyadicInterval>);
+        if constexpr (Constructible<Interval<U>,IntervalDomainType>) {
             return UnionOfIntervals<U>({Interval<U>(bs)});
         } else {
             assert(this->_data.size()!=0);

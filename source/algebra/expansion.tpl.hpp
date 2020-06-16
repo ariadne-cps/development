@@ -475,8 +475,8 @@ template<class I, class X> Expansion<MultiIndex,X> Expansion<I,X>::_embed(SizeTy
     MultiIndex new_index(new_size);
     for(typename Expansion<I,X>::ConstIterator iter=x.begin(); iter!=x.end(); ++iter) {
         old_index=iter->index();
-        static_assert(IsSame<I,MultiIndex>::value or IsSame<I,UniIndex>::value);
-        if constexpr (IsSame<I,MultiIndex>::value) {
+        static_assert(Same<I,MultiIndex> or Same<I,UniIndex>);
+        if constexpr (Same<I,MultiIndex>) {
             for(SizeType j=0; j!=old_size; ++j) { new_index[j+before_size]=old_index[j]; }
         } else {
             new_index[before_size]=old_index;

@@ -165,7 +165,7 @@ template<class P1, class P2> concept WeakerThan = IsWeaker<P1,P2>::value;
 template<class P1, class P2> concept StrongerThan = IsWeaker<P2,P1>::value;
 
 
-template<class T> using IsParadigm = IsConvertible<T,ApproximateTag>;
+template<class T> concept IsParadigm = Convertible<T,ApproximateTag>;
 
 } // namespace Ariadne
 

@@ -74,7 +74,7 @@ template<class V> concept AMatrix = IsMatrix<V>::value;
 template<class V> concept AVectorExpression = IsVectorExpression<V>::value;
 template<class V> concept AMatrixExpression = IsMatrixExpression<V>::value;
 
-template<class M, class X> concept AMatrixExpressionOver = IsMatrixExpression<M>::value and IsConvertible<typename M::ScalarType,X>::value;
+template<class M, class X> concept AMatrixExpressionOver = IsMatrixExpression<M>::value and Convertible<typename M::ScalarType,X>;
 
 template<class X> struct HasCreateZero {
     template<class XX, class=decltype(std::declval<XX>().create_zero())> static std::true_type test(int);
@@ -102,10 +102,10 @@ template<class T> inline T zero_element(Scalar<T> const& s) { return create_zero
 template<class PR> PR make_default_precision();
 
 template<class X> X make_zero() {
-    if constexpr (IsDefaultConstructible<X>::value) { return X(); }
-    else if constexpr (HasPrecisionType<X>::value) {
+    if constexpr (DefaultConstructible<X>) { return X(); }
+    else if constexpr (HasPrecisionType<X>) {
         typedef typename X::PrecisionType PR;
-        if constexpr (IsConstructible<X,PR>::value) {
+        if constexpr (Constructible<X,PR>) {
             PR pr=make_default_precision<PR>(); return X(pr);
         } else {
             abort();

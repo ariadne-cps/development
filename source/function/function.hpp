@@ -175,7 +175,7 @@ class Function
     , public FunctionFacade<P,SIG>
     , public DispatchFunctionOperations<P,SIG>
 {
-    static_assert(IsStronger<P,ApproximateTag>::value,"P must be an information level/paradigm.");
+    static_assert(IsParadigm<P>,"P must be an information level/paradigm.");
     using Y=Number<P>;
     using D=typename SignatureTraits<SIG>::DomainType;
     using C=typename SignatureTraits<SIG>::CodomainType;

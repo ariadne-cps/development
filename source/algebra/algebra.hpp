@@ -133,7 +133,7 @@ template<class X> ElementaryAlgebra<X>::ElementaryAlgebra(const Algebra<X>& a)
 template<class X> class NormedAlgebra
     : public Handle<NormedAlgebraInterface<X>>
 {
-    static_assert(not IsSame<X,Real>::value,"");
+    static_assert(not Same<X,Real>);
   public:
     typedef NormedAlgebraInterface<X> Interface;
     typedef X ScalarType;

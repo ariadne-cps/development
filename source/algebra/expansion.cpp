@@ -82,6 +82,10 @@ namespace Ariadne {
     template class SortedExpansion<MultiIndex,FloatMPUpperInterval,GradedIndexLess>;
     template class SortedExpansion<MultiIndex,FloatMPUpperInterval,ReverseLexicographicIndexLess>;
 
-    template Expansion<MultiIndex,Interval<FloatDPUpperBound>>::Expansion(Expansion<MultiIndex,FloatDPBounds> const&);
-    template Expansion<MultiIndex,FloatDPApproximation>::Expansion(Expansion<MultiIndex,FloatDPBounds> const&);
+    // FIXME: Put in accessible header file
+    template Void Expansion<MultiIndex,FloatDPUpperInterval>::_fill(Expansion<MultiIndex,FloatDPBounds> const&);
+    template Void Expansion<MultiIndex,FloatDPApproximation>::_fill(Expansion<MultiIndex,FloatDPBounds> const&);
+
+    template Void Expansion<MultiIndex,FloatMPUpperInterval>::_fill(Expansion<MultiIndex,FloatMPBounds> const&);
+    template Void Expansion<MultiIndex,FloatMPApproximation>::_fill(Expansion<MultiIndex,FloatMPBounds> const&);
 }

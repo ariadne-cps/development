@@ -36,6 +36,7 @@ template<class U> class VariableInterval;
 template<class IVL> struct IsInterval : False { };
 template<class UB> struct IsInterval<Interval<UB>> : True { };
 
+template<class IVL> concept AnInterval = IsInterval<IVL>::value;
 
 //!@{
 //! \relates Interval

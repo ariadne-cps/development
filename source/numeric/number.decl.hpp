@@ -75,8 +75,7 @@ template<class X> struct IsGenericScalar { static const bool value = (not IsConc
 template<class X> concept GenericScalar = IsGenericScalar<X>::value;
 template<class X> concept ConcreteScalar = IsConcreteScalar<X>::value;
 
-template<class R> struct IsConcreteNumericType : IsConvertible<R,Real> { };
-template<class X> concept ConcreteNumber = IsConcreteNumericType<X>::value;
+template<class X> concept ConcreteNumber = Convertible<X,Real>;
 
 
 typedef uint Nat;
@@ -133,7 +132,7 @@ template<> struct IsNumericType<Real>;
 
 template<class Y> struct IsGenericNumericType;
 
-template<class Y> struct IsGenericNumericType : IsBuiltinIntegral<Y> { };
+template<class Y> struct IsGenericNumericType : std::is_integral<Y> { };
 template<> struct IsGenericNumericType<ExactDouble> : True { };
 template<> struct IsGenericNumericType<Integer> : True { };
 template<> struct IsGenericNumericType<Dyadic> : True { };

@@ -122,11 +122,11 @@ template<class X> struct HasOperatorNumber<X,Void> {
 
 
 template<class X, class P> concept ConvertibleBuiltinFloatingPointToNumber
-    = And<IsSame<P,ApproximateTag>,IsBuiltinFloatingPoint<X>>::value;
+    = Same<P,ApproximateTag> and BuiltinFloatingPoint<X>;
 template<class X, class P> concept ConvertibleViaRealToNumber
-    = And<IsWeaker<P,ParadigmTag<X>>,IsConvertible<X,Real>>::value;
+    = WeakerThan<P,ParadigmTag<X>> and Convertible<X,Real>;
 template<class X, class P> concept ConvertibleViaNumberToNumber
-    = And<IsWeaker<P,ParadigmTag<X>>,Not<IsConvertible<X,Real>>,IsConvertible<X,Number<ParadigmTag<X>>>>::value;
+    = WeakerThan<P,ParadigmTag<X>> and (not Convertible<X,Real>) and Convertible<X,Number<ParadigmTag<X>>>;
 
 //! \ingroup NumericModule
 //! \brief Generic numbers with computational paradigm \a P,  which may be %EffectiveTag, %ValidatedTag, %UpperTag, %LowerTag or %ApproximateTag.
@@ -134,8 +134,8 @@ template<class P> class Number
     : public Handle<NumberInterface>
     , public DeclareNumberOperators
 {
-    static_assert(IsParadigm<P>::value,"P must be a paradigm");
-    static_assert(IsSame<P,ExactTag>::value or IsSame<P,EffectiveTag>::value or IsSame<P,ValidatedTag>::value or IsSame<P,ApproximateTag>::value);
+    static_assert(IsParadigm<P>,"P must be a paradigm");
+    static_assert(Same<P,ExactTag> or Same<P,EffectiveTag> or Same<P,ValidatedTag> or Same<P,ApproximateTag>);
 
     template<class PP> friend class Number;
     template<class PP> friend class LowerNumber;
@@ -143,7 +143,7 @@ template<class P> class Number
 
     template<class PR> using ResultFloatType = FloatType<Weaker<P,ValidatedTag>,PR>;
 
-    template<class X> using IsGettableAs = And<IsNumericType<X>,IsWeaker<typename X::Paradigm,P>,Not<IsSame<typename X::Paradigm,ExactTag>>>;
+    template<class X> static const bool IsGettableAs = IsNumericType<X>::value and IsWeaker<typename X::Paradigm,P>::value and (not Same<typename X::Paradigm,ExactTag>);
   public:
     typedef NumberInterface Interface;
     typedef P Paradigm;
@@ -179,7 +179,7 @@ template<class P> class Number
     ResultFloatType<MultiplePrecision> get(MultiplePrecision const& prec) const { return this->ref()._get(P(),prec); }
 
     //! \brief Get the value of the number as a floating-point ball with the given precision and error precision.
-    template<class PR, class PRE, EnableIf<And<IsPrecision<PR>,IsPrecision<PRE>,IsWeaker<ValidatedTag,P>>> =dummy>
+    template<class PR, class PRE, class=EnableIf<And<IsPrecision<PR>,IsPrecision<PRE>,IsWeaker<ValidatedTag,P>>>>
     FloatBall<PR,PRE> get(PR const& prec, PRE const& errprec) const { return this->ref()._get(P(),prec,errprec); }
 
     //! \brief Try to dynamic_cast the object to concrete type \a X.

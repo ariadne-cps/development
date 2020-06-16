@@ -360,14 +360,14 @@ Vector<Formula<Real>> make_formula(const EffectiveVectorMultivariateFunction& f)
 //------------------------ Vector Function ----------------------------------//
 
 template<class P, class SIG> auto Function<P,SIG>::get(SizeType i) const -> ScalarFunction<P,ARG> {
-    ARIADNE_ASSERT((IsSame<ResultSizeType,SizeType>::value));
+    ARIADNE_ASSERT((Same<ResultSizeType,SizeType>));
     const VectorOfFunctionInterface<P,ARG>* vfp = dynamic_cast<const VectorOfFunctionInterface<P,ARG>*>(this->raw_pointer());
     if(!vfp) { std::cerr<<"\nCannot get element of "<<*this<<"\n  of type "<<typeid(this->raw_pointer()).name()<<":"<<typeid(this->reference()).name()<<"\n\n"; }
     return ScalarFunction<P,ARG>(SharedPointer<ScalarFunctionInterface<P,ARG>>(vfp->_get(i)));
 }
 
 template<class P, class SIG> Void Function<P,SIG>::set(SizeType i, ScalarFunction<P,ARG> sf) {
-    ARIADNE_ASSERT((IsSame<ResultSizeType,SizeType>::value));
+    ARIADNE_ASSERT((Same<ResultSizeType,SizeType>));
     const VectorOfScalarFunction<P,ARG>& cvf = dynamic_cast<const VectorOfScalarFunction<P,ARG>&>(this->_ptr.operator*());
     VectorOfScalarFunction<P,ARG>& vf = const_cast<VectorOfScalarFunction<P,ARG>&>(cvf);
     vf[i]=sf;

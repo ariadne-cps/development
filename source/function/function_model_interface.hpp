@@ -49,7 +49,7 @@ template<class P, class SIG, class PR, class PRE> class FunctionModelAlgebraInte
 template<class P, class ARG, class PR, class PRE> class FunctionModelAlgebraInterface<P,RealScalar(ARG),PR,PRE>
     : public virtual ElementaryAlgebraInterface<CanonicalNumericType<P,PR,PRE>>
 {
-    static_assert(IsSame<ARG,RealScalar>::value or IsSame<ARG,RealVector>::value);
+    static_assert(Same<ARG,RealScalar> or Same<ARG,RealVector>);
     typedef RealScalar RES; typedef RES SIG(ARG);
     typedef DomainOfType<ARG> D; typedef DomainOfType<RES> C;
     typedef RawFloat<PR> F;
@@ -86,11 +86,11 @@ template<class P, class SIG, class PR, class PRE> class FunctionModelInterface
     , public virtual FunctionModelAlgebraInterface<P,SIG,PR,PRE>
 {
     using RES=typename SignatureTraits<SIG>::ResultKind; using ARG=typename SignatureTraits<SIG>::ArgumentKind;
-    static_assert(IsSame<ARG,RealScalar>::value or IsSame<ARG,RealVector>::value,"");
-    static_assert(IsSame<RES,RealScalar>::value or IsSame<RES,RealVector>::value,"");
+    static_assert(Same<ARG,RealScalar> or Same<ARG,RealVector>,"");
+    static_assert(Same<RES,RealScalar> or Same<RES,RealVector>,"");
     using C=DomainOfType<RES>; using D=DomainOfType<ARG>;
-    static_assert(IsSame<D,IntervalDomainType>::value or IsSame<D,BoxDomainType>::value,"");
-    static_assert(IsSame<C,IntervalDomainType>::value or IsSame<C,BoxDomainType>::value,"");
+    static_assert(Same<D,IntervalDomainType> or Same<D,BoxDomainType>,"");
+    static_assert(Same<C,IntervalDomainType> or Same<C,BoxDomainType>,"");
 
     template<class X> using Argument = typename FunctionInterface<P,SIG>::template Argument<X>;
     template<class X> using Result = typename FunctionInterface<P,SIG>::template Result<X>;

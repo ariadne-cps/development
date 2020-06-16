@@ -308,7 +308,7 @@ struct UnaryFunction
 
     virtual ScalarFunction<P,ARGS...> derivative(ArgumentIndexType j) const {
         return _op.accept([&](auto op){
-            if constexpr(IsSame<decltype(op),Abs>::value) { assert(false); return _arg.derivative(j); }
+            if constexpr(Same<decltype(op),Abs>) { assert(false); return _arg.derivative(j); }
             else { return op.derivative(this->_arg,_arg.derivative(j)); } } );
     }
 
@@ -361,7 +361,7 @@ struct BinaryFunction
 
     virtual ScalarFunction<P,ARGS...> derivative(ElementIndexType<D> j) const {
         return _op.accept([&](auto op){
-            if constexpr(IsSame<decltype(op),Max>::value || IsSame<decltype(op),Min>::value) { assert(false); return _arg1.derivative(j); }
+            if constexpr(Same<decltype(op),Max> || Same<decltype(op),Min>) { assert(false); return _arg1.derivative(j); }
             else { return op.derivative(_arg1,_arg1.derivative(j),_arg2,_arg2.derivative(j)); } }); }
 
     virtual OutputStream& repr(OutputStream& os) const {
@@ -655,7 +655,7 @@ struct JoinedFunction
     using RES1=ElementKind<C2>;
     using RES2=ElementKind<C1>;
 
-    static_assert(IsSame<typename VectorFunctionMixin<JoinedFunction<P,D,C1,C2>,P,ARG>::CodomainType,CartesianProductType<C1,C2>>::value,"");
+    static_assert(Same<typename VectorFunctionMixin<JoinedFunction<P,D,C1,C2>,P,ARG>::CodomainType,CartesianProductType<C1,C2>>);
 
     typedef CartesianProductType<C1,C2> C;
 

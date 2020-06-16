@@ -91,7 +91,7 @@ class Differential
     , public DispatchLatticeAlgebraOperations<Differential<X>,X>
     , public ProvideConcreteGenericArithmeticOperations<Differential<X>>
 {
-    static_assert(!IsSame<X,FloatDPValue>::value,"");
+    static_assert(!Same<X,FloatDPValue>);
     typedef Differential<X> SelfType;
 
     static const DegreeType MAX_DEGREE=65535;

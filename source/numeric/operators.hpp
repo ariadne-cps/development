@@ -439,7 +439,7 @@ template<class... OPS> class OperatorVariant
     : public CodedVariant<OperatorCode, OPS...>
 {
   public:
-    template<class OP> requires IsOneOf<OP,OPS...>::value OperatorVariant(OP op) : CodedVariant<OperatorCode,OPS...>(op) { }
+    template<class OP> requires OneOf<OP,OPS...> OperatorVariant(OP op) : CodedVariant<OperatorCode,OPS...>(op) { }
     explicit OperatorVariant(OperatorCode code) : CodedVariant<OperatorCode,OPS...>(code) { }
     OperatorKind kind() const {
         return this->accept([](auto op){return op.kind();}); }

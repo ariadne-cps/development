@@ -147,7 +147,7 @@ class FloatDPValue
   public:
     typedef ExactTag Paradigm;
     FloatDPValue();
-    template<class N, typename std::enable_if<std::is_integral<N>::value>::type> FloatDPValue(N);
+    template<BuiltinIntegral N> FloatDPValue(N);
     FloatDPValue(Nat);
     FloatDPValue(Int);
     explicit FloatDPValue(double);
@@ -205,7 +205,7 @@ class FloatDPError : public NumberObject<FloatDPUpperBound> {
 
 FloatDPError max(FloatDPError x1, FloatDPError x2);
 
-template<class M, typename std::enable_if<std::is_unsigned<M>::value,Int>::type=0> inline FloatDPError operator/(FloatDPError x1, M m2) {
+template<BuiltinUnsignedIntegral M> inline FloatDPError operator/(FloatDPError x1, M m2) {
     return FloatDPError(x1.get_d()/m2); }
 
 class ValidFloatDP : public NumberObject<ValidFloatDP> {
@@ -215,8 +215,7 @@ class ValidFloatDP : public NumberObject<ValidFloatDP> {
   public:
     typedef ValidatedTag Paradigm;
     ValidFloatDP();
-    template<class N, typename std::enable_if<std::is_integral<N>::value,Int>::type = 0>
-        ValidFloatDP(N n);
+    template<BuiltinIntegral N> ValidFloatDP(N n);
     explicit ValidFloatDP(double);
     explicit ValidFloatDP(double,double);
     ValidFloatDP(FloatDPValue, FloatDPError);
@@ -242,7 +241,7 @@ ValidFloatDP max(ValidFloatDP x1, ValidFloatDP x2);
 
 Bool same(ValidFloatDP x1, ValidFloatDP x2);
 
-template<class N, typename std::enable_if<std::is_integral<N>::value,Int>::type> inline
+template<BuiltinIntegral N> inline
 ValidFloatDP::ValidFloatDP(N n) : ValidFloatDP(double(n),ExactTag())
 { }
 

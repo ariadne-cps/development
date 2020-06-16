@@ -66,7 +66,7 @@ template<class I, class X> Polynomial<I,X> Polynomial<I,X>::_coordinate(Argument
 
 template<class I, class X> auto Polynomial<I,X>::coordinates(ArgumentSizeType as, X const& z) -> Argument<Polynomial<I,X>> {
     Polynomial<I,X> zero(as,z);
-    if constexpr (IsSame<I,MultiIndex>::value) {
+    if constexpr (Same<I,MultiIndex>) {
         Vector<Polynomial<I,X>> r(as,zero); for(SizeType i=0; i!=as; ++i) { r[i]=coordinate(as,i,z); } return r;
     } else {
          return coordinate(as,IndexZero(),z);
@@ -79,8 +79,8 @@ template<class I, class X> auto Polynomial<I,X>::variables(ArgumentSizeType as, 
 
 template<class I, class X> Polynomial<I,X>& Polynomial<I,X>::operator=(const X& x) {
     this->_expansion.clear();
-    if constexpr (IsSame<I,MultiIndex>::value) { this->_expansion.append(MultiIndex(this->argument_size()),x); }
-    if constexpr (IsSame<I,DegreeType>::value) { this->_expansion.append(DegreeType(0u),x); }
+    if constexpr (Same<I,MultiIndex>) { this->_expansion.append(MultiIndex(this->argument_size()),x); }
+    if constexpr (Same<I,DegreeType>) { this->_expansion.append(DegreeType(0u),x); }
     return *this;
 }
 
@@ -91,8 +91,8 @@ template<class I, class X> SizeType Polynomial<I,X>::number_of_terms() const { r
 
 template<class I, class X> DegreeType Polynomial<I,X>::degree() const {
     DegreeType deg=0u; for(auto iter=this->_expansion.begin(); iter!=this->_expansion.end(); ++iter) {
-        if constexpr (IsSame<I,MultiIndex>::value) { deg=std::max(deg,iter->index().degree()); }
-        else if constexpr (IsSame<I,DegreeType>::value) { deg=std::max(deg,iter->index()); }
+        if constexpr (Same<I,MultiIndex>) { deg=std::max(deg,iter->index().degree()); }
+        else if constexpr (Same<I,DegreeType>) { deg=std::max(deg,iter->index()); }
     }
     return deg;
 }
@@ -369,7 +369,7 @@ template<class I, class X>
 Polynomial<I,X>
 Polynomial<I,X>::_partial_evaluate(const Polynomial<I,X>& x, SizeType k, const X& c)
 {
-    if constexpr (IsSame<I,MultiIndex>::value) {
+    if constexpr (Same<I,MultiIndex>) {
         Polynomial<I,X> r(x.argument_size()-1u,x.zero_coefficient());
         MultiIndex ra(r.argument_size());
         if(is_null(c)) {
