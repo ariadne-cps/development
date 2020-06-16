@@ -294,7 +294,7 @@ class Differential
     OutputStream& _write(OutputStream& os) const;
 };
 
-template<class X, class Y> requires IsFloat<X>::value and IsGenericNumericType<Y>::value
+template<class X, class Y> requires ConcreteNumber<X> and GenericNumber<Y>
 decltype(auto) operator+(Differential<X> const& x, Y const& y) { return x+factory(x).create(y); }
 
 template<class X> struct AlgebraOperations<Differential<X>> : GradedAlgebraOperations<Differential<X>> {

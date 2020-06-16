@@ -61,7 +61,7 @@ template<class V> struct IsCovectorExpression : IsVector<V> { };
 template<class M> struct IsMatrix : False { };
 template<class M> struct IsMatrixExpression : IsMatrix<M> { };
 
-template<class X> struct IsNumericType;
+template<class X> struct IsNumber;
 template<class A> struct IsAlgebra;
 
 template<class X> struct IsScalar { static const Bool value = !IsVector<X>::value && !IsCovector<X>::value && !IsMatrix<X>::value; };
@@ -74,23 +74,15 @@ template<class V> concept AMatrix = IsMatrix<V>::value;
 template<class V> concept AVectorExpression = IsVectorExpression<V>::value;
 template<class V> concept AMatrixExpression = IsMatrixExpression<V>::value;
 
-template<class M, class X> concept AMatrixExpressionOver = IsMatrixExpression<M>::value and Convertible<typename M::ScalarType,X>;
+template<class M, class X> concept AMatrixExpressionOver = AMatrixExpression<M> and Convertible<typename M::ScalarType,X>;
 
-template<class X> struct HasCreateZero {
-    template<class XX, class=decltype(std::declval<XX>().create_zero())> static std::true_type test(int);
-    template<class XX> static std::false_type test(...);
-    static const bool value = decltype(test<X>(1))::value;
-};
-template<class X> struct HasNul {
-    template<class XX, class=decltype(nul(std::declval<XX>()))> static std::true_type test(int);
-    template<class XX> static std::false_type test(...);
-    static const bool value = decltype(test<X>(1))::value;
-};
+template<class X> concept HasCreateZero = requires(X const& x) { x.create_zero(); };
+template<class X> concept HasNul = requires(X x) { nul(x); };
 
 
 template<class X> X create_zero(const X& x) {
-    if constexpr (HasCreateZero<X>::value) { return x.create_zero(); }
-    else if constexpr (HasNul<X>::value)  { return nul(x); }
+    if constexpr (HasCreateZero<X>) { return x.create_zero(); }
+    else if constexpr (HasNul<X>)  { return nul(x); }
     else { return static_cast<X>(0u); }
 }
 
@@ -314,7 +306,7 @@ class Vector
     //! \brief Join a scalar and a vector.
     friend template<class X> Vector<X> join(const X& s1, const Vector<X>& v2);
     //! \brief Join two scalars. // FIXME: Removed due to poor detection of scalar types
-    // friend template<class X> requires IsScalar<X>::value Vector<X> join(const X& s1, const X& s2);
+    // friend template<class X> requires AScalar<X> Vector<X> join(const X& s1, const X& s2);
 
     //! \brief Write to an output stream.
     friend template<class X> OutputStream& operator<<(OutputStream& os, const Vector<X>& v);

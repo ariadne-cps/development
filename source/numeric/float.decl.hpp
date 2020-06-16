@@ -203,15 +203,16 @@ template<class F> struct IsFloat<Value<F>> : IsFloat<F> { };
 template<class F> struct IsFloat<Error<F>> : IsFloat<F> { };
 template<> struct IsFloat<Dbl> : False { };
 
+template<class F> concept AFloat = IsFloat<F>::value;
 
-template<class T> struct IsNumericType;
-template<> struct IsNumericType<Dbl> : True { };
-template<> struct IsNumericType<FloatDP> : True { };
-template<> struct IsNumericType<FloatMP> : True { };
-template<class F> struct IsNumericType<Approximation<F>> : IsNumericType<F> { };
-template<class F> struct IsNumericType<Bounds<F>> : IsNumericType<F> { };
-template<class F, class FE> struct IsNumericType<Ball<F,FE>> : IsNumericType<F> { };
-template<class F> struct IsNumericType<Value<F>> : IsNumericType<F> { };
+template<class T> struct IsNumber;
+template<> struct IsNumber<Dbl> : True { };
+template<> struct IsNumber<FloatDP> : True { };
+template<> struct IsNumber<FloatMP> : True { };
+template<class F> struct IsNumber<Approximation<F>> : IsNumber<F> { };
+template<class F> struct IsNumber<Bounds<F>> : IsNumber<F> { };
+template<class F, class FE> struct IsNumber<Ball<F,FE>> : IsNumber<F> { };
+template<class F> struct IsNumber<Value<F>> : IsNumber<F> { };
 
 template<class T> struct NumericTraits;
 

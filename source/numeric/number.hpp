@@ -53,22 +53,24 @@ namespace Ariadne {
 
 /************ Number *********************************************************/
 
-template<class X> struct IsNumericType;
+template<class X> struct IsNumber;
 
 class NumberInterface;
 
 template<class P> class Number;
-template<class P> struct IsNumericType<Number<P>> : True { };
-template<class P> struct IsNumericType<LowerNumber<P>> : True { };
-template<class P> struct IsNumericType<UpperNumber<P>> : True { };
+template<class P> struct IsNumber<Number<P>> : True { };
+template<class P> struct IsNumber<LowerNumber<P>> : True { };
+template<class P> struct IsNumber<UpperNumber<P>> : True { };
 
 struct DispatchException : public std::runtime_error {
     using std::runtime_error::runtime_error;
 };
 
-template<class PR> struct IsPrecision : False { };
-template<> struct IsPrecision<DoublePrecision> : True { };
-template<> struct IsPrecision<MultiplePrecision> : True { };
+template<class PR> struct IsPrecisionTrait : False { };
+template<> struct IsPrecisionTrait<DoublePrecision> : True { };
+template<> struct IsPrecisionTrait<MultiplePrecision> : True { };
+
+template<class PR> concept IsPrecision = IsPrecisionTrait<PR>::value;
 
 template<class P> Positive<Number<P>> cast_positive(Number<P> y);
 template<class P> Positive<UpperNumber<P>> cast_positive(UpperNumber<P> y);
@@ -108,18 +110,6 @@ class DeclareNumberOperators {
     operator+(Number<P> const& y1, R const& r2) { return y1+Number<Paradigm<R>>(r2); }
 };
 
-template<class X, class P=Void> struct HasOperatorNumber {
-    template<class XX, class PP, class=decltype(declval<XX>().operator Number<PP>())> static True test(int);
-    template<class XX, class PP> static False test(...);
-    static const bool value = decltype(test<X,P>(1))::value;
-};
-
-template<class X> struct HasOperatorNumber<X,Void> {
-    template<class XX, class=decltype(declval<XX>().operator Number<Paradigm<XX>>())> static True test(int);
-    template<class XX> static False test(...);
-    static const bool value = decltype(test<X>(1))::value;
-};
-
 
 template<class X, class P> concept ConvertibleBuiltinFloatingPointToNumber
     = Same<P,ApproximateTag> and BuiltinFloatingPoint<X>;
@@ -143,7 +133,7 @@ template<class P> class Number
 
     template<class PR> using ResultFloatType = FloatType<Weaker<P,ValidatedTag>,PR>;
 
-    template<class X> static const bool IsGettableAs = IsNumericType<X>::value and IsWeaker<typename X::Paradigm,P>::value and (not Same<typename X::Paradigm,ExactTag>);
+    template<class X> static const bool IsGettableAs = ANumber<X> and WeakerThan<typename X::Paradigm,P> and (not Same<typename X::Paradigm,ExactTag>);
   public:
     typedef NumberInterface Interface;
     typedef P Paradigm;
@@ -179,7 +169,7 @@ template<class P> class Number
     ResultFloatType<MultiplePrecision> get(MultiplePrecision const& prec) const { return this->ref()._get(P(),prec); }
 
     //! \brief Get the value of the number as a floating-point ball with the given precision and error precision.
-    template<class PR, class PRE, class=EnableIf<And<IsPrecision<PR>,IsPrecision<PRE>,IsWeaker<ValidatedTag,P>>>>
+    template<class PR, class PRE> requires IsPrecision<PR> and IsPrecision<PRE> and WeakerThan<ValidatedTag,P>
     FloatBall<PR,PRE> get(PR const& prec, PRE const& errprec) const { return this->ref()._get(P(),prec,errprec); }
 
     //! \brief Try to dynamic_cast the object to concrete type \a X.
@@ -251,7 +241,7 @@ template<class P> class Number
 //! \brief Generic lower (real) numbers with computational paradigm \a P, which may be %EffectiveTag or %ValidatedTag.
 template<class P> class LowerNumber
 {
-    static_assert(IsSame<P,EffectiveTag>::value or IsSame<P,ValidatedTag>::value,"P must be a paradigm");
+    static_assert(Same<P,EffectiveTag> or Same<P,ValidatedTag>,"P must be a paradigm");
     friend class UpperNumber<P>;
   private: public:
     Handle<NumberInterface> _handle;
@@ -315,7 +305,7 @@ template<class P> class LowerNumber
 //! \brief Generic upper (real) numbers with computational paradigm \a P, which may be %EffectiveTag or %ValidatedTag.
 template<class P> class UpperNumber
 {
-    static_assert(IsSame<P,EffectiveTag>::value or IsSame<P,ValidatedTag>::value,"P must be a paradigm");
+    static_assert(Same<P,EffectiveTag> or Same<P,ValidatedTag>,"P must be a paradigm");
     friend class LowerNumber<P>;
   private: public:
     Handle<NumberInterface> _handle;

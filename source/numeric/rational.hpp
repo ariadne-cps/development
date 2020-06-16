@@ -127,7 +127,7 @@ class Rational
   private:
     friend class Dyadic;
 };
-template<> struct IsNumericType<Rational> : True { };
+template<> struct IsNumber<Rational> : True { };
 Rational operator"" _q(unsigned long long int n);
 Rational operator"" _q(long double x);
 

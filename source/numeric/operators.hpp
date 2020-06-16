@@ -503,14 +503,11 @@ constexpr Tan inverse(Atan) { return Tan(); }
 
 template<class OP> using InverseType = decltype(inverse(declval<OP>()));
 
+template<class OP> concept HasInverse = requires(OP op) { inverse(op); };
+
 namespace {
-template<class OP> struct HasInverse {
-    template<class O, class=InverseType<O>> static std::true_type test(int);
-    template<class O> static std::false_type test(...);
-    static const bool value = decltype(test<OP>(1))::value;
-};
 template<class OP, class... OPS> Bool _are_inverses(OP const& op1, OperatorVariant<OPS...> const& ops2) {
-    if constexpr(HasInverse<decltype(op1)>::value) { return inverse(op1).code() == ops2.code(); }
+    if constexpr(HasInverse<decltype(op1)>) { return inverse(op1).code() == ops2.code(); }
     else { return false; }
 }
 } // namespace

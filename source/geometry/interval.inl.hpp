@@ -32,13 +32,11 @@ template<class F> inline Value<F> make_split_point(Ball<F> const& bm) { return b
 template<class U, class Y> inline U create_u(Y const& y) { assert(false); }
 
 template<class U> Interval<U>::Interval() : Interval(EmptyInterval()) { }
-
-template<class U> Interval<U>::Interval(EmptyInterval const&) : Interval(+inf,-inf) { }
-
+template<class U> Interval<U>::Interval(EmptyInterval const&)
+    : Interval(+ExactDouble::infinity(),-ExactDouble::infinity()) { }
 template<class U> Interval<U>::Interval(UnitInterval const&) : Interval(-1,+1) { }
-
-template<class U> Interval<U>::Interval(EntireInterval const&) : Interval(-inf,+inf) { }
-
+template<class U> Interval<U>::Interval(EntireInterval const&)
+    : Interval(-ExactDouble::infinity(),+ExactDouble::infinity()) { }
 template<class U> Interval<U>::Interval(LowerBoundType l, UpperBoundType u) : _l(l), _u(u) { }
 
 template<class U> Interval<U> Interval<U>::create_zero() const { return Interval<U>(nul(this->_l),nul(this->_u)); }

@@ -211,14 +211,10 @@ template<class I, class X> Void Expansion<I,X>::remove_zeros() {
     this->resize(static_cast<SizeType>(std::remove_if(this->begin(),this->end(),CoefficientIsZero())-this->begin()));
 }
 
-template<class X, class Y> struct CanInplaceAdd {
-    template<class XX, class YY, class = decltype(declval<XX&>()+=declval<YY>())> static True test(int);
-    template<class XX, class YY> static False test(...);
-    static const bool value = decltype(test<X,Y>(1))::value;
-};
+template<class X, class Y> concept CanInplaceAdd = requires(X& x, Y const& y) { x+=y; };
 
 template<class I, class X>Void combine_terms(Expansion<I,X>& e) {
-    if constexpr (CanInplaceAdd<X,X>::value) {
+    if constexpr (CanInplaceAdd<X,X>) {
         auto begin=e.begin();
         auto end=e.end();
         auto curr=begin;

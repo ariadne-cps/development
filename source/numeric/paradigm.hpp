@@ -156,7 +156,7 @@ template<class P1, class P2> using Weaker = typename ParadigmTraits<P1,P2>::Weak
 
 
 //! \brief Inherits from \c TrueType if paradigm \a P1 is weaker than \a P2.
-template<class P1, class P2> struct IsWeaker : IsConvertible<P2,P1> { };
+template<class P1, class P2> struct IsWeaker : std::is_convertible<P2,P1> { };
 
 //! \brief Inherits from \c TrueType if paradigm \a P1 is stronger than \a P2.
 template<class P1, class P2> struct IsStronger : IsWeaker<P2,P1> { };

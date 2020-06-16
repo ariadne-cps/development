@@ -46,8 +46,6 @@ class DivideByZeroError : public std::runtime_error {
 };
 
 
-template<class X> struct IsNumericType : False { };
-
 template<class X> using NumericType = typename X::NumericType;
 
 template<class X> struct NumericTraits;
@@ -61,21 +59,6 @@ template<class X> using PropertiesType = typename X::PropertiesType;
 template<class X> using GenericType = typename X::GenericType;
 
 template<class X> using GenericNumericType = GenericType<NumericType<X>>;
-
-
-template<class T> concept HasGenericType = requires { typename T::GenericType; };
-template<class T> concept HasPrecisionType = requires { typename T::PrecisionType; };
-
-template<class X> struct IsConcrete { static const bool value = HasGenericType<X>; };
-
-template<class X> struct IsScalar;
-template<class X> struct IsConcreteScalar { static const bool value = IsConcrete<X>::value and IsScalar<X>::value; };
-template<class X> struct IsGenericScalar { static const bool value = (not IsConcrete<X>::value) and IsScalar<X>::value; };
-
-template<class X> concept GenericScalar = IsGenericScalar<X>::value;
-template<class X> concept ConcreteScalar = IsConcreteScalar<X>::value;
-
-template<class X> concept ConcreteNumber = Convertible<X,Real>;
 
 
 typedef uint Nat;
@@ -121,31 +104,41 @@ template<class P=Void> class Number;
 template<class P> class LowerNumber;
 template<class P> class UpperNumber;
 
-template<> struct IsNumericType<Nat>;
-template<> struct IsNumericType<Int>;
-template<> struct IsNumericType<Dbl>;
+template<class X> struct IsNumber : False { };
 
-template<> struct IsNumericType<Integer>;
-template<> struct IsNumericType<Rational>;
-template<> struct IsNumericType<Real>;
+template<> struct IsNumber<Nat>;
+template<> struct IsNumber<Int>;
+template<> struct IsNumber<Dbl>;
 
+template<> struct IsNumber<Integer>;
+template<> struct IsNumber<Rational>;
+template<> struct IsNumber<Real>;
 
-template<class Y> struct IsGenericNumericType;
+template<class X> concept ANumber = IsNumber<X>::value;
 
-template<class Y> struct IsGenericNumericType : std::is_integral<Y> { };
-template<> struct IsGenericNumericType<ExactDouble> : True { };
-template<> struct IsGenericNumericType<Integer> : True { };
-template<> struct IsGenericNumericType<Dyadic> : True { };
-template<> struct IsGenericNumericType<Rational> : True { };
-template<> struct IsGenericNumericType<Real> : True { };
-template<> struct IsGenericNumericType<Dbl> : True { };
-template<class P> struct IsGenericNumericType<Number<P>> : True { };
-template<class P> struct IsGenericNumericType<UpperNumber<P>> : True { };
-template<class P> struct IsGenericNumericType<LowerNumber<P>> : True { };
-template<class Y> struct IsGenericNumericType<Positive<Y>> : IsGenericNumericType<Y> { };
+template<class Y> struct IsGenericNumber;
 
-template<class Y> using IsGenericNumber = IsGenericNumericType<Y>;
-template<class Y> concept GenericNumber = IsGenericNumericType<Y>::value;
+template<class Y> struct IsGenericNumber : std::is_integral<Y> { };
+template<> struct IsGenericNumber<ExactDouble> : True { };
+template<> struct IsGenericNumber<Integer> : True { };
+template<> struct IsGenericNumber<Dyadic> : True { };
+template<> struct IsGenericNumber<Rational> : True { };
+template<> struct IsGenericNumber<Real> : True { };
+template<> struct IsGenericNumber<Dbl> : True { };
+template<class P> struct IsGenericNumber<Number<P>> : True { };
+template<class P> struct IsGenericNumber<UpperNumber<P>> : True { };
+template<class P> struct IsGenericNumber<LowerNumber<P>> : True { };
+template<class Y> struct IsGenericNumber<Positive<Y>> : IsGenericNumber<Y> { };
+
+template<class T> concept HasGenericType = requires { typename T::GenericType; };
+template<class T> concept HasPrecisionType = requires { typename T::PrecisionType; };
+
+template<class X> concept Concrete = HasGenericType<X>;
+template<class X> concept Generic = not Concrete<X>;
+
+template<class Y> concept GenericNumber = IsGenericNumber<Y>::value;
+template<class X> concept ConcreteNumber = Concrete<X> and Convertible<X,Real>;
+
 
 
 //! \relates Number

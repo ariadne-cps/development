@@ -47,6 +47,9 @@ template<class X> Complex(X const& re, X const& im) -> Complex<X>;
 template<class X> struct IsComplex : False { };
 template<class X> struct IsComplex<Complex<X>> : True { };
 
+template<class X> concept AComplex = IsComplex<X>::value;
+template<class X> concept AReal = not AComplex<X>;
+
 struct PolarTag { };
 
 
@@ -64,8 +67,6 @@ template<class X> inline auto atan2(X const& x, X const& y) -> decltype(atan(y/x
 
 template<> inline double atan2(double const& x, double const& y) { return std::atan2(x,y); }
 
-template<class X> concept NotComplex = not IsComplex<X>::value;
-
 class DefineComplexOperations {
     template<class X1, class X2> friend Complex<SumType<X1,X2>>  add(Complex<X1> const& z1, Complex<X2> const& z2) {
         return Complex<SumType<X1,X2>> (z1._re+z2._re,z1._im+z2._im); } //!< \brief Sum \a z1+z2.
@@ -76,21 +77,21 @@ class DefineComplexOperations {
     template<class X1, class X2> friend Complex<ArithmeticType<X1,X2>> div(Complex<X1> const& z1, Complex<X2> const& z2) {
         auto ns=add(sqr(z2._re),sqr(z2._im)); return Complex<ArithmeticType<X1,X2>> ((z1._re*z2._re+z1._im*z2._im)/ns,(z1._im*z2._re-z1._re*z2._im)/ns); } //!< \brief Quotient \a z1÷z2.
 
-    template<class X1, class X2> requires NotComplex<X2> friend Complex<ProductType<X1,X2>> add(Complex<X1> const& z1, X2 const& x2) {
+    template<class X1, class X2> requires AReal<X2> friend Complex<ProductType<X1,X2>> add(Complex<X1> const& z1, X2 const& x2) {
         return Complex<SumType<X1,X2>>(z1._re+x2, z1._im); }
-    template<class X1, class X2> requires NotComplex<X1>  friend Complex<ProductType<X1,X2>> add(X1 const& x1, Complex<X2> const& z2) {
+    template<class X1, class X2> requires AReal<X1>  friend Complex<ProductType<X1,X2>> add(X1 const& x1, Complex<X2> const& z2) {
         return Complex<SumType<X1,X2>>(x1+z2._re, z2._im); }
-    template<class X1, class X2> requires NotComplex<X2> friend Complex<ProductType<X1,X2>> sub(Complex<X1> const& z1, X2 const& x2) {
+    template<class X1, class X2> requires AReal<X2> friend Complex<ProductType<X1,X2>> sub(Complex<X1> const& z1, X2 const& x2) {
         return Complex<DifferenceType<X1,X2>>(z1._re-x2, z1._im); }
-    template<class X1, class X2> requires NotComplex<X1> friend Complex<ProductType<X1,X2>> sub(X1 const& x1, Complex<X2> const& z2) {
+    template<class X1, class X2> requires AReal<X1> friend Complex<ProductType<X1,X2>> sub(X1 const& x1, Complex<X2> const& z2) {
         return Complex<DifferenceType<X1,X2>>(x1-z2._re, -z2._im); }
-    template<class X1, class X2> requires NotComplex<X2> friend Complex<ProductType<X1,X2>> mul(Complex<X1> const& z1, X2 const& x2) {
+    template<class X1, class X2> requires AReal<X2> friend Complex<ProductType<X1,X2>> mul(Complex<X1> const& z1, X2 const& x2) {
         return Complex<ProductType<X1,X2>>(z1._re*x2, z1._im*x2); }
-    template<class X1, class X2> requires NotComplex<X1> friend Complex<ProductType<X1,X2>> mul(X1 const& x1, Complex<X2> const& z2) {
+    template<class X1, class X2> requires AReal<X1> friend Complex<ProductType<X1,X2>> mul(X1 const& x1, Complex<X2> const& z2) {
         return Complex<ProductType<X1,X2>>(x1*z2._re, x1*z2._im); }
-    template<class X1, class X2> requires NotComplex<X1> friend Complex<QuotientType<X1,X2>> div(X1 const& x1, Complex<X2> const& z2) {
+    template<class X1, class X2> requires AReal<X1> friend Complex<QuotientType<X1,X2>> div(X1 const& x1, Complex<X2> const& z2) {
         auto ns=add(sqr(z2._re),sqr(z2._im)); return Complex<ArithmeticType<X1,X2>> (x1*z2._re/ns,-x1*z2._im/ns); }
-    template<class X1, class X2> requires NotComplex<X2> friend Complex<QuotientType<X1,X2>> div(Complex<X1> const& z1, X2 const& x2) {
+    template<class X1, class X2> requires AReal<X2> friend Complex<QuotientType<X1,X2>> div(Complex<X1> const& z1, X2 const& x2) {
         return Complex<ArithmeticType<X1,X2>>(z1._re/x2, z1._im/x2); }
 
     template<class X1, class X2> friend decltype(auto) operator+(Complex<X1> const& z1, Complex<X2> const& z2) { return add(z1,z2); }
@@ -114,14 +115,14 @@ class DefineComplexOperations {
     template<class X1, class X2> friend InequalityType<X1,X2> operator!=(Complex<X1> const& z1, Complex<X2> const& z2) {
         return (z1._re!=z2._re) || (z1._im != z2._im); } //!< Inequality.
 
-    template<class X1, class X2> requires NotComplex<X2> friend EqualityType<X1,X2> operator==(Complex<X1> const& z1, X2 const& x2) {
+    template<class X1, class X2> requires AReal<X2> friend EqualityType<X1,X2> operator==(Complex<X1> const& z1, X2 const& x2) {
         return (z1._re==x2) && (z1._im == 0); } //!< Equality.
-    template<class X1, class X2> requires NotComplex<X2> friend EqualityType<X1,X2> operator==(X1 const& x1, Complex<X2> const& z2) {
+    template<class X1, class X2> requires AReal<X2> friend EqualityType<X1,X2> operator==(X1 const& x1, Complex<X2> const& z2) {
         return (x1==z2._re) && (0==z2._im); } //!< Equality.
 
-    template<class X1, class X2> requires NotComplex<X2> friend InequalityType<X1,X2> operator!=(Complex<X1> const& z1, X2 const& x2) {
+    template<class X1, class X2> requires AReal<X2> friend InequalityType<X1,X2> operator!=(Complex<X1> const& z1, X2 const& x2) {
         return (z1._re!=x2) || (z1._im != 0); } //!< Equality.
-    template<class X1, class X2> requires NotComplex<X2> friend InequalityType<X1,X2> operator!=(X1 const& x1, Complex<X2> const& z2) {
+    template<class X1, class X2> requires AReal<X2> friend InequalityType<X1,X2> operator!=(X1 const& x1, Complex<X2> const& z2) {
         return (x1!=z2._re) || (0!=z2._im); } //!< Equality.
 
     //!@}

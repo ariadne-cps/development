@@ -43,8 +43,8 @@ namespace Ariadne {
 
 struct DefaultTag;
 
-static_assert(not IsGenericNumericType<FloatValue<DoublePrecision>>::value,"");
-static_assert(not IsGenericNumericType<FloatValue<MultiplePrecision>>::value,"");
+static_assert(not GenericNumber<FloatValue<DoublePrecision>>);
+static_assert(not GenericNumber<FloatValue<MultiplePrecision>>);
 
 extern const FloatDPValue infty;
 

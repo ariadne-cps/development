@@ -165,12 +165,8 @@ template<class F> struct DeclareIntervalArithmeticOperations<Approximation<F>>
 
 template<class F> struct DeclareIntervalArithmeticOperations<Value<F>> : DeclareIntervalArithmeticOperations<UpperBound<F>> { };
 
-template<class T, class U> struct IsConstructibleGivenDefaultPrecision {
-    template<class TT, class UU, class=decltype(declval<TT>()=TT(declval<UU>(),PrecisionType<TT>()))> static std::true_type test(int);
-    template<class TT, class UU> static std::false_type test(...);
-    static const bool value = decltype(test<T,U>(1))::value;
-};
-template<class T, class U> concept ConstructibleGivenDefaultPrecision = IsConstructibleGivenDefaultPrecision<T,U>::value;
+template<class T, class U> concept ConstructibleGivenDefaultPrecision
+    = requires(T const& t, U const& u) { T(u,t.precision()); };
 
 //! \ingroup GeometryModule
 //! \brief Intervals with upper endoint of type \a U.

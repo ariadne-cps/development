@@ -74,7 +74,7 @@ class PositiveReal;
 class PositiveLowerReal;
 class PositiveUpperReal;
 class PositiveNaiveReal;
-template<> struct IsNumericType<Real> : True { };
+template<> struct IsNumber<Real> : True { };
 
 class ValidatedReal;
 class ValidatedUpperReal;
