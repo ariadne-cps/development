@@ -44,12 +44,10 @@ extern template Ariadne::Nat Ariadne::Error<Ariadne::FloatMP>::output_places;
 
 inline Dyadic operator"" _exd (long double x) { return Dyadic(x); }
 
-template<class T, class = decltype(declval<T>().clobber())> True has_clobber(int);
-template<class T> False has_clobber(...);
-template<class T> using HasClobber = decltype(has_clobber<T>(1));
+template<class T> concept HasClobber = requires(T& t) { t.clobber(); };
 
 template<class T> void do_clobber(T& t) {
-    if constexpr (HasClobber<T>::value) { t=t.clobber(); }
+    if constexpr (HasClobber<T>) { t=t.clobber(); }
 }
 
 template<class T, class = decltype(declval<T>().norm())> decltype(declval<T>().norm()) norm(T& t, int=0) { return t.norm(); }
@@ -590,7 +588,7 @@ template<class F> Void TestTaylorModel<F>::test_antiderivative()
     ARIADNE_TEST_SAME(antiderivative((x0^2)*(x1^4)*15/2,0),(x0^3)*(x1^4)*5/2);
     ARIADNE_TEST_SAME(antiderivative((x0^2)*(x1^4)*15/2,1),(x0^2)*(x1^5)*3/2);
 
-    if constexpr (IsSame<F,FloatDP>::value) {
+    if constexpr (Same<F,FloatDP>) {
         ValidatedTaylorModelType x=ValidatedTaylorModelType::coordinate(1,0,swp);
         ValidatedTaylorModelType e=ValidatedTaylorModelType::zero(1,swp)+FloatBounds<PR>(-1,+1,pr);
         ARIADNE_TEST_SAME(antiderivative(2*x*x,0),0.66666666666666663_pr*x*x*x+5.5511151231257827021e-17_pr*e);
@@ -611,7 +609,7 @@ template<class F> Void TestTaylorModel<F>::test_compose()
     ARIADNE_TEST_SAME(compose(2-x0*x0-x1/4,{2-x0*x0-x1/4,x0}),-2-(x0^4)-(x1^2)/16+4*(x0^2)+x1-(x0^2)*x1/2-x0/4);
 
     // Regression test from failure in integration routing
-    if constexpr (IsSame<F,FloatDP>::value) {
+    if constexpr (Same<F,FloatDP>) {
         auto id=ValidatedTaylorModelType::coordinates(2,ThresholdSweeper<FloatDP>(double_precision,1e-10));
         auto s0=id[0];
         auto s1=id[1];

@@ -60,7 +60,7 @@ class TestFloatBall
     typedef FloatType<ExactTag,PR> FloatValueType;
   private:
     PR precision; PRE error_precision;
-    static PRE _make_error_precision(PR const& pr) { if constexpr (IsSame<PR,PRE>::value) { return pr; } else { return PRE(); } }
+    static PRE _make_error_precision(PR const& pr) { if constexpr (Same<PR,PRE>) { return pr; } else { return PRE(); } }
   public:
     TestFloatBall(PR prec) : precision(prec), error_precision(_make_error_precision(prec)) { };
     TestFloatBall(PR prec, PRE err_prec) : precision(prec), error_precision(err_prec) { };

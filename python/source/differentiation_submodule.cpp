@@ -66,7 +66,7 @@ Void export_differential(pybind11::module& module, const String& name)
     pybind11::class_<D> differential_class(module,name.c_str());
     differential_class.def(pybind11::init<D>());
 
-    if constexpr (HasGenericType<X>::value) {
+    if constexpr (HasGenericType<X>) {
         typedef typename X::PrecisionType PR;
         differential_class.def( pybind11::init<SizeType,DegreeType,PR>());
     } else {
@@ -77,7 +77,7 @@ Void export_differential(pybind11::module& module, const String& name)
     differential_class.def_static("variable",(D(*)(SizeType as, DegreeType deg, const X& y, SizeType j)) &D::variable);
     differential_class.def_static("constants",(Vector<D>(*)(SizeType, DegreeType, const Vector<X>&)) &D::constants);
     differential_class.def_static("variables",(Vector<D>(*)(DegreeType, const Vector<X>&)) &D::variables);
-    if constexpr (HasGenericType<X>::value) {
+    if constexpr (HasGenericType<X>) {
         typedef typename X::GenericType Y; typedef typename X::PrecisionType PR;
         differential_class.def_static("constant",(D(*)(SizeType, DegreeType, const Y&, const PR&)) &D::constant);
         differential_class.def_static("variable",(D(*)(SizeType as, DegreeType deg, const Y& y, SizeType j, const PR& pr)) &D::variable);
@@ -126,7 +126,7 @@ export_differential_vector(pybind11::module& module, const String& name)
     pybind11::class_<DV> differential_vector_class(module,name.c_str());
     differential_vector_class.def(pybind11::init<DV>());
     differential_vector_class.def(pybind11::init<Vector<D>>());
-    if constexpr (HasPrecisionType<X>::value) {
+    if constexpr (HasPrecisionType<X>) {
         typedef typename X::PrecisionType PR;
         differential_vector_class.def(pybind11::init<Nat,Nat,Nat,PR>());
     } else {

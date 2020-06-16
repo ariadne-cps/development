@@ -144,7 +144,7 @@ template<class E, class OP, class... AS> Check<E,OP,AS...>::Check() {
 }
 #else
 template<class E, class  R , class OP, class... AS> void sm() {
-    static_assert(IsSame<E,  R >::value,"");
+    static_assert(Same<E,  R >);
 }
 template<class E, class OP, class... AS> Check<E,OP,AS...>::Check() {
     typedef SafeType<OP,AS...>  R ;
@@ -220,8 +220,8 @@ void output_check_explicitly_constructible_result(Bool p, String t, String f, Bo
 }
 
 template<class T, class F> void check_explicitly_constructible() {
-    Bool c=IsConvertible<F,T>::value;
-    Bool p=IsConstructible<T,F>::value and not c;
+    Bool c=Convertible<F,T>;
+    Bool p=Constructible<T,F> and not c;
     output_check_explicitly_constructible_result(p,class_name<T>(),class_name<F>(),c);
 }
 
@@ -237,7 +237,7 @@ void output_check_convertible_result(Bool p, String t, String f) {
 }
 
 template<class T, class F> void check_convertible() {
-    Bool p=IsConvertible<F,T>::value;
+    Bool p=Convertible<F,T>;
     output_check_convertible_result(p,class_name<T>(),class_name<F>());
 }
 
@@ -252,7 +252,7 @@ void output_check_not_constructible_result(Bool p, String t, String f) {
 }
 
 template<class T, class F> void check_not_constructible() {
-    Bool p=not IsConstructible<T,F>::value;
+    Bool p=Constructible<T,F>;
     output_check_not_constructible_result(p,class_name<T>(),class_name<F>());
 }
 
@@ -431,13 +431,13 @@ String to_str(bool b) { return b?"true":"false"; }
 void CheckNumeric::notifications()
 {
     // Operations on FloatDPValue: display what is being used.
-    ARIADNE_TEST_NOTIFY(String("Conversion double -> ApproximateNumericType: ")+to_str(IsConvertible<double,ApproximateNumericType>::value));
-    ARIADNE_TEST_NOTIFY(String("Conversion double -> FloatDPApproximation: ")+to_str(IsConvertible<double,FloatDPApproximation>::value));
-    ARIADNE_TEST_NOTIFY(String("Conversion double -> FloatDPValue: ")+to_str(IsConvertible<double,FloatDPValue>::value));
-    ARIADNE_TEST_NOTIFY(String("Construction double -> ExactNumericType: ")+to_str(IsConstructible<ExactNumericType,double>::value));
-    ARIADNE_TEST_NOTIFY(String("Construction double -> FloatDPValue: ")+to_str(IsConstructible<FloatDPValue,double>::value));
-    ARIADNE_TEST_NOTIFY(String("Conversion int -> FloatDPValue: ")+to_str(IsConvertible<int,FloatDPValue>::value));
-    ARIADNE_TEST_NOTIFY(String("Construction Integer -> FloatDPValue: ")+to_str(IsConstructible<FloatDPValue,Integer>::value)+"");
+    ARIADNE_TEST_NOTIFY(String("Conversion double -> ApproximateNumericType: ")+to_str(Convertible<double,ApproximateNumericType>));
+    ARIADNE_TEST_NOTIFY(String("Conversion double -> FloatDPApproximation: ")+to_str(Convertible<double,FloatDPApproximation>));
+    ARIADNE_TEST_NOTIFY(String("Conversion double -> FloatDPValue: ")+to_str(Convertible<double,FloatDPValue>));
+    ARIADNE_TEST_NOTIFY(String("Construction double -> ExactNumericType: ")+to_str(Constructible<ExactNumericType,double>));
+    ARIADNE_TEST_NOTIFY(String("Construction double -> FloatDPValue: ")+to_str(Constructible<FloatDPValue,double>));
+    ARIADNE_TEST_NOTIFY(String("Conversion int -> FloatDPValue: ")+to_str(Convertible<int,FloatDPValue>));
+    ARIADNE_TEST_NOTIFY(String("Construction Integer -> FloatDPValue: ")+to_str(Constructible<FloatDPValue,Integer>)+"");
 
     ARIADNE_TEST_NOTIFY((String("UpperNumericType * UpperNumericType -> ")+class_name<SafeProductType<UpperNumericType,UpperNumericType>>()+"\n"));
 

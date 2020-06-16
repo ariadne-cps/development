@@ -257,7 +257,7 @@ void export_array(pybind11::module& module, const char* name)
 
     pybind11::class_<Array<T>> array_class(module,name);
     array_class.def(pybind11::init<Array<T>>());
-    if (IsDefaultConstructible<T>::value) {
+    if constexpr (DefaultConstructible<T>) {
         array_class.def(pybind11::init<uint>());
     }
     array_class.def(pybind11::init<uint,T>());
@@ -272,7 +272,7 @@ namespace pybind11::detail {
 
 // The third template argument is 'true' if the array is resizable
 template <class T> struct type_caster<Ariadne::Array<T>>
-    : array_caster<Ariadne::Array<T>, T, Ariadne::IsDefaultConstructible<T>::value> { };
+    : array_caster<Ariadne::Array<T>, T, Ariadne::DefaultConstructible<T>> { };
 template <class T> struct type_caster<Ariadne::List<T>>
     : list_caster<Ariadne::List<T>, T> { };
 template <class T> struct type_caster<Ariadne::Set<T>>
@@ -602,7 +602,7 @@ pybind11::class_<Ariadne::Vector<X>> export_vector(pybind11::module& module, std
     }
     vector_class.def("__str__",&__cstr__<Vector<X>>);
     //vector_class.def("__repr__",&__repr__<Vector<X>>);
-    if constexpr (IsDefaultConstructible<X>::value) {
+    if constexpr (DefaultConstructible<X>) {
         vector_class.def_static("unit",(Vector<X>(*)(SizeType,SizeType))&Vector<X>::unit);
         vector_class.def_static("basis",(Array<Vector<X>>(*)(SizeType))&Vector<X>::basis);
     }

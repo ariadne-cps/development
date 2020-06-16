@@ -1,4 +1,4 @@
-// /***************************************************************************
+/***************************************************************************
  *            geometry_submodule.cpp
  *
  *  Copyright  2008-20  Pieter Collins
@@ -266,7 +266,7 @@ using namespace Ariadne;
 template<class IVL> IVL interval_from_pair(pybind11::handle lh, pybind11::handle uh) {
     typedef typename IVL::LowerBoundType LB;
     typedef typename IVL::UpperBoundType UB;
-    if constexpr (IsConstructibleGivenDefaultPrecision<UB,Dyadic>::value) {
+    if constexpr (ConstructibleGivenDefaultPrecision<UB,Dyadic>) {
         typedef PrecisionType<UB> PR; PR pr;
         try {
             LB lb(pybind11::cast<Dyadic>(lh),pr);
@@ -369,10 +369,10 @@ template<class PT> Void export_point(pybind11::module& module, std::string name)
     pybind11::class_<PT, DrawableInterface> point_class(module,name.c_str());
     point_class.def(pybind11::init(&point_from_python<PT>));
     point_class.def(pybind11::init<PT>());
-    if constexpr (IsDefaultConstructible<X>::value) {
+    if constexpr (DefaultConstructible<X>) {
         point_class.def(pybind11::init<Nat>());
     }
-    if constexpr (HasPrecisionType<X>::value) {
+    if constexpr (HasPrecisionType<X>) {
         typedef typename X::PrecisionType PR;
         point_class.def(pybind11::init<Nat,PR>());
     }
@@ -442,16 +442,16 @@ template<class IVL> Void export_interval(pybind11::module& module, std::string n
         interval_class.def(pybind11::init<DyadicInterval>());
         interval_class.def(pybind11::init([](Dyadic l, Dyadic u){return IntervalType(DyadicInterval(l,u));}));
     }
-    if constexpr (IsConstructible<IntervalType,RealInterval>::value and not IsSame<IntervalType,RealInterval>::value) {
+    if constexpr (Constructible<IntervalType,RealInterval> and not Same<IntervalType,RealInterval>) {
         interval_class.def(pybind11::init<RealInterval>());
         interval_class.def(pybind11::init([](Real l, Real u){return IntervalType(RealInterval(l,u));}));
     }
-    if constexpr (HasPrecisionType<UpperBoundType>::value) {
+    if constexpr (HasPrecisionType<UpperBoundType>) {
         typedef PrecisionType<UpperBoundType> PrecisionType;
-        if constexpr (IsConstructible<IntervalType,RealInterval,PrecisionType>::value) {
+        if constexpr (Constructible<IntervalType,RealInterval,PrecisionType>) {
             interval_class.def(pybind11::init<RealInterval,PrecisionType>());
             interval_class.def(pybind11::init([](Real l, Real u, PrecisionType pr){return IntervalType(RealInterval(l,u),pr);}));
-        } else if constexpr (IsConstructible<IntervalType,DyadicInterval,PrecisionType>::value) {
+        } else if constexpr (Constructible<IntervalType,DyadicInterval,PrecisionType>) {
             interval_class.def(pybind11::init<DyadicInterval,PrecisionType>());
             interval_class.def(pybind11::init([](Dyadic l, Dyadic u, PrecisionType pr){return IntervalType(DyadicInterval(l,u),pr);}));
         }
@@ -487,11 +487,11 @@ template<class IVL> Void export_interval(pybind11::module& module, std::string n
     module.def("hull", (IntervalType(*)(IntervalType const&, IntervalType const&)) &hull);
     module.def("split", (Pair<IntervalType,IntervalType>(*)(IntervalType const&)) &split);
 
-    if constexpr (IsSame<IVL,IntervalDomainType>::value) {
+    if constexpr (Same<IVL,IntervalDomainType>) {
         module.attr("IntervalDomainType")=interval_class;
-    } else if constexpr (IsSame<IVL,IntervalValidatedRangeType>::value) {
+    } else if constexpr (Same<IVL,IntervalValidatedRangeType>) {
         module.attr("IntervalValidatedRangeType")=interval_class;
-    } else if constexpr (IsSame<IVL,IntervalApproximateRangeType>::value) {
+    } else if constexpr (Same<IVL,IntervalApproximateRangeType>) {
         module.attr("IntervalApproximateRangeType")=interval_class;
     }
 }
@@ -555,7 +555,7 @@ template<class BX> Void export_box(pybind11::module& module, std::string name)
     if constexpr (Constructible<BoxType,DyadicBox> and not Same<BoxType,DyadicBox>) {
          box_class.def(pybind11::init<Box<Interval<Dyadic>>>());
     }
-    if constexpr (IsConstructible<IntervalType,RealInterval>::value and not IsSame<IntervalType,RealInterval>::value) {
+    if constexpr (Constructible<IntervalType,RealInterval> and not Same<IntervalType,RealInterval>) {
         box_class.def(pybind11::init<RealBox>());
     }
 
@@ -580,7 +580,7 @@ template<class BX> Void export_box(pybind11::module& module, std::string name)
     module.def("contains", (ContainsType(*)(BX const&,MidpointType const&)) &contains);
     module.def("disjoint", (DisjointType(*)(BX const&,BX const&)) &disjoint);
 
-    if constexpr (IsSame<typename IVL::UpperBoundType, typename IVL::LowerBoundType>::value) {
+    if constexpr (Same<typename IVL::UpperBoundType, typename IVL::LowerBoundType>) {
         module.def("subset", (SubsetType(*)(const BX&,const BX&)) &subset);
     } else {
         typedef Box<Interval<typename IVL::LowerBoundType>> LBX;
@@ -594,11 +594,11 @@ template<class BX> Void export_box(pybind11::module& module, std::string name)
     module.def("intersection", (BX(*)(const BX&,const BX&)) &intersection);
     module.def("split", (Pair<BX,BX>(*)(BX const&)) &split);
 
-    if constexpr (IsSame<BX,BoxDomainType>::value) {
+    if constexpr (Same<BX,BoxDomainType>) {
         module.attr("BoxDomainType")=box_class;
-    } else if constexpr (IsSame<BX,BoxValidatedRangeType>::value) {
+    } else if constexpr (Same<BX,BoxValidatedRangeType>) {
         module.attr("BoxValidatedRangeType")=box_class;
-    } else if constexpr (IsSame<BX,BoxApproximateRangeType>::value) {
+    } else if constexpr (Same<BX,BoxApproximateRangeType>) {
         module.attr("BoxApproximateRangeType")=box_class;
     }
 }

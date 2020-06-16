@@ -90,16 +90,12 @@ template<class OP, class... AS> using ReturnType = decltype(declval<OP>().operat
 template<class OP, class A1> using UnaryReturnType = decltype(declval<OP>().operator()(declval<A1>()));
 template<class OP, class A1, class A2> using BinaryReturnType = decltype(declval<OP>().operator()(declval<A1>(),declval<A2>()));
 
-template<class OP, class... AS> struct HasOperator;
-template<class OP, class A1> struct HasOperator<OP,A1> : Is<Return<DontCare>, UnaryReturnType, OP, A1> { };
-template<class OP, class A1, class A2> struct HasOperator<OP,A1,A2> : Is<Return<DontCare>, BinaryReturnType, OP, A1, A2> { };
-template<class OP, class A1, class R> struct HasOperator<OP,A1,Return<R>> : Is<Return<R>, UnaryReturnType, OP, A1> { };
-template<class OP, class A1, class A2, class R> struct HasOperator<OP,A1,A2,Return<R>> : Is<Return<R>, BinaryReturnType, OP, A1, A2> { };
-template<class R, class OP, class... AS> struct HasOperatorReturning : Is<Return<R>, ReturnType, OP, AS...> { };
+template<class OP, class... AS> concept HasOperator = Invocable<OP,AS...>;
+template<class R, class OP, class... AS> concept HasOperatorReturning = InvocableReturning<R,OP,AS...>;
 
 template<class OP, class... AS> using SafeType = typename Detail::SafeTypedef<OP,AS...>::Type;
 
-template<class T> struct Expect { template<class U, EnableIf<IsSame<T,U>> =dummy> Expect<T>& operator=(U const&) { return *this; } };
+template<class T> struct Expect { template<class U> requires Same<T,U> Expect<T>& operator=(U const&) { return *this; } };
 
 //} // namespace Test
 //using namespace Test;

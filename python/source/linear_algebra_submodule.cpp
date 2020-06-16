@@ -219,7 +219,7 @@ Void define_vector_constructors(pybind11::module& module, pybind11::class_<Vecto
     }
     if constexpr (HasPrecisionType<X>) {
         typedef typename X::PrecisionType PR;
-        if constexpr (IsConstructible<X,Nat,PR>::value) {
+        if constexpr (Constructible<X,Nat,PR>) {
             vector_class.def(pybind11::init<Nat,PR>());
             vector_class.def_static("unit",(Vector<X>(*)(SizeType,SizeType,PR)) &Vector<X>::unit);
             vector_class.def_static("basis",(Array<Vector<X>>(*)(SizeType,PR)) &Vector<X>::basis);
@@ -233,7 +233,7 @@ Void define_vector_constructors(pybind11::module& module, pybind11::class_<Vecto
         typedef typename X::GenericType Y; typedef typename X::PrecisionType PR;
         if constexpr(Constructible<Vector<X>,Vector<Y>,PR>) {
             vector_class.def(pybind11::init([](pybind11::list const& lst, PR pr){return Vector<X>(vector_from_python<Y>(lst),pr);}));
-        } else if (IsConstructible<Vector<X>,Vector<Dyadic>,PR>::value) {
+        } else if (Constructible<Vector<X>,Vector<Dyadic>,PR>) {
             vector_class.def(pybind11::init([](pybind11::list const& lst, PR pr){return Vector<X>(vector_from_python<Dyadic>(lst),pr);}));
         }
     }
@@ -534,10 +534,10 @@ template<class X> Void export_matrix(pybind11::module& module)
 template<class X> Void export_diagonal_matrix(pybind11::module& module)
 {
     pybind11::class_<DiagonalMatrix<X>> diagonal_matrix_class(module,python_name<X>("DiagonalMatrix").c_str());
-    if constexpr (IsConstructible<X,Nat>::value) {
+    if constexpr (Constructible<X,Nat>) {
         diagonal_matrix_class.def(pybind11::init<SizeType>());
     }
-    if constexpr (HasPrecisionType<X>::value) {
+    if constexpr (HasPrecisionType<X>) {
         typedef typename X::PrecisionType PR;
         diagonal_matrix_class.def(pybind11::init<SizeType,PR>());
     }
@@ -548,7 +548,7 @@ template<class X> Void export_diagonal_matrix(pybind11::module& module)
 
     diagonal_matrix_class.def("__neg__", &__neg__<DiagonalMatrix<X> , Return<DiagonalMatrix<X>> >);
 
-    if constexpr (IsSame<ArithmeticType<X>,X>::value) {
+    if constexpr (Same<ArithmeticType<X>,X>) {
         diagonal_matrix_class.def("__add__", &__add__<DiagonalMatrix<X>,DiagonalMatrix<X>>, pybind11::is_operator());
         diagonal_matrix_class.def("__sub__", &__sub__<DiagonalMatrix<X>,DiagonalMatrix<X>>, pybind11::is_operator());
         diagonal_matrix_class.def("__mul__", &__mul__<DiagonalMatrix<X>,DiagonalMatrix<X>>, pybind11::is_operator());
