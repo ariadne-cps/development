@@ -9,6 +9,7 @@ add_library(${LIBRARY_NAME} OBJECT
     function.cpp
     measurable_function.cpp
     multifunction.cpp
+    function_patch.cpp
     function_model.cpp
     affine_model.cpp
     taylor_model.cpp

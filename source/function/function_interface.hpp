@@ -53,16 +53,28 @@ template<class... ARGS> using DomainOfType = typename DomainOfTypedef<ARGS...>::
 template<class SIG> struct SignatureTraits;
 template<> struct SignatureTraits<Real(Real)> {
     typedef Real ResultKind; typedef Real ArgumentKind;
-    typedef RealDomain DomainType; typedef RealDomain CodomainType; };
+    typedef RealDomain DomainType; typedef RealDomain CodomainType;
+    typedef IntervalDomainType BoundedDomainType; typedef IntervalDomainType BoundedCodomainType;
+    typedef IntervalRangeType BoundedRangeType;
+};
 template<> struct SignatureTraits<Real(RealVector)> {
     typedef Real ResultKind; typedef RealVector ArgumentKind;
-    typedef EuclideanDomain DomainType; typedef RealDomain CodomainType; };
+    typedef EuclideanDomain DomainType; typedef RealDomain CodomainType;
+    typedef BoxDomainType BoundedDomainType; typedef IntervalDomainType BoundedCodomainType;
+    typedef IntervalRangeType BoundedRangeType;
+};
 template<> struct SignatureTraits<RealVector(Real)> {
     typedef RealVector ResultKind; typedef Real ArgumentKind;
-    typedef RealDomain DomainType; typedef EuclideanDomain CodomainType; };
+    typedef RealDomain DomainType; typedef EuclideanDomain CodomainType;
+    typedef IntervalDomainType BoundedDomainType; typedef BoxDomainType BoundedCodomainType;
+    typedef BoxRangeType BoundedRangeType;
+};
 template<> struct SignatureTraits<RealVector(RealVector)> {
     typedef RealVector ResultKind; typedef RealVector ArgumentKind;
-    typedef EuclideanDomain DomainType; typedef EuclideanDomain CodomainType; };
+    typedef EuclideanDomain DomainType; typedef EuclideanDomain CodomainType;
+    typedef BoxDomainType BoundedDomainType; typedef BoxDomainType BoundedCodomainType;
+    typedef BoxRangeType BoundedRangeType;
+};
 
 
 template<class P, class SIG> class FunctionInterface;

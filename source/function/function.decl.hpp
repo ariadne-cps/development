@@ -50,6 +50,9 @@ using RealVector=Vector<Real>;
 typedef Interval<FloatDPValue> IntervalDomainType;
 typedef Box<Interval<FloatDPValue>> BoxDomainType;
 
+typedef Interval<FloatDPUpperBound> IntervalRangeType;
+typedef Box<Interval<FloatDPUpperBound>> BoxRangeType;
+
 class RealDomain;
 class EuclideanDomain;
 
@@ -107,7 +110,15 @@ using RealVectorMultivariateFunction = EffectiveVectorMultivariateFunction; //!<
 //! \see Function
 template<class P, class SIG> class FunctionInterface;
 
-template<class P, class SIG> using FunctionPatch=Function<P,SIG>;
+template<class P, class SIG> class FunctionPatch;
+template<class P, class... ARGS> using ScalarFunctionPatch=FunctionPatch<P,Real(ARGS...)>;
+template<class P, class... ARGS> using VectorFunctionPatch=FunctionPatch<P,RealVector(ARGS...)>;
+template<class P, class RES> using UnivariateFunctionPatch=FunctionPatch<P,RES(RealScalar)>;
+template<class P, class RES> using MultivariateFunctionPatch=FunctionPatch<P,RES(RealVector)>;
+template<class P> using ScalarUnivariateFunctionPatch = FunctionPatch<P,RealScalar(RealScalar)>;
+template<class P> using VectorUnivariateFunctionPatch = FunctionPatch<P,RealVector(RealScalar)>;
+template<class P> using ScalarMultivariateFunctionPatch = FunctionPatch<P,RealScalar(RealVector)>;
+template<class P> using VectorMultivariateFunctionPatch = FunctionPatch<P,RealVector(RealVector)>;
 using ValidatedScalarUnivariateFunctionPatch = FunctionPatch<ValidatedTag,RealScalar(RealScalar)>;
 using ValidatedVectorUnivariateFunctionPatch = FunctionPatch<ValidatedTag,RealVector(RealScalar)>;
 using ValidatedScalarMultivariateFunctionPatch = FunctionPatch<ValidatedTag,RealScalar(RealVector)>;
