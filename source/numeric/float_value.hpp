@@ -48,8 +48,6 @@ static_assert(not IsGenericNumericType<FloatValue<MultiplePrecision>>::value,"")
 
 extern const FloatDPValue infty;
 
-FloatDPValue operator"" _exact(long double lx);
-
 //! \ingroup NumericModule
 //! \brief A floating-point number, which is taken to represent the \em exact value of a real quantity.
 //! \sa Dyadic, Real, FloatDP, FloatMP, Ball, Bounds, Approximation.

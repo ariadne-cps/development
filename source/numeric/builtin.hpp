@@ -51,6 +51,9 @@ template<class D> struct HasGetD {
     static const bool value = decltype(test<D>(1))::value;
 };
 
+//! \ingroup NumericModule
+//! \brief A wrapper around a builtin double-precision floating-point number,
+//! indicating that the stored value is an \em approximation to the value of a real quantity.
 class ApproximateDouble {
     double _d;
   public:
@@ -129,12 +132,19 @@ class ExactDouble {
     friend Bool operator<=(ExactDouble const& x1, ExactDouble const& x2) { return x1._d<=x2._d; }
     friend Bool operator> (ExactDouble const& x1, ExactDouble const& x2) { return x1._d> x2._d; }
     friend Bool operator< (ExactDouble const& x1, ExactDouble const& x2) { return x1._d< x2._d; }
-    friend ExactDouble operator"" _x (long double lx) { double x=lx; if (x!=lx) { std::cerr<<"lx="<<lx; assert(x==lx); } return ExactDouble(x); }
-    friend ExactDouble operator"" _pr (long double lx) { double x=lx; return ExactDouble(x); }
     friend OutputStream& operator<<(OutputStream& os, ExactDouble x) { return os << std::setprecision(18) << x.get_d(); }
+    friend ExactDouble operator"" _x (long double lx);
+    friend ExactDouble operator"" _exact (long double lx);
+    friend ExactDouble exact(long double lx);
+    friend ExactDouble operator"" _pr (long double lx);
 };
-inline ExactDouble operator"" _x (long double lx);
-inline ExactDouble operator"" _pr (long double lx);
+inline ExactDouble operator"" _x (long double lx) {
+    double x=lx; if (x!=lx) { std::cerr<<"lx="<<lx; assert(x==lx); } return ExactDouble(x); }
+inline ExactDouble operator"" _exact (long double lx) { return operator""_x(lx); }
+//! \ingroup NumericModule
+//! \brief Indicate that a floating-point literal is the exact value of a number in double-precision.
+inline ExactDouble exact(long double lx) { return operator""_x(lx); }
+inline ExactDouble operator"" _pr (long double lx) { double x=lx; return ExactDouble(x); }
 inline ExactDouble cast_exact(double d) { return ExactDouble(d); }
 inline ExactDouble cast_exact(ApproximateDouble ax) { return ExactDouble(ax.get_d()); }
 
