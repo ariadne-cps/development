@@ -454,13 +454,19 @@ class TaylorModel
     //! \name Paradigm-based operations.
     //!@{
     //
-    //! \brief Test if one model is disjoint from (is incompatible with) another.
+    //! \brief Test if two models are compatible with each other, in the sense that they could both represent the same function.
+    //! Equivalent to checking that the two sets of possible functions intersect.
+    //! If the result is \a true, then the models are definitely consistent; may return \a false even if the models are inconsistent.
     friend Bool consistent(const TaylorModel<P,F>& tm1, const TaylorModel<P,F>& tm2) {
         return TaylorModel<P,F>::_consistent(tm1,tm2); }
-    //! \brief Test if one model is disjoint from (is incompatible with) another.
+    //! \brief Test if one model is incompatible with another.
+    //! Equivalent to checking that the two sets of possible functions are disjoint.
+    //! If the result is \a true, then the models are definitely inconsistent; may return \a false even if the models are inconsistent.
     friend Bool inconsistent(const TaylorModel<P,F>& tm1, const TaylorModel<P,F>& tm2) {
         return TaylorModel<P,F>::_inconsistent(tm1,tm2); }
-    //! \brief Test if one model refines (is a subset of) another.
+    //! \brief Test if one model refines another, in the sense that it represents a subset of possible functions.
+    //! If the result is \a true, then the first model definitely refines the second;
+    //! may return \a false even if the first model actually does refine the second.
     friend Bool refines(const TaylorModel<P,F>& tm1, const TaylorModel<P,F>& tm2) {
         return TaylorModel<P,F>::_refines(tm1,tm2); }
     //! \brief An over-approximation to the common refinement of two Taylor models.

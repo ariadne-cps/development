@@ -502,12 +502,17 @@ template<class M> Bool same(const ScaledFunctionPatch<M>& tv1, const ScaledFunct
     return tv1.domain()==tv2.domain() && same(tv1.model(),tv2.model());
 }
 //! \brief Test if the quantity is a better approximation than \a t throughout the domain.
+//! If the result is \a true, then the first function model definitely refines the second;
+//! may return \a false even if the first function model actually does refine the second.
 template<class M> Bool refines(const ScaledFunctionPatch<M>& tv1, const ScaledFunctionPatch<M>& tv2) {
     if(tv1.domain()==tv2.domain()) { return refines(tv1.model(),tv2.model()); }
     if(subset(tv2.domain(),tv1.domain())) { return refines(restriction(tv1,tv2.domain()).model(),tv2.model()); }
     else { return false; }
 }
 //! \brief Test if the function models are inconsistent with representing the same exact function.
+//! Equivalent to checking that the two sets of possible functions are disjoint.
+//! If the result is \a true, then the models are definitely inconsistent;
+//! may return \a false even if the models are inconsistent.
 template<class M> Bool inconsistent(const ScaledFunctionPatch<M>& tv1, const ScaledFunctionPatch<M>& tv2) {
     if(tv1.domain()==tv2.domain()) {
         return inconsistent(tv1.model(),tv2.model());
