@@ -50,8 +50,6 @@ Orbit<ExactPoint<F>>::insert(Value<F> t, const ExactPoint<F>& pt)
 }
 
 
-
-
 struct Orbit<Storage>::Data {
     Data(const Grid& grid, const EffectiveVectorMultivariateFunction& auxiliary_mapping)
         : initial(grid,auxiliary_mapping), reach(initial), intermediate(initial), final(initial) { }

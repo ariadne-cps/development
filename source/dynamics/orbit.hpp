@@ -39,6 +39,7 @@
 #include "../output/graphics_interface.hpp"
 #include "../geometry/function_set.hpp"
 #include "../geometry/list_set.hpp"
+#include "../geometry/curve.hpp"
 #include "../dynamics/enclosure.hpp"
 #include "../dynamics/storage.hpp"
 
@@ -78,9 +79,20 @@ class Orbit<Point<Value<F>>>
 {
   public:
     Orbit(const Point<Value<F>>& pt);
-    Void insert(Value<F> t, const Point<Value<F>>& hpt);
+    Void insert(Value<F> t, const Point<Value<F>>& pt);
     const InterpolatedCurve& curve() const { return *this->_curve; }
   private:
+    std::shared_ptr< InterpolatedCurve > _curve;
+};
+
+template<class F>
+class Orbit<Point<Approximation<F>>>
+{
+public:
+    Orbit(const Point<Approximation<F>>& pt) : _curve(new InterpolatedCurve(0,pt)) { }
+    Void insert(Value<F> t, const Point<Approximation<F>>& pt) { this->_curve->insert(t,pt); }
+    const InterpolatedCurve& curve() const { return *this->_curve; }
+private:
     std::shared_ptr< InterpolatedCurve > _curve;
 };
 

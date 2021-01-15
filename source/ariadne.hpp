@@ -69,6 +69,7 @@ namespace Ariadne {
 
 #include "dynamics/vector_field_evolver.hpp"
 #include "dynamics/inclusion_evolver.hpp"
+#include "dynamics/simulator.hpp"
 #include "hybrid/hybrid_evolver.hpp"
 #include "hybrid/hybrid_simulator.hpp"
 #include "hybrid/hybrid_reachability_analyser.hpp"
