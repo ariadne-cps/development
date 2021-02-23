@@ -53,6 +53,8 @@ class TestMultifunction
     Void test_concept();
     Void test_evaluate();
     Void test_taylor_evaluate();
+    Void test_function_set();
+    Void test_inclusion_solutions();
 };
 
 Void TestMultifunction::test()
@@ -60,6 +62,8 @@ Void TestMultifunction::test()
     Dyadic::set_default_writer(DecimalWriter());
     ARIADNE_TEST_CALL(test_evaluate());
     ARIADNE_TEST_CALL(test_taylor_evaluate());
+    ARIADNE_TEST_CALL(test_function_set());
+    ARIADNE_TEST_CALL(test_inclusion_solutions());
 }
 
 Void TestMultifunction::test_concept()
@@ -126,6 +130,61 @@ Void TestMultifunction::test_taylor_evaluate()
     std::cout << "vf(w)=" << vf(w) << "\n";
 }
 
+Void TestMultifunction::test_function_set()
+{
+    using ScalarIntervalFunctionModel = ValidatedIntervalTaylorFunctionModel<FloatMP>;
+    using Ivl = Interval<FloatMPUpperBound>;
+
+    MP pr(128);
+    BoxDomainType dom({{-1,+1},{-1,+1}});
+//    BoxDomainType dom({{0,1},{1,3}});
+    ThresholdSweeper<FloatMP> swp(pr,1e-10);
+    ScalarIntervalFunctionModel x0=ScalarIntervalFunctionModel::coordinate(dom,0,swp);
+    ScalarIntervalFunctionModel x1=ScalarIntervalFunctionModel::coordinate(dom,1,swp);
+
+    ScalarIntervalFunctionModel sf=Ivl(3,5,pr)*x0*x1+Ivl(7,11,pr);
+
+    ValidatedIntervalTaylorFunctionSet<FloatMP> fset(sf);
+    FunctionSet<ValidatedTag,Real(RealVector),CompactSet> gset(fset);
+    CompactSet<ValidatedTag,Real(RealVector)> gfset(fset);
+
+}
+
+Void TestMultifunction::test_inclusion_solutions()
+{
+    using ScalarIntervalFunctionModel = ValidatedIntervalTaylorFunctionModel<FloatMP>;
+    using VectorIntervalFunctionModel = ValidatedVectorIntervalTaylorFunctionModel<FloatMP>;
+    using Ivl = Interval<FloatMPUpperBound>;
+    using P=ValidatedTag;
+
+    MP pr(128);
+    BoxDomainType dom({{-1,+1},{-1,+1},{0,+1}});
+//    BoxDomainType dom({{0,1},{1,3}});
+    ThresholdSweeper<FloatMP> swp(pr,1e-10);
+    ScalarIntervalFunctionModel x0=ScalarIntervalFunctionModel::coordinate(dom,0,swp);
+    ScalarIntervalFunctionModel x1=ScalarIntervalFunctionModel::coordinate(dom,1,swp);
+    ScalarIntervalFunctionModel t=ScalarIntervalFunctionModel::coordinate(dom,1,swp);
+
+    VectorIntervalFunctionModel vf={Ivl(3,5,pr)*x0*x1*+Ivl(7,11,pr),x1*cos(t)};
+
+    Vector<ValidatedNumber> w0({.375_x,0.625_x});
+    ValidatedNumber s(0.25_x);
+
+    ValidatedIntervalTaylorMultiflow<FloatMP> phi(vf);
+    ValidatedIntervalTaylorCurriedTrajectorySet<FloatMP> phi_w0=phi(w0);
+    CompactSet<P,RealVector> phi_w0_s=phi_w0(s);
+
+    //    Function<P,CompactSet<P,RealVector(Real)>(RealVector)> const& phif=phi;
+    ValidatedCompactMultiflow::Interface const& phif=phi;
+    CompactSet<P,RealVector(Real)> phif_w0=phif._call(w0);
+    CompactSet<P,RealVector> phif_w0_s=phif_w0(s);
+
+    std::cout << " phi_w0=" << phi_w0 << "\n";
+    std::cout << "phif_w0=" << phif_w0 << "\n";
+    std::cout << " phi_w0_s=" << phi_w0_s << "\n";
+    std::cout << "phif_w0_s=" << phif_w0_s << "\n";
+
+}
 
 Int main() {
     TestMultifunction().test();

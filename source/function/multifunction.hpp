@@ -249,5 +249,138 @@ template<class P, class RES, class ARG> class Function<P,LocatedSet<P,RES>(ARG)>
 
 } // namespace Ariadne
 
+
+
+#include "../geometry/set_wrapper.hpp"
+
+namespace Ariadne {
+
+template<class P, class SIG, template<class,class>class SET=LocatedSet> class FunctionSet;
+
+template<class F, class P, class SIG, template<class,class>class SET> struct IsFunctionSet {
+    using ARG=typename SignatureTraits<SIG>::ArgumentKind;
+    using RES=typename SignatureTraits<SIG>::ResultKind;
+    using D=typename SignatureTraits<SIG>::DomainType;
+    template<class Y> using Argument = typename ElementTraits<D>::template Type<Y>;
+
+    template<class FF, class=decltype(declval<SET<P,RES>>()=declval<FF>()(declval<Argument<Number<P>>>()))>
+        static std::true_type test(int);
+    template<class FF>
+        static std::false_type test(...);
+    static const bool value = decltype(test<F>(1))::value;
+};
+
+template<class F, class P, class SIG, template<class,class>class SET> concept AFunctionSet = IsFunctionSet<F,P,SIG,SET>::value;
+
+
+template<class P, class SIG, template<class,class>class SET> class FunctionSetInterface {
+    using ARG=typename SignatureTraits<SIG>::ArgumentKind;
+    using RES=typename SignatureTraits<SIG>::ResultKind;
+    using D=typename SignatureTraits<SIG>::DomainType;
+  public:
+    template<class Y> using Argument = typename ElementTraits<D>::template Type<Y>;
+    virtual ~FunctionSetInterface<P,SIG,SET>() = default;
+    virtual SET<P,RES> _call(Argument<Number<P>> const& x) const = 0;
+    virtual OutputStream& _write(OutputStream& os) const = 0;
+};
+
+template<class P, class SIG, template<class,class>class SET> class FunctionSet
+    : public Handle<FunctionSetInterface<P,SIG,SET>>
+{
+    using ARG=typename SignatureTraits<SIG>::ArgumentKind;
+    using RES=typename SignatureTraits<SIG>::ResultKind;
+    using D=typename SignatureTraits<SIG>::DomainType;
+  public:
+    typedef FunctionSetInterface<P,SIG,SET> Interface;
+    typedef D DomainType;
+    template<class Y> using Argument = typename ElementTraits<D>::template Type<Y>;
+
+    using Handle<Interface>::Handle;
+
+    //! \brief <p/>
+    template<AFunctionSet<P,SIG,SET> FS> explicit FunctionSet(FS const& fs);
+    //! \brief <p/>
+    SET<P,RES> operator() (Argument<Number<P>> const& x) const { return this->reference()._call(x); }
+    //! \brief <p/>
+    friend SET<P,RES> apply (FunctionSet<P,SIG,SET> const& fs, SET<P,ARG> const& x);
+    //! \brief <p/>
+    friend OutputStream& operator<<(OutputStream& os,FunctionSet<P,SIG,SET> const& fs) { return fs.reference()._write(os); }
+};
+
+template<class FS, class P, class SIG, template<class,class>class SET> class FunctionSetWrapper
+    : public virtual FunctionSetInterface<P,SIG,SET>
+{
+    using ARG=typename SignatureTraits<SIG>::ArgumentKind;
+    using RES=typename SignatureTraits<SIG>::ResultKind;
+    using D=typename SignatureTraits<SIG>::DomainType;
+  public:
+    template<class Y> using Argument = typename ElementTraits<D>::template Type<Y>;
+
+    FunctionSetWrapper(FS mf) : _fs(mf) { }
+    FS const& base() const { return this->_fs; }
+    virtual SET<P,RES> _call(Argument<Number<P>> const& x) const final override {
+        return static_cast<SET<P,RES>>(this->_fs(x)); }
+    virtual OutputStream& _write(OutputStream& os) const  final override {
+        return os << this->base(); }
+  private:
+    FS _fs;
+};
+
+template<class P, class SIG,template<class,class>class SET> template<AFunctionSet<P,SIG,SET> FS>
+FunctionSet<P,SIG,SET>::FunctionSet(FS const& fs)
+    : Handle<Interface>(std::make_shared<FunctionSetWrapper<FS,P,SIG,SET>>(fs)) { }
+
+template<class RES, class ARG> class CompactSet<ValidatedTag,RES(ARG)>
+    : public FunctionSet<ValidatedTag,RES(ARG),CompactSet>
+{
+    using FunctionSet<ValidatedTag,RES(ARG),CompactSet>::FunctionSet;
+};
+template<class RES, class ARG> class LocatedSet<ValidatedTag,RES(ARG)>
+    : public FunctionSet<ValidatedTag,RES(ARG),LocatedSet>
+{
+    using FunctionSet<ValidatedTag,RES(ARG),LocatedSet>::FunctionSet;
+};
+
+
+
+
+template<class A1, class A2> using JoinType = decltype(join(declval<A1>(),declval<A2>()));
+
+
+template<class P, class RES, class PAR, class ARG, template<class,class>class SET> class FunctionSetFunction {
+    typedef JoinType<ARG,PAR> ARGS;
+  public:
+    using D=typename SignatureTraits<RES(ARG)>::DomainType;
+  public:
+    template<class Y> using Argument = typename ElementTraits<D>::template Type<Y>;
+    typedef SET<P,RES(PAR)> FunctionSetType;
+    class Interface {
+#warning
+      private: public:
+        virtual SET<P,RES(PAR)> _call(Argument<Number<P>> const&) const = 0;
+        virtual Function<P,SET<P,RES>(ARGS)> _curry() const = 0;
+        virtual OutputStream& _write(OutputStream&) const = 0;
+    };
+    SET<P,RES(PAR)> operator() (Argument<Number<P>> const& x) const { return this->_handle._ptr->_call(x); }
+    Function<P,SET<P,RES>(ARGS)> curry() const { return this->_handle._ptr->_curry(); }
+  private:
+    Handle<Interface> _handle;
+};
+
+
+template<class P, class RES, class PAR, class ARG> class Function<P,CompactSet<P,RES(PAR)>(ARG)>
+    : public FunctionSetFunction<P,RES,PAR,ARG,CompactSet>
+{ };
+
+template<class P, template<class,class>class SET=LocatedSet> using Multiflow = Function<P,SET<P,RealVector(Real)>(RealVector)>;
+template<class P> using CompactMultiflow = Function<P,CompactSet<P,RealVector(Real)>(RealVector)>;
+template<class P> using LocatedMultiflow = Multiflow<P,LocatedSet>;
+
+using ValidatedCompactMultiflow = Multiflow<ValidatedTag,CompactSet>;
+
+
+
+} // namespace Ariadne
+
 #endif
 

@@ -127,6 +127,84 @@ template<class F> class ValidatedVectorIntervalTaylorFunctionModel
 };
 
 
+
+template<class F> class ValidatedIntervalTaylorFunctionSet
+//    : public FunctionSet<ValidatedTag,Real(RealVector),CompactSet>::Interface
+    : public CompactSet<ValidatedTag,Real(RealVector)>::Interface
+{
+    using P=ValidatedTag; using M=ValidatedIntervalTaylorModel<F>; using RES=Real;
+    ValidatedIntervalTaylorFunctionModel<F> _function_model;
+  public:
+    ValidatedIntervalTaylorFunctionSet(ScaledFunctionPatch<M> const& f) : _function_model(f) { }
+    CompactSet<P,RES> operator() (Vector<Number<P>> const& x) const { return this->_function_model(x); }
+    friend OutputStream& operator<<(OutputStream& os, ValidatedIntervalTaylorFunctionSet<F> const& fs) {
+        return os << "FunctionSet(" << fs._function_model << ")"; }
+  private:
+    virtual CompactSet<P,RES> _call(Vector<Number<P>> const& x) const { return this->operator()(x); }
+    virtual OutputStream& _write(OutputStream& os) const { return os << *this; }
+};
+
+template<class F> class ValidatedVectorIntervalTaylorFunctionSet
+//    : public FunctionSet<ValidatedTag,Real(RealVector),CompactSet>::Interface
+    : public CompactSet<ValidatedTag,RealVector(RealVector)>::Interface
+{
+    using P=ValidatedTag; using M=ValidatedIntervalTaylorModel<F>; using RES=RealVector;
+    ValidatedVectorIntervalTaylorFunctionModel<F> _function_model;
+  public:
+    ValidatedVectorIntervalTaylorFunctionSet(VectorScaledFunctionPatch<M> const& f) : _function_model(f) { }
+    CompactSet<P,RES> operator() (Vector<Number<P>> const& x) const { return this->_function_model(x); }
+    friend OutputStream& operator<<(OutputStream& os, ValidatedVectorIntervalTaylorFunctionSet<F> const& fs) {
+        return os << "FunctionSet(" << fs._function_model << ")"; }
+  private:
+    virtual CompactSet<P,RES> _call(Vector<Number<P>> const& x) const { return this->operator()(x); }
+    virtual OutputStream& _write(OutputStream& os) const { return os << *this; }
+};
+
+
+template<class F> class ValidatedIntervalTaylorCurriedTrajectorySet
+    : public CompactSet<ValidatedTag,RealVector(Real)>::Interface
+{
+    using P=ValidatedTag; using M=ValidatedIntervalTaylorModel<F>; using RES=RealVector;
+    ValidatedVectorIntervalTaylorFunctionModel<F> _flow_model;
+    Vector<Number<P>> _initial_state;
+  public:
+    ValidatedIntervalTaylorCurriedTrajectorySet(ValidatedVectorIntervalTaylorFunctionModel<F> const& phi, Vector<Number<P>> x0)
+        : _flow_model(phi), _initial_state(x0) { }
+    CompactSet<P,RES> operator() (Scalar<Number<P>> const& t) const { return this->_flow_model(join(this->_initial_state,t)); }
+    friend OutputStream& operator<<(OutputStream& os, ValidatedIntervalTaylorCurriedTrajectorySet<F> const& trs) {
+        return os << "TrajectorySet(" << trs._flow_model << ", " << trs._initial_state << ")"; }
+  private:
+    virtual CompactSet<P,RES> _call(Scalar<Number<P>> const& t) const override {
+        return this->operator()(t); }
+    virtual OutputStream& _write(OutputStream& os) const override { return os << *this; }
+};
+
+
+
+template<class F> class ValidatedIntervalTaylorMultiflow
+    : public ValidatedCompactMultiflow::Interface
+{
+    using P=ValidatedTag; using M=ValidatedIntervalTaylorModel<F>; using RES=Real;
+    typedef ValidatedVectorIntervalTaylorFunctionModel<F> FlowModelType;
+    typedef ValidatedIntervalTaylorCurriedTrajectorySet<F> TrajectorySetType;
+    typedef ValidatedVectorIntervalTaylorFunctionModel<F> ReachMapType;
+    FlowModelType _flow_model;
+  public:
+    ValidatedIntervalTaylorMultiflow(VectorScaledFunctionPatch<M> const& f) : _flow_model(f) { }
+    TrajectorySetType operator() (Vector<Number<P>> const& x0) const {
+        return TrajectorySetType(this->_flow_model,x0); }
+    ReachMapType curry() const {
+        return ReachMapType(this->_flow_model); }
+    friend OutputStream& operator<<(OutputStream& os, ValidatedIntervalTaylorMultiflow<F> const& phi) { return phi._write(os); }
+  private: public:
+    virtual CompactSet<P,RealVector(Real)> _call(Vector<Number<P>> const& x0) const override {
+        return CompactSet<P,RealVector(Real)>(std::make_shared<TrajectorySetType>(this->_flow_model,x0)); }
+    virtual Function<P,CompactSet<P,RealVector>(RealVector)> _curry() const override {
+        return Function<P,CompactSet<P,RealVector>(RealVector)>(std::make_shared<ReachMapType>(this->curry())); }
+    virtual OutputStream& _write(OutputStream& os) const override { return os << *this; }
+};
+
+
 } // namespace Ariadne
 
 #endif
