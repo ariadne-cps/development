@@ -150,7 +150,6 @@ Void TestScalarTaylorFunction::test_concept()
     stf(vy); stf(vy); evaluate(stf,vy); unchecked_evaluate(stf,vy); partial_evaluate(stf,k,y);
     stf.domain(); stf.range(); stf.expansion(); stf.error();
 
-    ScaledFunctionPatch<ValidatedIntervalTaylorModelDP> istfp;
     ScaledFunctionPatch<ValidatedTaylorModelDP> vstfp;
 
 }

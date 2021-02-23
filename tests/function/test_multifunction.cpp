@@ -33,6 +33,7 @@
 #include "config.hpp"
 #include "algebra/sweeper.hpp"
 #include "function/multifunction.hpp"
+#include "function/taylor_multifunction.hpp"
 #include "numeric/numeric.hpp"
 
 #include "symbolic/variable.hpp"
@@ -51,12 +52,14 @@ class TestMultifunction
   private:
     Void test_concept();
     Void test_evaluate();
+    Void test_taylor_evaluate();
 };
 
 Void TestMultifunction::test()
 {
     Dyadic::set_default_writer(DecimalWriter());
     ARIADNE_TEST_CALL(test_evaluate());
+    ARIADNE_TEST_CALL(test_taylor_evaluate());
 }
 
 Void TestMultifunction::test_concept()
@@ -85,6 +88,42 @@ Void TestMultifunction::test_evaluate()
     ARIADNE_TEST_ASSIGN(res,mvf(v));
     ARIADNE_TEST_ASSIGN(res,mvfmdp(v));
     ARIADNE_TEST_ASSIGN(res,mvfdp(v));
+}
+
+Void TestMultifunction::test_taylor_evaluate()
+{
+    using ScalarIntervalFunctionModel = ValidatedIntervalTaylorFunctionModel<FloatMP>;
+    using VectorIntervalFunctionModel = ValidatedVectorIntervalTaylorFunctionModel<FloatMP>;
+    using Ivl = Interval<FloatMPUpperBound>;
+
+    MP pr(128);
+    BoxDomainType dom({{-1,+1},{-1,+1}});
+//    BoxDomainType dom({{0,1},{1,3}});
+    ThresholdSweeper<FloatMP> swp(pr,1e-10);
+    ScalarIntervalFunctionModel x0=ScalarIntervalFunctionModel::coordinate(dom,0,swp);
+    ScalarIntervalFunctionModel x1=ScalarIntervalFunctionModel::coordinate(dom,1,swp);
+
+//    Vector<ValidatedNumber> u({0.75_x,2.5_x});
+    Vector<ValidatedNumber> u({0.75_x,-0.5_x});
+    Vector<FloatMPBounds> v(u,pr);
+    Vector<FloatDPBounds> w(u,dp);
+
+    ScalarIntervalFunctionModel sf=Ivl(3,5,pr)*x0*x1+Ivl(7,11,pr);
+    std::cout << "x0=" << x0 << "\n";
+    std::cout << "sf=" << sf << "\n";
+    Interval<FloatMPUpperBound> fv=sf(v);
+
+    std::cout << "sf(u)=" << sf(u) << "\n";
+    std::cout << "sf(v)=" << sf(v) << "\n";
+    std::cout << "sf(w)=" << sf(w) << "\n";
+
+    VectorIntervalFunctionModel vf({sf,x0});
+    std::cout << "vf=" << vf << "\n";
+    Box<Interval<FloatMPUpperBound>> vfv=vf(v);
+
+    std::cout << "vf(u)=" << vf(u) << "\n";
+    std::cout << "vf(v)=" << vf(v) << "\n";
+    std::cout << "vf(w)=" << vf(w) << "\n";
 }
 
 

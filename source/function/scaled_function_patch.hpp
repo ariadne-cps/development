@@ -110,13 +110,9 @@ template<class M> class ScaledFunctionPatchMixin :
     public ScalarMultivariateFunctionModelMixin<ScaledFunctionPatch<M>, typename M::Paradigm, typename M::PrecisionType, typename M::ErrorPrecisionType>
 { };
 
-template<class F> class ScaledFunctionPatchMixin<ValidatedIntervalTaylorModel<F>> { };
-
 template<class M> class VectorScaledFunctionPatchMixin :
     public VectorMultivariateFunctionModelMixin<VectorScaledFunctionPatch<M>,typename M::Paradigm,typename M::PrecisionType,typename M::ErrorPrecisionType>
 { };
-
-template<class F> class VectorScaledFunctionPatchMixin<ValidatedIntervalTaylorModel<F>> { };
 
 
 
@@ -1238,9 +1234,6 @@ template<class M> class VectorScaledFunctionPatchElementReference
 
 template<class M> class ScaledFunctionPatchFactoryMixin
     : public FunctionModelFactoryMixin<ScaledFunctionPatchFactory<M>, ValidatedTag, typename M::PrecisionType, typename M::ErrorPrecisionType>
-{ };
-
-template<class F> class ScaledFunctionPatchFactoryMixin<ValidatedIntervalTaylorModel<F>>
 { };
 
 

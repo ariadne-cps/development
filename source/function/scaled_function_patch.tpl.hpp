@@ -679,6 +679,13 @@ template<class M> VectorScaledFunctionPatch<M>::VectorScaledFunctionPatch(const 
 }
 
 
+template<class C, class F> decltype(auto) common(C const& c, F const& f) {
+    assert(c.size()>0);
+    auto r=f(c[0]);
+    for(SizeType i=1; i!=c.size(); ++i) { ARIADNE_ASSERT(f(c[i])==r); }
+    return r;
+}
+
 
 template<class M> VectorScaledFunctionPatch<M>::VectorScaledFunctionPatch(const BoxDomainType& d,
                                            const VectorFunctionType<M>& f,
@@ -695,31 +702,19 @@ template<class M> VectorScaledFunctionPatch<M>::VectorScaledFunctionPatch(const 
 }
 
 template<class M> VectorScaledFunctionPatch<M>::VectorScaledFunctionPatch(const Vector<ScaledFunctionPatch<M>>& v)
-    : _domain(), _models(v.size())
+    : _domain(v.zero_element().domain()),_models(v.size(),[&v](SizeType i){return v[i].model();})
 {
     for(SizeType i=0; i!=v.size(); ++i) { ARIADNE_ASSERT(v[i].domain()==v.zero_element().domain()); }
-    this->_domain=v.zero_element().domain();
-    for(SizeType i=0; i!=v.size(); ++i) {
-        this->_models[i]=v[i].model();
-    }
 }
 
 template<class M> VectorScaledFunctionPatch<M>::VectorScaledFunctionPatch(const List<ScaledFunctionPatch<M>>& v)
-    : _domain(), _models(v.size())
+    : _domain(common(v,[](auto sf){return sf.domain();})), _models(v.size(),[&v](SizeType i){return v[i].model();})
 {
-    ARIADNE_ASSERT(v.size()>0);
-    for(SizeType i=1; i!=v.size(); ++i) { ARIADNE_ASSERT(v[i].domain()==v[0].domain()); }
-    this->_domain=v[0].domain();
-    for(SizeType i=0; i!=v.size(); ++i) {
-        this->_models[i]=v[i].model();
-    }
 }
 
 template<class M> VectorScaledFunctionPatch<M>::VectorScaledFunctionPatch(InitializerList<ScaledFunctionPatch<M>> lst)
-    : _domain(), _models(lst.size())
-{
-    *this=VectorScaledFunctionPatch<M>(List<ScaledFunctionPatch<M>>(lst));
-}
+    : VectorScaledFunctionPatch<M>(List<ScaledFunctionPatch<M>>(lst))
+{ }
 
 
 // FIXME: Should be possible to put in code file
