@@ -1063,11 +1063,36 @@ template<class P, class F> inline Void _sma(TaylorModel<P,F>& r, const TaylorMod
 }
 
 
+template<class I1, class I2, class C, class CMP>
+void _sparse_range_add(I1 x1iter, I1 x1end, I2 x2iter, I2 x2end, C& r, CMP cmp) {
+    I1 x1begin=x1iter; I2 x2begin=x2iter;
+    while (x1iter!=x1end && x2iter!=x2end) {
+        if (x1iter->index()==x2iter->index()) {
+            r.append(x1iter->index(),x1iter->coefficient()+x2iter->coefficient());
+            ++x1iter; ++x2iter;
+        } else if (cmp(x1iter->index(),x2iter->index())) {
+            r.append(x1iter->index(),x1iter->coefficient());
+            ++x1iter;
+        } else {
+            r.append(x2iter->index(),x2iter->coefficient());
+            ++x2iter;
+        }
+    }
+    while (x1iter!=x1end) {
+        r.append(x1iter->index(),x1iter->coefficient());
+        ++x1iter;
+    }
+    while (x2iter!=x2end) {
+        r.append(x2iter->index(),x2iter->coefficient());
+        ++x2iter;
+    }
+}
+
 
 // Compute r+=x*y
 // Compute monomial-by-monomial in y
 // Avoid changing rounding mode
-template<class P, class F> inline Void _ifma(TaylorModel<P,F>& r, const TaylorModel<P,F>& x, const TaylorModel<P,F>& y)
+template<class P, class F> inline Void _ifma1(TaylorModel<P,F>& r, const TaylorModel<P,F>& x, const TaylorModel<P,F>& y)
 {
     using CoefficientType = typename TaylorModel<P,F>::CoefficientType;
     using ErrorType = typename TaylorModel<P,F>::ErrorType;
@@ -1141,7 +1166,111 @@ template<class P, class F> inline Void _ifma(TaylorModel<P,F>& r, const TaylorMo
     const ErrorType& ye=y.error();
     re+=xe*ye;
     re+=xs*ye+ys*xe;
+}
 
+
+// Compute r+=x*y
+// Compute monomial-by-monomial in y
+// Avoid changing rounding mode
+// Use buffering to compute product in time O(m*n*log(min(m,n))) where x,y have m,n elements
+template<class P, class F> inline Void _ifma2(TaylorModel<P,F>& r, const TaylorModel<P,F>& x, const TaylorModel<P,F>& y)
+{
+//    std::cerr<<"ifma(r,x,y): r="<<r<<", x="<<x<<", y="<<y<<"\n";
+    if (x.number_of_nonzeros()>y.number_of_nonzeros()) {
+        _ifma2(r,y,x);
+        return;
+    }
+    if (x.number_of_nonzeros()==0) {
+        return;
+    }
+
+    using CoefficientType = typename TaylorModel<P,F>::CoefficientType;
+    using BufferCoefficientType = ArithmeticType<CoefficientType>;
+    using ErrorType = typename TaylorModel<P,F>::ErrorType;
+
+    using IndexType=typename TaylorModel<P,F>::IndexType;
+    typedef SortedExpansion<IndexType,BufferCoefficientType,ReverseLexicographicIndexLess> BufferExpansionType;
+
+    ReverseLexicographicLess cmp;
+    CoefficientType zero=r.expansion().zero_coefficient();
+    const SizeType as=r.argument_size();
+    BufferExpansionType t(as,zero,capacity=x.number_of_nonzeros()*y.number_of_nonzeros());
+    BufferExpansionType u(as,zero,capacity=x.number_of_nonzeros()*y.number_of_nonzeros());
+
+    List<PointerDifferenceType> starts;
+    starts.reserve(x.number_of_nonzeros());
+    List<PointerDifferenceType> new_starts;
+    new_starts.reserve(x.number_of_nonzeros());
+
+    // Compute products, store in t
+    starts.append(0);
+    for(auto xiter=x.begin(); xiter!=x.end(); ++xiter) {
+        UniformConstReference<MultiIndex> xa=xiter->index();
+        UniformConstReference<CoefficientType> xv=xiter->coefficient();
+        for(auto yiter=y.begin(); yiter!=y.end(); ++yiter) {
+            UniformConstReference<MultiIndex> ya=yiter->index();
+            UniformConstReference<CoefficientType> yv=yiter->coefficient();
+            t.append_sum(xa,ya,xv*yv);
+        }
+        starts.append((PointerDifferenceType)t.size());
+    }
+
+    // Add pairwise, storing elements in u
+    while (starts.size()!=2) {
+        new_starts.append(0);
+        for (SizeType k=0; k+2<=starts.size(); k+=2) {
+            if (k+2 == starts.size()) {
+                for (auto titer=t.begin()+starts[k]; titer!=t.begin()+starts[k+1]; ++titer) {
+                    u.append(titer->index(),titer->coefficient());
+                }
+            } else {
+                _sparse_range_add(t.begin()+starts[k],t.begin()+starts[k+1],t.begin()+starts[k+1],t.begin()+starts[k+2],u,cmp);
+            }
+            new_starts.append((PointerDifferenceType)u.size());
+        }
+        t.clear();
+        std::swap(t,u);
+        starts.clear();
+        std::swap(starts,new_starts);
+    }
+
+    _sparse_range_add(r.begin(),r.end(),t.begin(),t.end(),u,cmp);
+
+    if constexpr (IsSame<CoefficientType,BufferCoefficientType>::value) {
+        std::swap(r.expansion(),u);
+    } else {
+        ErrorType e=nul(r.error());
+        r.expansion().clear();
+        for (auto uiter=u.begin(); uiter!=u.end(); ++uiter) {
+            BufferCoefficientType const& c=uiter->coefficient();
+            CoefficientType v=c.value();
+            r.expansion().append(uiter->index(),v);
+            e+=max(c.upper()-v,v-c.lower());
+        }
+        r.error()+=e;
+    }
+    ErrorType xs=nul(r.error());
+    for(auto xiter=x.begin(); xiter!=x.end(); ++xiter) {
+        xs+=mag(xiter->coefficient());
+    }
+    ErrorType ys=nul(r.error());
+    for(auto yiter=y.begin(); yiter!=y.end(); ++yiter) {
+        ys+=mag(yiter->coefficient());
+    }
+
+    ErrorType& re=r.error();
+    const ErrorType& xe=x.error();
+    const ErrorType& ye=y.error();
+    re+=xe*ye;
+    re+=xs*ye+ys*xe;
+
+    r.sweep();
+}
+
+
+template<class P, class F> inline Void _ifma(TaylorModel<P,F>& r, const TaylorModel<P,F>& x, const TaylorModel<P,F>& y)
+{
+    _ifma2(r,x,y);
 }
 
 template<class P, class F> inline TaylorModel<P,F> _fma(const TaylorModel<P,F>& x, const TaylorModel<P,F>& y, TaylorModel<P,F> z) {
