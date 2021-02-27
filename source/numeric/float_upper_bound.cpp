@@ -30,10 +30,8 @@
 
 namespace Ariadne {
 
-UpperBound<Dyadic>::UpperBound(UpperBound<FloatDP> const& x) : UpperBound(Dyadic(x.raw())) { }
-UpperBound<Dyadic>::UpperBound(UpperBound<FloatMP> const& x) : UpperBound(Dyadic(x.raw())) { }
-UpperBound<FloatDP> UpperBound<Dyadic>::get(DoublePrecision pr) const { return UpperBound<FloatDP>(FloatDP(this->raw(),up,pr)); }
-UpperBound<FloatMP> UpperBound<Dyadic>::get(MultiplePrecision pr) const { return UpperBound<FloatMP>(FloatMP(this->raw(),up,pr)); }
+template<> UpperBound<FloatDP> UpperBound<Dyadic>::get(DoublePrecision pr) const { return UpperBound<FloatDP>(FloatDP(this->raw(),up,pr)); }
+template<> UpperBound<FloatMP> UpperBound<Dyadic>::get(MultiplePrecision pr) const { return UpperBound<FloatMP>(FloatMP(this->raw(),up,pr)); }
 
 template class UpperBound<FloatDP>;
 template class Operations<UpperBound<FloatDP>>;
@@ -42,5 +40,11 @@ template class Operations<UpperBound<FloatMP>>;
 
 template<> String class_name<UpperBound<FloatDP>>() { return "FloatDPUpperBound"; }
 template<> String class_name<UpperBound<FloatMP>>() { return "FloatMPUpperBound"; }
+
+static_assert(DirectedGroups<UpperBound<FloatDP>,LowerBound<FloatDP>>);
+static_assert(DirectedGroup<UpperBound<FloatDP>>);
+
+static_assert(not DirectedSemiField<UpperBound<FloatDP>>);
+static_assert(DirectedSemiField<Positive<UpperBound<FloatDP>>>);
 
 } // namespace Ariadne

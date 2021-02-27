@@ -61,8 +61,8 @@ OutputStream& operator<<(OutputStream& os, Accuracy const& acc) {
     return os << "Accuracy("<<DecimalWriter()(acc.error())<<")";
 }
 
-Bounds<FloatDP> Bounds<Dyadic>::get(DoublePrecision pr) const { return Bounds<FloatDP>(_l,_u,pr); }
-Bounds<FloatMP> Bounds<Dyadic>::get(MultiplePrecision pr) const { return Bounds<FloatMP>(_l,_u,pr); }
+template<> Bounds<FloatDP> Bounds<Dyadic>::get(DoublePrecision pr) const { return Bounds<FloatDP>(_l,_u,pr); }
+template<> Bounds<FloatMP> Bounds<Dyadic>::get(MultiplePrecision pr) const { return Bounds<FloatMP>(_l,_u,pr); }
 
 template<> Ball<FloatDP>::Ball(Real const& r, DoublePrecision pr) : Ball(r.compute_get(Effort(53),pr)) { }
 template<> Bounds<FloatDP>::Bounds(Real const& r, DoublePrecision pr) : Bounds<FloatDP>(r.compute_get(Effort(53),pr)) { }
@@ -644,5 +644,11 @@ FloatMPUpperBound ValidatedUpperReal::get(MultiplePrecision pr) const { return F
 OutputStream& operator<<(OutputStream& os, ValidatedUpperReal const& ur) { return ur._ptr->_write(os); }
 
 ApproximateDouble::ApproximateDouble(Real const& r) : _d(FloatDPApproximation(r,dp).raw().get_d()) { }
+
+static_assert(IsOrderedLatticeRing<Real>);
+static_assert(AreMixedOrderedLatticeRing<Real,Int>);
+static_assert(AreMixedOrderedLatticeRing<Real,Integer>);
+static_assert(AreMixedOrderedLatticeRing<Real,Dyadic>);
+static_assert(AreMixedOrderedLatticeRing<Real,Rational>);
 
 } // namespace Ariadne
