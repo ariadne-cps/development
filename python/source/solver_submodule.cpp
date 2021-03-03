@@ -59,11 +59,11 @@ class SolverWrapper
         return this->get_override("solve")(f,pt); }
     Vector<ValidatedNumericType> solve(const ValidatedVectorMultivariateFunction& f, const ExactBoxType& bx) const {
         return this->get_override("solve")(f,bx); }
-    ValidatedVectorMultivariateFunctionModelDP implicit(const ValidatedVectorMultivariateFunction& f, const ExactBoxType& pd, const ExactBoxType& bx) const {
+    ValidatedVectorMultivariateFunctionPatch implicit(const ValidatedVectorMultivariateFunction& f, const ExactBoxType& pd, const ExactBoxType& bx) const {
         return this->get_override("implicit")(f,pd,bx); }
-    ValidatedScalarMultivariateFunctionModelDP implicit(const ValidatedScalarMultivariateFunction& f, const ExactBoxType& pd, const ExactIntervalType& ivl) const {
+    ValidatedScalarMultivariateFunctionPatch implicit(const ValidatedScalarMultivariateFunction& f, const ExactBoxType& pd, const ExactIntervalType& ivl) const {
         return this->get_override("implicit")(f,pd,ivl); }
-    ValidatedVectorMultivariateFunctionModelDP continuation(const ValidatedVectorMultivariateFunction& f, const Vector< ApproximateNumericType>& a, const ExactBoxType& X,  const ExactBoxType& A) const {
+    ValidatedVectorMultivariateFunctionPatch continuation(const ValidatedVectorMultivariateFunction& f, const Vector< ApproximateNumericType>& a, const ExactBoxType& X,  const ExactBoxType& A) const {
         return this->get_override("continuation")(f,a,X,A); }
     Set< Vector<ValidatedNumericType> > solve_all(const ValidatedVectorMultivariateFunction& f, const ExactBoxType& bx) const {
         return this->get_override("solve_all")(f,bx); }
@@ -107,8 +107,8 @@ Void export_solvers(pybind11::module& module)
     typedef SolverInterface::ValidatedNumericType ValidatedNumericType;
     pybind11::class_<SolverInterface,SolverWrapper> solver_interface_class(module,"SolverInterface");
     solver_interface_class.def("solve", (Vector<ValidatedNumericType>(SolverInterface::*)(const ValidatedVectorMultivariateFunction&,const ExactBoxType&)const) &SolverInterface::solve);
-    solver_interface_class.def("implicit",(ValidatedVectorMultivariateFunctionModelDP(SolverInterface::*)(const ValidatedVectorMultivariateFunction&,const ExactBoxType&,const ExactBoxType&)const) &SolverInterface::implicit);
-    solver_interface_class.def("implicit",(ValidatedScalarMultivariateFunctionModelDP(SolverInterface::*)(const ValidatedScalarMultivariateFunction&,const ExactBoxType&,const ExactIntervalType&)const) &SolverInterface::implicit);
+    solver_interface_class.def("implicit",(ValidatedVectorMultivariateFunctionPatch(SolverInterface::*)(const ValidatedVectorMultivariateFunction&,const ExactBoxType&,const ExactBoxType&)const) &SolverInterface::implicit);
+    solver_interface_class.def("implicit",(ValidatedScalarMultivariateFunctionPatch(SolverInterface::*)(const ValidatedScalarMultivariateFunction&,const ExactBoxType&,const ExactIntervalType&)const) &SolverInterface::implicit);
     solver_interface_class.def("solve_all",(Set< Vector<ValidatedNumericType> >(SolverInterface::*)(const ValidatedVectorMultivariateFunction&,const ExactBoxType&)const) &SolverInterface::solve_all);
     solver_interface_class.def("__str__",&__cstr__<SolverInterface>);
 

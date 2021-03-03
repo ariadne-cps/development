@@ -38,6 +38,7 @@
 #include "function/taylor_model.hpp"
 #include "function/formula.hpp"
 #include "function/function.hpp"
+#include "function/function_patch.hpp"
 #include "function/function_model.hpp"
 
 #include "algebra/expansion.inl.hpp"
@@ -65,6 +66,29 @@ operator*(const Matrix<FloatBounds<PR>>& A,const ValidatedVectorMultivariateFunc
     return r;
 }
 
+template<class X> auto
+operator*(const Matrix<X>& A,const ValidatedVectorMultivariateFunctionPatch& v)
+    -> ValidatedVectorMultivariateFunctionPatch
+{
+    ARIADNE_ASSERT(v.size()!=0);
+    ValidatedVectorMultivariateFunctionPatch r(A.row_size(),factory(v).create_zero());
+    for(SizeType i=0; i!=r.size(); ++i) {
+        ValidatedScalarMultivariateFunctionPatch t=r[i];
+        for(SizeType j=0; j!=v.size(); ++j) {
+            t+=A[i][j]*v[j];
+        }
+        r[i]=t;
+    }
+    return r;
+}
+
+template<class X> auto
+linear_solve(const Matrix<X>& A,const ValidatedVectorMultivariateFunctionPatch& v)
+    -> ValidatedVectorMultivariateFunctionPatch
+{
+    return inverse(A)*v;
+}
+
 template<class PR> FloatError<PR> sup_error(const ValidatedVectorMultivariateFunctionModel<PR>& x) {
     assert(x.size()>0);
     FloatError<PR> r(0u,x[0].error().precision());
@@ -74,6 +98,16 @@ template<class PR> FloatError<PR> sup_error(const ValidatedVectorMultivariateFun
 
 
 }
+
+
+
+#warning Missing functions
+Bool inconsistent(ValidatedScalarMultivariateFunctionPatch const& fp1, ValidatedScalarMultivariateFunctionPatch const& fp2);
+Bool inconsistent(ValidatedVectorMultivariateFunctionPatch const& fp1, ValidatedVectorMultivariateFunctionPatch const& fp2);
+Bool refines(ValidatedScalarMultivariateFunctionPatch const& fp1, ValidatedScalarMultivariateFunctionPatch const& fp2);
+Bool refines(ValidatedVectorMultivariateFunctionPatch const& fp1, ValidatedVectorMultivariateFunctionPatch const& fp2);
+ValidatedVectorMultivariateFunctionPatch refinement(ValidatedVectorMultivariateFunctionPatch const& fp1, ValidatedVectorMultivariateFunctionPatch const& fp2);
+PositiveValidatedUpperNumber sup_error(ValidatedVectorMultivariateFunctionPatch const& fp);
 
 
 static const Bool ALLOW_PARTIAL_FUNCTION = true;
@@ -260,11 +294,10 @@ auto SolverBase::fixed_point(const ValidatedVectorMultivariateFunction& f, const
 }
 
 
-
 auto SolverBase::implicit(const ValidatedVectorMultivariateFunction& f,
                           const ExactBoxType& ip,
                           const ExactBoxType& ix) const
-    -> ValidatedVectorMultivariateFunctionModelType
+    -> ValidatedVectorMultivariateFunctionPatch
 {
     ARIADNE_LOG_SCOPE_CREATE;
     ARIADNE_LOG_PRINTLN_AT(1,"f="<<f);
@@ -274,10 +307,10 @@ auto SolverBase::implicit(const ValidatedVectorMultivariateFunction& f,
     const SizeType n=ix.size();
     const ExactDouble err=this->maximum_error();
 
-    ValidatedVectorMultivariateFunctionModelDP id(this->function_factory().create_identity(ip));
-    ValidatedVectorMultivariateFunctionModelDP h(this->function_factory().create_constants(ip,cast_singleton(ix)));
-    ValidatedVectorMultivariateFunctionModelDP nh(this->function_factory().create_zeros(n,ip));
-    ValidatedVectorMultivariateFunctionModelDP fnh(this->function_factory().create_zeros(n,ip));
+    ValidatedVectorMultivariateFunctionPatch id(this->function_factory().create_identity(ip));
+    ValidatedVectorMultivariateFunctionPatch h(this->function_factory().create_constants(ip,cast_singleton(ix)));
+    ValidatedVectorMultivariateFunctionPatch nh(this->function_factory().create_zeros(n,ip));
+    ValidatedVectorMultivariateFunctionPatch fnh(this->function_factory().create_zeros(n,ip));
 
     CounterType steps_remaining=this->maximum_number_of_steps();
     SizeType number_unrefined=n;
@@ -297,7 +330,7 @@ auto SolverBase::implicit(const ValidatedVectorMultivariateFunction& f,
                     if(refines(nh[i],h[i])) {
                         is_refinement[i]=true;
                         --number_unrefined;
-                    } else if(definitely(disjoint(ValidatedScalarMultivariateFunctionModelDP(nh[i]).range(),ix[i]))) {
+                    } else if(definitely(disjoint(ValidatedScalarMultivariateFunctionPatch(nh[i]).range(),ix[i]))) {
                         ARIADNE_THROW(NoSolutionException,"SolverBase::implicit","No result found in "<<ix<<"; function "<<nh<<" is disjoint from "<<h<<" for at least one point.");
                     }
                 }
@@ -327,21 +360,21 @@ auto SolverBase::implicit(const ValidatedVectorMultivariateFunction& f,
 
         steps_remaining=steps_remaining-1;
         if( (number_unrefined==0) && ( (steps_remaining==0) || (definitely(sup_error(nh)<err) && definitely(sup_error(fnh)<err)) ) ) {
-            return h;
+            return ValidatedVectorMultivariateFunctionPatch(h);
         }
     }
 
     ARIADNE_THROW(NoSolutionException,"SolverBase::implicit","Could not prove existence of a solution in "<<ix<<".");
 }
 
-ValidatedScalarMultivariateFunctionModelDP
+ValidatedScalarMultivariateFunctionPatch
 SolverBase::implicit(const ValidatedScalarMultivariateFunction& f,
                      const ExactBoxType& ip,
                      const ExactIntervalType& ix) const
 {
     ARIADNE_LOG_SCOPE_CREATE;
     ARIADNE_LOG_PRINTLN_AT(1,"f="<<f);
-    ValidatedVectorMultivariateFunctionModelDP res=this->implicit(ValidatedVectorMultivariateFunction(List<ValidatedScalarMultivariateFunction>(1u,f)),ip,ExactBoxType(1u,ix));
+    ValidatedVectorMultivariateFunctionPatch res=this->implicit(ValidatedVectorMultivariateFunction(List<ValidatedScalarMultivariateFunction>(1u,f)),ip,ExactBoxType(1u,ix));
     return res[0];
 }
 
@@ -358,7 +391,7 @@ auto SolverBase::continuation(const ValidatedVectorMultivariateFunction& f,
 
 
 auto IntervalNewtonSolver::step(const ValidatedVectorMultivariateFunction& f,
-                                const Vector<ValidatedNumericType>& x) const
+                                        const Vector<ValidatedNumericType>& x) const
     -> Vector<ValidatedNumericType>
 {
     ARIADNE_LOG_SCOPE_CREATE;
@@ -435,20 +468,21 @@ auto FactoredKrawczykSolver::step(const ValidatedVectorMultivariateFunction& f,
 }
 
 
-ValidatedVectorMultivariateFunctionModelDP
+ValidatedVectorMultivariateFunctionPatch
 IntervalNewtonSolver::implicit_step(const ValidatedVectorMultivariateFunction& f,
-                                    const ValidatedVectorMultivariateFunctionModelDP& id,
-                                    const ValidatedVectorMultivariateFunctionModelDP& h) const
+                                    const ValidatedVectorMultivariateFunctionPatch& id,
+                                    const ValidatedVectorMultivariateFunctionPatch& h) const
 {
     ARIADNE_LOG_SCOPE_CREATE;
-    const SizeType m=id.size();
-    const SizeType n=h.size();
+    const SizeType m=id.result_size();
+    const SizeType n=h.result_size();
     DP pr;
 
     ARIADNE_LOG_PRINTLN("f="<<f);
     ARIADNE_LOG_PRINTLN("h="<<h);
 
-    ValidatedVectorMultivariateFunctionModelDP mh=h; mh.clobber();
+    ValidatedVectorMultivariateFunctionPatch mh=h;
+    mh.clobber();
     ARIADNE_LOG_PRINTLN("midpoint(h)="<<mh);
 
     ValidatedScalarMultivariateFunction zero_function(f.domain());
@@ -461,10 +495,10 @@ IntervalNewtonSolver::implicit_step(const ValidatedVectorMultivariateFunction& f
     ARIADNE_LOG_PRINTLN("D2f="<<D2f);
 
     ValidatedNumericType zero(0,pr);
-    ValidatedScalarMultivariateFunctionModelDP z=h[0]*zero;
-    ValidatedVectorMultivariateFunctionModelDP idh=join(id,h);
+    ValidatedScalarMultivariateFunctionPatch z=h[0]*zero;
+    ValidatedVectorMultivariateFunctionPatch idh=join(id,h);
 
-    Matrix<ValidatedScalarMultivariateFunctionModelDP> J(n,n,z);
+    Matrix<ValidatedScalarMultivariateFunctionPatch> J(n,n,z);
     for(SizeType i=0; i!=n; ++i) {
         for(SizeType j=0; j!=n; ++j) {
             J[i][j]=compose(D2f[i][j],idh);
@@ -481,10 +515,10 @@ IntervalNewtonSolver::implicit_step(const ValidatedVectorMultivariateFunction& f
     }
     ARIADNE_LOG_PRINTLN("rngJ="<<rngJ);
 
-    ValidatedVectorMultivariateFunctionModelDP fidmh=compose(f,join(id,mh));
+    ValidatedVectorMultivariateFunctionPatch fidmh=compose(f,join(id,mh));
     ARIADNE_LOG_PRINTLN_AT(1,"compose(f,join(id,midpoint(h)))="<<fidmh);
 
-    ValidatedVectorMultivariateFunctionModelDP dh(n,z);
+    ValidatedVectorMultivariateFunctionPatch dh(n,z);
     if(n==1) {
         if(possibly(contains(rngJ[0][0],FloatDPValue(0.0_x,dp)))) {
             ARIADNE_THROW(SingularJacobianException,"IntervalNewtonSolver","D2f(P,X)="<<rngJ[0][0]<<" which contains zero.");
@@ -495,20 +529,20 @@ IntervalNewtonSolver::implicit_step(const ValidatedVectorMultivariateFunction& f
             dh[0]=fidmh[0]/J[0][0];
         }
     } else {
-        dh=inverse(cast_singleton(rngJ))*fidmh;
+        dh=Ariadne::linear_solve(cast_singleton(rngJ),fidmh);
     }
     ARIADNE_LOG_PRINTLN("dh="<<dh);
 
-    ValidatedVectorMultivariateFunctionModelDP nh=mh-dh;
+    ValidatedVectorMultivariateFunctionPatch nh=mh-dh;
     ARIADNE_LOG_PRINTLN("nh="<<nh);
     return nh;
 }
 
 
-ValidatedVectorMultivariateFunctionModelDP
+ValidatedVectorMultivariateFunctionPatch
 KrawczykSolver::implicit_step(const ValidatedVectorMultivariateFunction& f,
-                              const ValidatedVectorMultivariateFunctionModelDP& p,
-                              const ValidatedVectorMultivariateFunctionModelDP& x) const
+                              const ValidatedVectorMultivariateFunctionPatch& p,
+                              const ValidatedVectorMultivariateFunctionPatch& x) const
 {
     ARIADNE_LOG_SCOPE_CREATE;
     const SizeType np=p.size();
@@ -517,14 +551,14 @@ KrawczykSolver::implicit_step(const ValidatedVectorMultivariateFunction& f,
     ARIADNE_LOG_PRINTLN("Contracting x="<<x);
     ARIADNE_LOG_PRINTLN("p="<<p);
     ARIADNE_LOG_PRINTLN("f="<<f);
-    ValidatedVectorMultivariateFunctionModelDP mx(x);
+    ValidatedVectorMultivariateFunctionPatch mx(x);
     for(SizeType i=0; i!=mx.size(); ++i) { mx[i].clobber(); }
     ARIADNE_LOG_PRINTLN("mx="<<mx);
     Vector<FloatDPError> ex(nx,dp);
     for(SizeType i=0; i!=nx; ++i) { ex[i]=x[i].error(); }
     Vector<ValidatedNumericType> eix=make_bounds(ex);
     ARIADNE_LOG_PRINTLN("ex="<<ex);
-    ValidatedVectorMultivariateFunctionModelDP fm=compose(f,join(p,mx));
+    ValidatedVectorMultivariateFunctionPatch fm=compose(f,join(p,mx));
     ARIADNE_LOG_PRINTLN_AT(1,"f(p,mx)="<<fm);
     Vector<ValidatedNumericType> rp(np,dp);
     for(SizeType i=0; i!=np; ++i) { rp[i]=cast_singleton(p[i].range()); }
@@ -537,9 +571,9 @@ KrawczykSolver::implicit_step(const ValidatedVectorMultivariateFunction& f,
     ARIADNE_LOG_PRINTLN("M*f(p,mx)="<<M*fm);
     ARIADNE_LOG_PRINTLN("(I-M*J)="<<(I-M*J));
     ARIADNE_LOG_PRINTLN("(I-M*J) * (ex*ValidatedNumericType(-1,+1))="<<(I-M*J)<<"*"<<eix<<"="<<(I-M*J) * eix);
-    ValidatedVectorMultivariateFunctionModelDP dx= M*fm - (I-M*J) * eix;
+    ValidatedVectorMultivariateFunctionPatch dx= M*fm - (I-M*J) * eix;
     ARIADNE_LOG_PRINTLN("dx="<<dx);
-    ValidatedVectorMultivariateFunctionModelDP nwx= mx - dx;
+    ValidatedVectorMultivariateFunctionPatch nwx= mx - dx;
     ARIADNE_LOG_PRINTLN("nwx="<<nwx);
     return nwx;
 }

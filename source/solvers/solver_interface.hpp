@@ -85,7 +85,7 @@ class SolverInterface
   public:
     typedef Bounds<FLT> ValidatedNumericType;
     typedef Approximation<FLT> ApproximateNumericType;
-    typedef ValidatedVectorMultivariateFunctionModelDP ValidatedVectorMultivariateFunctionModelType;
+    typedef ValidatedVectorMultivariateFunctionPatch ValidatedVectorMultivariateFunctionModelType;
   public:
     //! \brief Virtual destructor.
     virtual ~SolverInterface() = default;
@@ -119,12 +119,12 @@ class SolverInterface
     //! May throw a NoSolutionException, but \em only if there are no solutions to \f$f(a,x)=0\f$ in \f$A\times X\f$.
     //! If there is a continuous branch of solutions \f$x=h(a)\f$ such that \f$h(a)\in X\f$ for some parameter values,
     //! but \f$h(a)\not\in X\f$ for others, then \f$h\f$ is a valid result for the function.
-    virtual ValidatedVectorMultivariateFunctionModelDP implicit(const ValidatedVectorMultivariateFunction& f, const ExactBoxType& A, const ExactBoxType& X) const = 0;
+    virtual ValidatedVectorMultivariateFunctionPatch implicit(const ValidatedVectorMultivariateFunction& f, const ExactBoxType& A, const ExactBoxType& X) const = 0;
     //! \brief Solve \f$f(a,x)=0\f$ for a in \a A, looking for a solution with x in \a X.
-    virtual ValidatedScalarMultivariateFunctionModelDP implicit(const ValidatedScalarMultivariateFunction& f, const ExactBoxType& A, const ExactIntervalType& X) const = 0;
+    virtual ValidatedScalarMultivariateFunctionPatch implicit(const ValidatedScalarMultivariateFunction& f, const ExactBoxType& A, const ExactIntervalType& X) const = 0;
 
     //! \brief Solve \f$f(a,x)=0\f$ for x in \a X, and continue to a function \f$h\f$ solving \f$f(a,h(a))=0\f$ over \f$A\f$.
-    virtual ValidatedVectorMultivariateFunctionModelDP continuation(const ValidatedVectorMultivariateFunction& f, const Vector<ApproximateNumericType>& a, const ExactBoxType& X,  const ExactBoxType& A) const = 0;
+    virtual ValidatedVectorMultivariateFunctionPatch continuation(const ValidatedVectorMultivariateFunction& f, const Vector<ApproximateNumericType>& a, const ExactBoxType& X,  const ExactBoxType& A) const = 0;
 
     //! \brief Solve \f$f(x)=0\f$, starting in the interval point \a pt. Returns a set of boxes for which it can be <em>proved</em> that
     //! a solution exists in the box. This means that some solutions may be omitted if they are not sufficiently robust.
