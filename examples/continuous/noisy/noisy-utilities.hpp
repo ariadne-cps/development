@@ -55,7 +55,7 @@ template<class C> Reverse<C> reverse(C const& c) { return Reverse<C>(c); }
 
 
 void run_single(String name, InclusionVectorField const& ivf, BoxDomainType const& initial, Real evolution_time, ApproximateDouble step, List<InputApproximation> approximations, SweeperDP sweeper, IntegratorInterface const& integrator, ReconditionerHandle const& reconditioner, bool draw) {
-
+    ARIADNE_LOG_SCOPE_CREATE;
     auto evolver = InclusionEvolver(ivf,sweeper,integrator,reconditioner);
     evolver.configuration().approximations(approximations);
     evolver.configuration().maximum_step_size(step);
@@ -105,7 +105,7 @@ void run_each_approximation(String name, InclusionVectorField const& ivf, BoxDom
 
     for (auto appro: approximations) {
         List<InputApproximation> singleapproximation = {appro};
-        std::cout << appro << std::endl;
+        ARIADNE_LOG_PRINTLN(appro);
         run_single(name,ivf,initial,evolution_time,step,singleapproximation,sweeper,integrator,reconditioner,draw);
     }
 }
