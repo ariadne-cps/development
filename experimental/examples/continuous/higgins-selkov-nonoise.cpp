@@ -30,7 +30,7 @@ using namespace Ariadne;
 
 int main(int argc, const char* argv[])
 {
-    Logger::configuration().set_verbosity(get_verbosity(argc,argv));
+    ARIADNE_LOG_SET_VERBOSITY(get_verbosity(argc,argv));
 
     RealVariable v0("v0"), k1("k1"), k2("k2");
     RealVariable S("S"), P("P");
@@ -56,7 +56,7 @@ int main(int argc, const char* argv[])
 
     auto bbx = orbit.final().bounding_box();
     double volume = (bbx[S].width()*bbx[P].width()).get_d();
-    std::cout << "Volume score: " << 1.0/std::pow(volume,1.0/bbx.dimension()) << std::endl;
+    std::cout << "Volume cost: " << 1.0/std::pow(volume,1.0/bbx.dimension()) << std::endl;
 
     Axes2d axes(0.5<=S<=1.5,0.5<=P<=1.5);
     LabelledFigure fig=LabelledFigure(axes);

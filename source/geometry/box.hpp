@@ -189,8 +189,12 @@ class Box
     //! The area or volume of the box.
     RadiusType measure() const;
     RadiusType volume() const;
+    //! The widths of the sides.
+    Vector<RadiusType> widths() const;
+    //! The radii of the sides.
+    Vector<RadiusType> radii() const;
     //! The sum of the lengths of the sides.
-    RadiusType lengths() const;
+    RadiusType perimeter() const;
     //! Half the length of the longest side.
     RadiusType radius() const;
 

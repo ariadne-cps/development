@@ -1,5 +1,5 @@
 /***************************************************************************
- *            symbolic/identifier.hpp
+ *            utility/identifier.hpp
  *
  *  Copyright  2008-20  Pieter Collins
  *
@@ -22,20 +22,19 @@
  *  along with Ariadne.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/*! \file symbolic/identifier.hpp
- *  \brief Strings used as names for constants and variables.
+/*! \file utility/identifier.hpp
+ *  \brief Strings used as identifiers.
  */
 
 #ifndef ARIADNE_IDENTIFIER_HPP
 #define ARIADNE_IDENTIFIER_HPP
 
-#include "utility/string.hpp"
+#include "string.hpp"
 
 namespace Ariadne {
 
-//! \ingroup SymbolicModule
-//! \brief A class representing the name of a constant or variable.
-//! \details A proxy for a standard string; used to distinguish a string used as a variable name from a value.
+//! \brief A class representing the name of an object.
+//! \details A proxy for a standard string.
 //! \sa Constant, Variable, String
 class Identifier : public std::string
 {

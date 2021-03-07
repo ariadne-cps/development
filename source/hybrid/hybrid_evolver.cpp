@@ -251,7 +251,7 @@ orbit(const HybridExactBoxType& initial_box,
     ARIADNE_LOG_SCOPE_CREATE;
     ARIADNE_LOG_PRINTLN_AT(2,"factory="<<this->function_factory());
     ARIADNE_LOG_PRINTLN("initial_box="<<initial_box);
-    HybridEnclosure initial_enclosure(initial_box,this->function_factory());
+    HybridEnclosure initial_enclosure(initial_box,EnclosureConfiguration(this->function_factory()));
     ARIADNE_LOG_PRINTLN_AT(1,"initial_enclosure="<<initial_enclosure);
     return this->orbit(initial_enclosure,termination,semantics);
 }
@@ -265,7 +265,7 @@ orbit(const HybridBoxSet& initial_box,
     ARIADNE_LOG_SCOPE_CREATE;
     ARIADNE_LOG_PRINTLN_AT(2,"factory="<<this->function_factory());
     ARIADNE_LOG_PRINTLN("initial_box="<<initial_box);
-    HybridEnclosure initial_enclosure(initial_box,this->system().continuous_state_space(initial_box.location()),this->function_factory());
+    HybridEnclosure initial_enclosure(initial_box,this->system().continuous_state_space(initial_box.location()),EnclosureConfiguration(this->function_factory()));
     ARIADNE_LOG_PRINTLN_AT(1,"initial_enclosure="<<initial_enclosure);
     return this->orbit(initial_enclosure,termination,semantics);
 }
@@ -278,7 +278,7 @@ orbit(const HybridBoundedConstraintSet& initial_set,
 {
     ARIADNE_LOG_SCOPE_CREATE;
     ARIADNE_LOG_PRINTLN("initial_set="<<initial_set);
-    HybridEnclosure initial_enclosure(initial_set,this->system().continuous_state_space(initial_set.location()),this->function_factory());
+    HybridEnclosure initial_enclosure(initial_set,this->system().continuous_state_space(initial_set.location()),EnclosureConfiguration(this->function_factory()));
     ARIADNE_LOG_PRINTLN_AT(1,"initial_enclosure="<<initial_enclosure);
     return this->orbit(initial_enclosure,termination,semantics);
 }
@@ -310,8 +310,6 @@ orbit(const HybridEnclosure& initial,
     orbit.adjoin_final(evolution_data.final_sets);
     return orbit;
 }
-
-HybridEvolverBase::FunctionFactoryType* make_taylor_function_factory();
 
 HybridEvolverBase::HybridEvolverBase(const SystemType& system)
 {
@@ -384,13 +382,13 @@ HybridEvolverBase::set_solver(const SolverInterface& solver)
 HybridEvolverBase::EnclosureType
 HybridEvolverBase::enclosure(const HybridExactBox& initial_box) const
 {
-    return HybridEnclosure(initial_box,this->function_factory());
+    return HybridEnclosure(initial_box,EnclosureConfiguration(this->function_factory()));
 }
 
 HybridEvolverBase::EnclosureType
 HybridEvolverBase::enclosure(const HybridBoundedConstraintSet& initial_set) const
 {
-    return HybridEnclosure(initial_set,this->system().continuous_state_space(initial_set.location()),this->function_factory());
+    return HybridEnclosure(initial_set,this->system().continuous_state_space(initial_set.location()),EnclosureConfiguration(this->function_factory()));
 }
 
 
@@ -578,6 +576,7 @@ ValidatedVectorMultivariateFunctionModelDP
 HybridEvolverBase::
 _compute_flow(EffectiveVectorMultivariateFunction dynamic,
               ExactBoxType const& initial_box,
+              StepSizeType& previous_step_size,
               const StepSizeType& maximum_step_size) const
 {
     ARIADNE_LOG_SCOPE_CREATE;
@@ -592,8 +591,8 @@ _compute_flow(EffectiveVectorMultivariateFunction dynamic,
     // more accurate, and the time domain might be used explicitly for the domain
     // of the resulting set.
     StepSizeType step_size=maximum_step_size;
-    ValidatedVectorMultivariateFunctionModelDP flow_model=integrator.flow_step(dynamic,initial_box,step_size);
-
+    ValidatedVectorMultivariateFunctionModelDP flow_model=integrator.flow_step(dynamic,initial_box,previous_step_size,step_size);
+    previous_step_size=step_size;
     ARIADNE_LOG_PRINTLN_AT(1,"twosided_flow_model="<<flow_model);
     ExactBoxType flow_domain=flow_model.domain();
     ARIADNE_ASSERT(step_size==flow_domain[flow_domain.size()-1u].upper_bound());
@@ -1241,8 +1240,9 @@ _evolution_in_mode(EvolutionData& evolution_data,
     //    return;
     //}
 
+    StepSizeType previous_step_size=0;
     while(!evolution_data.working_sets.empty()) {
-        this->_evolution_step(evolution_data,dynamic,transitions,final_time);
+        this->_evolution_step(evolution_data,dynamic,transitions,final_time,previous_step_size);
     }
 }
 
@@ -1251,7 +1251,8 @@ HybridEvolverBase::
 _evolution_step(EvolutionData& evolution_data,
                 EffectiveVectorMultivariateFunction const& dynamic,
                 Map<DiscreteEvent,TransitionData> const& transitions,
-                Real const& final_time) const
+                Real const& final_time,
+                StepSizeType& previous_step_size) const
 {
     ARIADNE_LOG_SCOPE_CREATE;
     HybridEnclosure starting_set=evolution_data.working_sets.back(); evolution_data.working_sets.pop_back();
@@ -1308,7 +1309,7 @@ _evolution_step(EvolutionData& evolution_data,
     ARIADNE_LOG_PRINTLN_AT(1,"guards="<<guard_functions);
 
     // Compute flow and actual time step size used
-    const FlowFunctionModel flow_model=this->_compute_flow(dynamic,starting_bounding_box,this->configuration().maximum_step_size());
+    const FlowFunctionModel flow_model=this->_compute_flow(dynamic,starting_bounding_box,previous_step_size,this->configuration().maximum_step_size());
     ARIADNE_LOG_PRINTLN_AT(1,"flow_model.domain()="<<flow_model.domain()<<" flow_model.range()="<<flow_model.range());
 
     // Compute possibly active events
@@ -1623,7 +1624,9 @@ HybridEvolverBaseConfiguration::HybridEvolverBaseConfiguration(HybridEvolverBase
 Void
 HybridEvolverBaseConfiguration::set_flow_accuracy(const ApproximateRealType value)
 {
-    _evolver._integrator_ptr=std::shared_ptr<GradedTaylorSeriesIntegrator>(new GradedTaylorSeriesIntegrator(MaximumError(cast_exact(value))));
+    Configuration<TaylorPicardIntegrator> config;
+    config.set_step_maximum_error(value);
+    _evolver._integrator_ptr=std::shared_ptr<TaylorPicardIntegrator>(new TaylorPicardIntegrator(config));
     _flow_accuracy = cast_exact(value);
 }
 

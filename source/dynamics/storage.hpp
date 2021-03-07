@@ -33,7 +33,7 @@
 #include "geometry/set_interface.hpp"
 #include "geometry/paving_interface.hpp"
 #include "geometry/grid_paving.hpp"
-#include "symbolic/identifier.hpp"
+#include "utility/identifier.hpp"
 #include "output/graphics_interface.hpp"
 
 namespace Ariadne {

@@ -32,7 +32,7 @@ extern template Ariadne::Nat Ariadne::Error<Ariadne::FloatMP>::output_places;
 extern template Ariadne::Nat Ariadne::Approximation<Ariadne::FloatMP>::output_places;
 
 int main(int argc, const char* argv[]) {
-    Logger::configuration().set_verbosity(get_verbosity(argc,argv));
+    ARIADNE_LOG_SET_VERBOSITY(get_verbosity(argc,argv));
 
     //! [numeric_demonstration]
     ARIADNE_LOG_PRINTLN("Numeric");

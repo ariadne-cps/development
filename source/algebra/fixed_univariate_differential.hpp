@@ -251,7 +251,7 @@ class UnivariateSecondDifferential
     explicit UnivariateSecondDifferential(const X& v, const X& g) : _value(v), _gradient(g), _half_hessian(nul(v)) { }
 
     //! \brief Constructs a second differential with value \a v, derivative \a g and second derivative \a h.
-//    explicit UnivariateSecondDifferential(const X& v, const X& g, const X& h) : _value(v), _gradient(g), _half_hessian(h) { }
+//    explicit UnivariateSecondDifferential(const X& v, const X& g, const X& h) : _threshold(v), _gradient(g), _half_hessian(h) { }
 
     //! \brief Construct from  a power series.
     UnivariateSecondDifferential(const Series<X>& x)

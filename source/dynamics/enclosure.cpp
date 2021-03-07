@@ -94,7 +94,7 @@ Pair<Interval<FloatDPValue>,FloatDPError> make_domain(Interval<Real> const& ivl)
 
 namespace {
 
-ValidatedVectorMultivariateFunctionModelDP make_identity(const RealBox& bx, const EnclosureConfiguration& configuration) {
+ValidatedVectorMultivariateFunctionModelDP make_identity(const RealBox& bx, const ValidatedFunctionModelDPFactory& function_factory) {
     ExactBoxType dom(bx.dimension());
     Vector<FloatDPError> errs(bx.dimension(),dp);
 
@@ -102,7 +102,7 @@ ValidatedVectorMultivariateFunctionModelDP make_identity(const RealBox& bx, cons
         make_lpair(dom[i],errs[i])=make_domain(bx[i]);
     }
 
-    ValidatedVectorMultivariateFunctionModelDP res=configuration._function_factory.create_identity(dom);
+    ValidatedVectorMultivariateFunctionModelDP res=function_factory.create_identity(dom);
     for(SizeType i=0; i!=bx.dimension(); ++i) {
         res[i]=res[i]+FloatDPBounds(-errs[i],+errs[i]);
     }
@@ -147,13 +147,14 @@ inline Pair<ValidatedVectorMultivariateFunctionModelDP,ValidatedVectorMultivaria
 
 
 
-EnclosureConfiguration::EnclosureConfiguration(ValidatedFunctionModelDPFactory function_factory)
-    : _function_factory(function_factory), _paver(new AffinePaver()), _drawer(new AffineDrawer(0)) { }
+EnclosureConfiguration::EnclosureConfiguration(ValidatedFunctionModelDPFactory function_factory, SizeType reconditioning_num_blocks)
+    : _function_factory(function_factory), _paver(new AffinePaver()), _drawer(new AffineDrawer(0)), _reconditioning_num_blocks(reconditioning_num_blocks) { }
 
 OutputStream& operator<<(OutputStream& os, EnclosureConfiguration const& ec) {
     return os << "EnclosureConfiguration( function_factory=" << ec._function_factory
               << ", paver=" << ec._paver
-              <<", drawer=" << ec._drawer<<")";
+              <<", drawer=" << ec._drawer
+              <<", reconditioning_num_blocks=" << ec._reconditioning_num_blocks <<")";
 }
 
 Void Enclosure::_check(std::string from) const {
@@ -285,7 +286,7 @@ Enclosure::Enclosure(const RealBox& box, const EnclosureConfiguration& configura
 Enclosure::Enclosure(const BoundedConstraintSet& set, const EnclosureConfiguration& configuration)
     : _configuration(configuration)
 {
-    this->_state_function=make_identity(set.domain(),this->function_factory());
+    this->_state_function=make_identity(set.domain(),configuration._function_factory);
     this->_domain=this->_state_function.domain();
     this->_time_function=this->function_factory().create_zero(this->domain());
     this->_dwell_time_function=this->function_factory().create_zero(this->domain());
@@ -1188,9 +1189,7 @@ Enclosure::kuhn_recondition()
         ARIADNE_WARN("Cannot Kuhn reduce an Enclosure which is not given by TaylorFunctions.");
     }
 
-    static const SizeType NUMBER_OF_BLOCKS = 3;
-
-    const SizeType number_of_kept_parameters = (NUMBER_OF_BLOCKS-1)*this->state_dimension();
+    const SizeType number_of_kept_parameters = (this->configuration()._reconditioning_num_blocks-1)*this->state_dimension();
     const SizeType number_of_discarded_parameters=this->number_of_parameters()-number_of_kept_parameters;
     const SizeType number_of_error_parameters = this->state_dimension();
 
@@ -1245,7 +1244,7 @@ Enclosure::kuhn_recondition()
     this->_domain = new_domain;
     this->_reduced_domain = new_reduced_domain;
 
-    Enclosure new_set(new_domain,ValidatedVectorMultivariateTaylorFunctionModelDP(new_domain,new_models),this->function_factory());
+    Enclosure new_set(new_domain,ValidatedVectorMultivariateTaylorFunctionModelDP(new_domain,new_models),this->configuration());
     for(SizeType i=0; i!=this->_constraints.size(); ++i) {
         const ValidatedConstraintModel& constraint=this->_constraints[i];
         ValidatedScalarMultivariateTaylorFunctionModelDP const& constraint_function=dynamic_cast<const ValidatedScalarMultivariateTaylorFunctionModelDP&>(constraint.function().reference());
@@ -1445,7 +1444,7 @@ Enclosure product(const Enclosure& set, const ExactIntervalType& ivl) {
 
     ValidatedVectorMultivariateFunctionModelDP new_function=combine(set.state_function(),set.function_factory().create_identity(ivl));
 
-    Enclosure result(new_function.domain(),new_function,set.function_factory());
+    Enclosure result(new_function.domain(),new_function,set.configuration());
     for(ConstIterator iter=set._constraints.begin(); iter!=set._constraints.end(); ++iter) {
         result._constraints.append(ValidatedConstraintModel(iter->lower_bound(),embed(iter->function(),ivl),iter->upper_bound()));
     }
@@ -1462,7 +1461,7 @@ Enclosure product(const Enclosure& set, const ExactBoxType& bx) {
 
     ValidatedVectorMultivariateFunctionModelDP new_function=combine(set.state_function(),set.function_factory().create_identity(bx));
 
-    Enclosure result(new_function.domain(),new_function,set.function_factory());
+    Enclosure result(new_function.domain(),new_function,set.configuration());
     for(ConstIterator iter=set._constraints.begin(); iter!=set._constraints.end(); ++iter) {
         result._constraints.append(ValidatedConstraintModel(iter->lower_bound(),embed(iter->function(),bx),iter->upper_bound()));
     }
@@ -1482,7 +1481,7 @@ Enclosure product(const Enclosure& set1, const Enclosure& set2) {
 
     ValidatedVectorMultivariateFunctionModelDP new_state_function=combine(set1.state_function(),set2.state_function());
 
-    Enclosure result(new_state_function.domain(),new_state_function,set1.function_factory());
+    Enclosure result(new_state_function.domain(),new_state_function,set1.configuration());
     for(ConstIterator iter=set1._constraints.begin(); iter!=set1._constraints.end(); ++iter) {
         result._constraints.append(ValidatedConstraintModel(iter->lower_bound(),embed(iter->function(),set2.domain()),iter->upper_bound()));
     }

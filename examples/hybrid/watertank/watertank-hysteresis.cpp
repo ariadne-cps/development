@@ -33,7 +33,7 @@ using std::cout; using std::endl;
 Int main(Int argc, const char* argv[])
 {
     // Acquire the verbosity value from the command line
-    Logger::configuration().set_verbosity(get_verbosity(argc,argv));
+    ARIADNE_LOG_SET_VERBOSITY(get_verbosity(argc,argv));
 
     // Declare the shared system variables required in the following
     RealVariable aperture("aperture");

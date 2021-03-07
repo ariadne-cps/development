@@ -88,7 +88,7 @@ class TestIntegrator
         ARIADNE_TEST_PRINT(f);
         ExactBoxType d={{0.0_x,1.0_x},{-0.5_x,1.5_x}};
         StepSizeType h=0.25_x;
-        ValidatedVectorMultivariateFunctionModelDP flow=integrator_ptr->flow_step(f,d,h);
+        ValidatedVectorMultivariateFunctionModelDP flow=integrator_ptr->flow_step(f,d,0,h);
         EffectiveVectorMultivariateFunction expected_flow={x0+2*t,y0+3*t};
         ARIADNE_TEST_PRINT(flow);
         ARIADNE_TEST_PRINT(expected_flow);
@@ -108,7 +108,7 @@ class TestIntegrator
         EffectiveVectorMultivariateFunction f={o,x};
         ExactBoxType d={ExactIntervalType(0.0_x,1.0_x),ExactIntervalType(-0.5_x,1.5_x)};
         StepSizeType h=0.25_x;
-        ValidatedVectorMultivariateFunctionModelDP flow=integrator_ptr->flow_step(f,d,h);
+        ValidatedVectorMultivariateFunctionModelDP flow=integrator_ptr->flow_step(f,d,0,h);
         EffectiveVectorMultivariateFunction expected_flow={x0+t,y0+x0*t+t*t/2};
         ARIADNE_TEST_PRINT(f);
         ARIADNE_TEST_PRINT(flow);
@@ -129,7 +129,7 @@ class TestIntegrator
         EffectiveVectorMultivariateFunction f={x,-y};
         ExactBoxType d={ExactIntervalType(-0.25_x,0.25_x),ExactIntervalType(-0.25_x,0.25_x)};
         StepSizeType h=0.25_x;
-        ValidatedVectorMultivariateFunctionModelDP flow=integrator_ptr->flow_step(f,d,h);
+        ValidatedVectorMultivariateFunctionModelDP flow=integrator_ptr->flow_step(f,d,0,h);
         EffectiveVectorMultivariateFunction expected_flow={x0*(1+t+t*t/2+t*t*t/6+t*t*t*t/24),y0*(1-t+t*t/2-t*t*t/6+t*t*t*t/24)};
         ARIADNE_TEST_PRINT(f);
         ARIADNE_TEST_PRINT(flow);
@@ -151,7 +151,7 @@ class TestIntegrator
         EffectiveVectorMultivariateFunction f={-half*x-y,x-half*y};
         ExactBoxType d={ExactIntervalType(0.75_x,1.25_x),ExactIntervalType(-0.25_x,0.25_x)};
         StepSizeType h=0.25_x;
-        ValidatedVectorMultivariateFunctionModelDP flow=integrator_ptr->flow_step(f,d,h);
+        ValidatedVectorMultivariateFunctionModelDP flow=integrator_ptr->flow_step(f,d,0,h);
         EffectiveVectorMultivariateFunction expected_flow={exp(-half*t)*(x0*cos(t)-y0*sin(t)),exp(-half*t)*(x0*sin(t)+y0*cos(t))};
         ARIADNE_TEST_PRINT(f);
         ARIADNE_TEST_PRINT(flow);
@@ -174,7 +174,7 @@ class TestIntegrator
         EffectiveVectorMultivariateFunction f={x*(o-x)};
         ExactBoxType d={ExactIntervalType(0.25_x,0.5_x)};
         StepSizeType h=0.5_x;
-        ValidatedVectorMultivariateFunctionModelDP flow=integrator_ptr->flow_step(f,d,h);
+        ValidatedVectorMultivariateFunctionModelDP flow=integrator_ptr->flow_step(f,d,0,h);
         ValidatedVectorMultivariateTaylorFunctionModelDP taylor_flow=dynamic_cast<ValidatedVectorMultivariateTaylorFunctionModelDP&>(flow.reference());
         EffectiveVectorMultivariateFunction expected_flow={1/(1+(1/x0-1)*exp(-t))};
         ARIADNE_TEST_PRINT(*integrator_ptr);
@@ -252,13 +252,18 @@ class TestIntegrator
 };
 
 Int main(Int argc, const char* argv[]) {
-    Logger::configuration().set_verbosity(get_verbosity(argc,argv));
+    ARIADNE_LOG_SET_VERBOSITY(get_verbosity(argc,argv));
 
     ThresholdSweeper<FloatDP> sweeper(DoublePrecision(),1e-10);
 
-    TaylorPicardIntegrator taylor_picard_integrator(
-            maximum_error=1e-6,sweeper,lipschitz_constant=0.5,
-            step_maximum_error=1e-8,minimum_temporal_order=0,maximum_temporal_order=16);
+    TaylorPicardIntegrator taylor_picard_integrator(Configuration<TaylorPicardIntegrator>()
+        .set_step_maximum_error(1e-5)
+        .set_lipschitz_tolerance(0.5)
+        .set_minimum_temporal_order(0)
+        .set_maximum_temporal_order(16)
+    );
+    ARIADNE_TEST_NOTIFY("Testing the suite with TaylorPicardIntegrator");
+
     TestIntegrator(taylor_picard_integrator).test();
     ARIADNE_TEST_CLASS("TaylorPicardIntegrator",TestIntegrator(taylor_picard_integrator));
 

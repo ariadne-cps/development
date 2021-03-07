@@ -42,7 +42,7 @@
 #include "output/logging.hpp"
 #include "solvers/integrator_interface.hpp"
 #include "solvers/inclusion_integrator.hpp"
-#include "solvers/configuration_interface.hpp"
+#include "configuration/configuration_interface.hpp"
 #include "inclusion_vector_field.hpp"
 
 namespace Ariadne {

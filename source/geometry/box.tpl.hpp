@@ -135,7 +135,29 @@ template<class I> typename Box<I>::RadiusType Box<I>::radius() const
     return r;
 }
 
-template<class I> typename Box<I>::RadiusType Box<I>::lengths() const
+template<class I> Vector<typename Box<I>::RadiusType> Box<I>::widths() const
+{
+    const Box<I>& bx=*this;
+    ARIADNE_ASSERT(bx.dimension()>0);
+    Vector<decltype(declval<I>().width())> r(bx.dimension(),bx[0].width());
+    for(SizeType i=1; i!=bx.dimension(); ++i) {
+        r[i] = bx[i].width();
+    }
+    return r;
+}
+
+template<class I> Vector<typename Box<I>::RadiusType> Box<I>::radii() const
+{
+    const Box<I>& bx=*this;
+    ARIADNE_ASSERT(bx.dimension()>0);
+    Vector<decltype(declval<I>().width())> r(bx.dimension(),bx[0].radius());
+    for(SizeType i=1; i!=bx.dimension(); ++i) {
+        r[i] = bx[i].radius();
+    }
+    return r;
+}
+
+template<class I> typename Box<I>::RadiusType Box<I>::perimeter() const
 {
     const Box<I>& bx=*this;
     ARIADNE_ASSERT(bx.dimension()>0);

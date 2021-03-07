@@ -226,7 +226,7 @@ struct ConstantFunction
     D _domain;
     Y _value;
 
-    //ConstantFunction(SizeType as, const Y& c) : _argument_size(as), _value(c) { }
+    //ConstantFunction(SizeType as, const Y& c) : _argument_size(as), _threshold(c) { }
     ConstantFunction(DomainType dom, const Y& c) : _domain(dom), _value(c) { }
     operator Y() const { return _value; }
 

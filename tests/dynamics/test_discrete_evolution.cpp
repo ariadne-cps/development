@@ -99,7 +99,7 @@ Void TestMapEvolver::test() const
 
 
     // Over-approximate the initial set by a grid cell
-    EnclosureType initial_set(initial_box,henon.state_space(),TaylorFunctionFactory(ThresholdSweeper<FloatDP>(dp,1e-10)));
+    EnclosureType initial_set(initial_box,henon.state_space(),EnclosureConfiguration(TaylorFunctionFactory(ThresholdSweeper<FloatDP>(dp,1e-10))));
     ARIADNE_TEST_PRINT(initial_set);
 
     // Set up the evolution parameters and grid

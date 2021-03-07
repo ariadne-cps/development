@@ -127,15 +127,27 @@ typename MapEvolver::FunctionFactoryType const MapEvolver::function_factory() co
 }
 
 typename MapEvolver::EnclosureType MapEvolver::enclosure(const ExactBoxType& box) const {
-    return EnclosureType(box,this->system().state_space(),this->function_factory());
+    return EnclosureType(box,this->system().state_space(),EnclosureConfiguration(this->function_factory()));
+}
+
+typename MapEvolver::EnclosureType MapEvolver::enclosure(const ExactBoxType& box, const EnclosureConfiguration& config) const {
+    return EnclosureType(box,this->system().state_space(), config);
 }
 
 typename MapEvolver::EnclosureType MapEvolver::enclosure(const RealBox& box) const {
-    return EnclosureType(box,this->system().state_space(),this->function_factory());
+    return EnclosureType(box,this->system().state_space(),EnclosureConfiguration(this->function_factory()));
+}
+
+typename MapEvolver::EnclosureType MapEvolver::enclosure(const RealBox& box, const EnclosureConfiguration& config) const {
+    return EnclosureType(box,this->system().state_space(), config);
 }
 
 typename MapEvolver::EnclosureType MapEvolver::enclosure(const RealVariablesBox& box) const {
-    return EnclosureType(box,this->system().state_space(),this->function_factory());
+    return EnclosureType(box,this->system().state_space(),EnclosureConfiguration(this->function_factory()));
+}
+
+typename MapEvolver::EnclosureType MapEvolver::enclosure(const RealVariablesBox& box, const EnclosureConfiguration& config) const {
+    return EnclosureType(box,this->system().state_space(), config);
 }
 
 Orbit<MapEvolver::EnclosureType>

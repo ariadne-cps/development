@@ -134,8 +134,6 @@ class BounderHandle {
 
 };
 
-
-
 } // namespace Ariadne
 
 #endif /* ARIADNE_BOUNDER_HPP */

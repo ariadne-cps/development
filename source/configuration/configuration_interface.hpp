@@ -1,5 +1,5 @@
 /***************************************************************************
- *            solvers/configuration_interface.hpp
+ *            configuration/configuration_interface.hpp
  *
  *  Copyright  2011-20  Luca Geretti
  *
@@ -22,14 +22,15 @@
  *  along with Ariadne.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/*! \file solvers/configuration_interface.hpp
- *  \brief A simple interface for configuration classes, mainly provided to specify the involved semantics.
+/*! \file configuration/configuration_interface.hpp
+ *  \brief Interface for basic configurations.
  */
 
-#ifndef ARIADNE_CONFIGURATION_INTERFACE_HPP
-#define ARIADNE_CONFIGURATION_INTERFACE_HPP
+#ifndef ARIADNE_CONFIGURATION_HPP
+#define ARIADNE_CONFIGURATION_HPP
 
 #include <ostream>
+#include <type_traits>
 #include "utility/writable.hpp"
 
 namespace Ariadne {
@@ -104,7 +105,6 @@ namespace Ariadne {
  *
  */
 class ConfigurationInterface : public WritableInterface {
-
   private:
     const ConfigurationInterface& operator=(const ConfigurationInterface& other) = delete;
   public:
@@ -113,7 +113,6 @@ class ConfigurationInterface : public WritableInterface {
     friend OutputStream& operator<<(OutputStream& os, const ConfigurationInterface& config) { return config._write(os); }
 };
 
-
 } // namespace Ariadne
 
-#endif // ARIADNE_CONFIGURATION_INTERFACE_HPP
+#endif // ARIADNE_CONFIGURATION_HPP

@@ -125,19 +125,19 @@ class HybridEnclosure
     //! \brief An empty enclosure.
     HybridEnclosure(EnclosureConfiguration const& config);
     //! \brief An enclosure corresponding to a hybrid box \a hbx with variables canonically ordered by \a spc.
-    HybridEnclosure(const HybridBoxSet& hbx, const RealSpace& spc, const ValidatedFunctionModelDPFactory& fac);
+    HybridEnclosure(const HybridBoxSet& hbx, const RealSpace& spc, const EnclosureConfiguration& config);
     //! \brief An enclosure corresponding to the hybrid set \a set using \a space to order the continuous variables.
-    HybridEnclosure(const HybridBoundedConstraintSet& set, const RealSpace& space, const ValidatedFunctionModelDPFactory& factory);
+    HybridEnclosure(const HybridBoundedConstraintSet& set, const RealSpace& space, const EnclosureConfiguration& config);
 
     //! \brief An enclosure corresponding to a Euclidean box \a bx in location \a q with variables ordered by \a spc.
-    HybridEnclosure(const DiscreteLocation& q, const RealSpace& spc, const RealBox& bx, const ValidatedFunctionModelDPFactory& fac);
+    HybridEnclosure(const DiscreteLocation& q, const RealSpace& spc, const RealBox& bx, const EnclosureConfiguration& config);
     //! \brief An enclosure corresponding to a hybrid box \a hbx.
-    explicit HybridEnclosure(const HybridRealBox& hbx, const ValidatedFunctionModelDPFactory& fac);
+    explicit HybridEnclosure(const HybridRealBox& hbx, const EnclosureConfiguration& config);
 
     //! \brief An enclosure corresponding to a hybrid box \a hbx.
-    explicit HybridEnclosure(const HybridExactBoxType& hbx, const ValidatedFunctionModelDPFactory& fac);
+    explicit HybridEnclosure(const HybridExactBoxType& hbx, const EnclosureConfiguration& config);
     //! \brief An enclosure corresponding to a hybrid box \a hbx.
-    explicit HybridEnclosure(const HybridExactBoxType& hbx, List<RealAssignment> aux, const ValidatedFunctionModelDPFactory& fac);
+    explicit HybridEnclosure(const HybridExactBoxType& hbx, List<RealAssignment> aux, const EnclosureConfiguration& config);
     //! \brief An enclosure constructed from a location \a q, and a (timed, labelled) enclosure \a es.
     explicit HybridEnclosure(const DiscreteLocation& q, const RealSpace& spc, const Enclosure& es);
     //! \brief An enclosure constructed from a location \a q, and a (timed, labelled) enclosure \a es.

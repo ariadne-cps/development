@@ -39,7 +39,7 @@
 
 #include "dynamics/map.hpp"
 #include "function/function_interface.hpp"
-#include "solvers/configuration_interface.hpp"
+#include "configuration/configuration_interface.hpp"
 #include "dynamics/evolver_base.hpp"
 
 #include "output/logging.hpp"
@@ -84,10 +84,12 @@ class MapEvolver
 
     //! \brief Make an enclosure from a user set.
     EnclosureType enclosure(RealBox const&) const;
+    EnclosureType enclosure(RealBox const&, EnclosureConfiguration const&) const;
     EnclosureType enclosure(RealVariablesBox const&) const;
-
+    EnclosureType enclosure(RealVariablesBox const&, EnclosureConfiguration const&) const;
     //! \brief Make an enclosure from a computed box set.
     EnclosureType enclosure(ExactBoxType const&) const;
+    EnclosureType enclosure(ExactBoxType const&, EnclosureConfiguration const&) const;
 
     //!@{
     //! \name Configuration for the class.

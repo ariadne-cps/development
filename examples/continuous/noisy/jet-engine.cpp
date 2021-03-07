@@ -30,6 +30,6 @@ using namespace Ariadne;
 
 int main(int argc, const char* argv[])
 {
-    Logger::configuration().set_verbosity(get_verbosity(argc,argv));
+    ARIADNE_LOG_SET_VERBOSITY(get_verbosity(argc,argv));
     run_noisy_system(JE());
 }

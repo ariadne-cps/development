@@ -3,7 +3,8 @@ set(UNIT_TESTS
     test_inclusion_vector_field
     test_inclusion_evolver
     test_discrete_evolution
-    test_reachability_analyser
+    test_finite_time_reachability
+    test_infinite_time_reachability
 )
 
 foreach(TEST ${UNIT_TESTS})

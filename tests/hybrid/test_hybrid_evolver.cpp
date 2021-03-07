@@ -827,7 +827,7 @@ Void TestHybridEvolver::test_transverse_linear_crossing() const
     RealExpression ct=-guard; // Crossing time
     //EffectiveVectorMultivariateFunction function=make_function((x+ct,y+2-ct),final_space);
     EffectiveVectorMultivariateFunction function=join(make_function(x+ct,final_space),make_function(y+2-ct,final_space));
-    LabelledEnclosure expected_final_enclosure(initial_set.euclidean_set(q1,final_space),system.continuous_state_space(q1),evolver_ptr->function_factory());
+    LabelledEnclosure expected_final_enclosure(initial_set.euclidean_set(q1,final_space),system.continuous_state_space(q1),EnclosureConfiguration(evolver_ptr->function_factory()));
     expected_final_enclosure.apply_map(function);
 
     Vector<FloatDPBounds> tolerance(2,FloatDPBounds(-tol,+tol,dp));
@@ -901,7 +901,7 @@ Void TestHybridEvolver::test_transverse_cube_root_crossing() const
 
 Int main(Int argc, const char* argv[])
 {
-    Logger::configuration().set_verbosity(get_verbosity(argc,argv));
+    ARIADNE_LOG_SET_VERBOSITY(get_verbosity(argc,argv));
 
     DRAWING_METHOD = DrawingMethod::AFFINE;
     DRAWING_ACCURACY = 2u;

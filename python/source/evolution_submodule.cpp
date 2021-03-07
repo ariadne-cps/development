@@ -29,7 +29,6 @@
 #include "dynamics/map_evolver.hpp"
 #include "dynamics/vector_field_evolver.hpp"
 
-
 using namespace Ariadne;
 
 
@@ -107,5 +106,5 @@ Void evolution_submodule(pybind11::module& module)
     export_evolver_interface<VectorFieldEvolver::Interface>(module,"VectorFieldEvolverInterface");
 
     export_evolver<MapEvolver, IteratedMap>(module,"MapEvolver");
-    export_evolver<VectorFieldEvolver, VectorField, IntegratorInterface const&>(module,"VectorFieldEvolver");
+    export_evolver<VectorFieldEvolver, VectorField const&, Configuration<VectorFieldEvolver> const&>(module,"VectorFieldEvolver");
 }

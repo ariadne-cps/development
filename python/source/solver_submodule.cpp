@@ -77,24 +77,12 @@ class IntegratorWrapper
   public:
     IntegratorInterface* clone() const {
         return this->get_override("clone")(); }
-    Void set_temporal_order(Nat to) {
-        this->get_override("set_temporal_order")(to); }
-    Void set_maximum_error(ApproximateDouble me) {
-        this->get_override("set_maximum_error")(me); }
-    ExactDouble maximum_error() const {
-        return this->get_override("maximum_error")(); }
     Pair<StepSizeType,UpperBoxType> flow_bounds(const ValidatedVectorMultivariateFunction& vf, const ExactBoxType& D, const StepSizeType& h) const {
         return this->get_override("flow_bounds")(vf,D,h); }
-    FlowStepModelType flow_step(const ValidatedVectorMultivariateFunction& vf, const ExactBoxType& D, StepSizeType& h) const {
-        return this->get_override("flow_step")(vf,D,h); }
+    FlowStepModelType flow_step(const ValidatedVectorMultivariateFunction& vf, const ExactBoxType& D, const StepSizeType& hst, StepSizeType& hsug) const {
+        return this->get_override("flow_step")(vf,D,hst,hsug); }
     FlowStepModelType flow_step(const ValidatedVectorMultivariateFunction& vf, const ExactBoxType& D, const StepSizeType& h, const UpperBoxType& B) const {
         return this->get_override("flow_step")(vf,D,h,B); }
-    FlowStepModelType flow_to(const ValidatedVectorMultivariateFunction& vf ,const ExactBoxType& D, const Real& tf) const {
-        return this->get_override("flow_to")(vf,D,tf); }
-    FlowModelType flow(const ValidatedVectorMultivariateFunction& vf, const ExactBoxType& D, const Real& t0, const Real& tf) const {
-        return this->get_override("flow")(vf,D,t0,tf); }
-    FlowModelType flow(const ValidatedVectorMultivariateFunction& vf, const ExactBoxType& D, const Real& tf) const {
-        return this->get_override("flow")(vf,D,tf); }
     Void _write(OutputStream& os) const {
         this->get_override("_write")(os); }
 };
@@ -138,34 +126,23 @@ Void export_integrators(pybind11::module& module)
 
     pybind11::class_<IntegratorInterface,IntegratorWrapper> integrator_interface_class(module,"IntegratorInterface");
     integrator_interface_class.def("flow_bounds",(Pair<StepSizeType,UpperBoxType>(IntegratorInterface::*)(const ValidatedVectorMultivariateFunction&, const ExactBoxType&, const StepSizeType&)const)&IntegratorInterface::flow_bounds);
-    integrator_interface_class.def("flow_step",(FlowStepModelType(IntegratorInterface::*)(const ValidatedVectorMultivariateFunction&, const ExactBoxType&, StepSizeType&)const)&IntegratorInterface::flow_step);
+    integrator_interface_class.def("flow_step",(FlowStepModelType(IntegratorInterface::*)(const ValidatedVectorMultivariateFunction&, const ExactBoxType&, const StepSizeType&, StepSizeType&)const)&IntegratorInterface::flow_step);
     integrator_interface_class.def("flow_step",(FlowStepModelType(IntegratorInterface::*)(const ValidatedVectorMultivariateFunction&,const ExactBoxType&,const StepSizeType&,const UpperBoxType&)const)&IntegratorInterface::flow_step);
-    integrator_interface_class.def("flow_to",(FlowStepModelType(IntegratorInterface::*)(const ValidatedVectorMultivariateFunction&,const ExactBoxType&,const Real&)const)&IntegratorInterface::flow_to);
-    integrator_interface_class.def("flow",(FlowModelType(IntegratorInterface::*)(const ValidatedVectorMultivariateFunction&,const ExactBoxType&,const Real&)const)&IntegratorInterface::flow);
     integrator_interface_class.def("__str__", &__cstr__<IntegratorInterface>);
-
+/*
+ * TODO: restore
     pybind11::class_<TaylorPicardIntegrator,IntegratorInterface> taylor_picard_integrator_class(module,"TaylorPicardIntegrator");
     taylor_picard_integrator_class.def(pybind11::init<ApproximateDouble>());
     taylor_picard_integrator_class.def("minimum_temporal_order",&TaylorPicardIntegrator::minimum_temporal_order);
     taylor_picard_integrator_class.def("maximum_temporal_order",&TaylorPicardIntegrator::maximum_temporal_order);
     taylor_picard_integrator_class.def("set_minimum_temporal_order",&TaylorPicardIntegrator::set_minimum_temporal_order);
     taylor_picard_integrator_class.def("set_maximum_temporal_order",&TaylorPicardIntegrator::set_maximum_temporal_order);
-
+*/
     pybind11::class_<TaylorSeriesIntegrator,IntegratorInterface> taylor_series_integrator_class(module,"TaylorSeriesIntegrator");
     taylor_series_integrator_class.def(pybind11::init<ApproximateDouble,Nat>());
-    taylor_series_integrator_class.def("order",&TaylorSeriesIntegrator::order);
-    taylor_series_integrator_class.def("maximum_error",&TaylorSeriesIntegrator::maximum_error);
-    taylor_series_integrator_class.def("set_order",&TaylorSeriesIntegrator::set_order);
-    taylor_series_integrator_class.def("set_maximum_error",&TaylorSeriesIntegrator::set_maximum_error);
 
     pybind11::class_<GradedTaylorSeriesIntegrator,IntegratorInterface> graded_taylor_series_integrator_class(module,"GradedTaylorSeriesIntegrator");
     graded_taylor_series_integrator_class.def(pybind11::init<ApproximateDouble>());
-    graded_taylor_series_integrator_class.def("maximum_spacial_order",&GradedTaylorSeriesIntegrator::maximum_spacial_order);
-    graded_taylor_series_integrator_class.def("maximum_temporal_order",&GradedTaylorSeriesIntegrator::maximum_temporal_order);
-    graded_taylor_series_integrator_class.def("maximum_error",&GradedTaylorSeriesIntegrator::maximum_error);
-    graded_taylor_series_integrator_class.def("set_maximum_spacial_order",&GradedTaylorSeriesIntegrator::set_maximum_spacial_order);
-    graded_taylor_series_integrator_class.def("set_maximum_temporal_order",&GradedTaylorSeriesIntegrator::set_maximum_temporal_order);
-    graded_taylor_series_integrator_class.def("set_maximum_error",&GradedTaylorSeriesIntegrator::set_maximum_error);
 
     pybind11::class_<RungeKutta4Integrator> runge_kutta_4_integrator_class(module,"RungeKutta4Integrator");
     runge_kutta_4_integrator_class.def(pybind11::init<ApproximateDouble>());

@@ -33,6 +33,7 @@
 #include <cstring>
 #include <iostream>
 #include <exception>
+#include "numeric/logical.hpp"
 
 int ARIADNE_TEST_FAILURES=0;
 int ARIADNE_TEST_SKIPPED=0;
@@ -270,6 +271,20 @@ int test_case_counter = 0;
         }                                                               \
     }                                                                   \
 
+/*! \brief Evaluates \a expression1 and expression2 and checks if the results are not equal. */
+#define ARIADNE_TEST_NOT_EQUAL(expression1,expression2)                 \
+    {                                                                   \
+        std::cout << #expression1 << " != " << #expression2 << ": " << std::flush; \
+        Bool ok = decide((expression1) == (expression2));               \
+        if(ok) {                                                        \
+            ++ARIADNE_TEST_FAILURES;                                    \
+            std::cout << "\nERROR: " << #expression1 << ":\n           " << (expression1) \
+                      << "\n     : " << #expression2 << ":\n           " << (expression2) << std::endl; \
+            std::cerr << "ERROR: " << __FILE__ << ":" << __LINE__ << ": " << __PRETTY_FUNCTION__ << ": Inequality `" << #expression1 << " != " << #expression2 << "' failed; " << #expression1 << "=" << (expression1) << "; " << #expression2 << "=" << (expression2) << std::endl; \
+        } else {                                                        \
+            std::cout << "true\n" << std::endl;                         \
+        }                                                               \
+    }                                                                   \
 
 /*! \brief Evaluates \a expression and checks if the result is equal to \a expected. */
 #define ARIADNE_TEST_EQUALS(expression,expected)                         \

@@ -62,7 +62,7 @@ using namespace std;
 
 Int main(int argc, const char* argv[])
 {
-    Logger::configuration().set_verbosity(get_verbosity(argc,argv));
+    ARIADNE_LOG_SET_VERBOSITY(get_verbosity(argc,argv));
 
     // The Henon map \f$(x,y)\mapsto(a-x^2+by,x)
     Real a=Decimal(1.3), b=Decimal(0.3);

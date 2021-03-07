@@ -101,8 +101,15 @@ Void TestContinuousEvolution::test() const
     ThresholdSweeper<FloatDP> sweeper(DoublePrecision(),1e-8_pr);
 
     // Set up the evaluators
-    TaylorPicardIntegrator picard_integrator(maximum_error=1e-4_pr,sweeper,lipschitz_constant=0.5_x,
-                                             step_maximum_error=1e-6_pr,minimum_temporal_order=0,maximum_temporal_order=8);
+
+    Configuration<TaylorPicardIntegrator> integrator_configuration;
+    integrator_configuration.set_step_maximum_error(1e-2);
+    TaylorPicardIntegrator picard_integrator(Configuration<TaylorPicardIntegrator>()
+        .set_step_maximum_error(1e-6)
+        .set_sweeper(sweeper)
+        .set_maximum_temporal_order(8)
+    );
+
     // Set up the evaluators
     GradedTaylorSeriesIntegrator series_integrator(maximum_error=1e-4_pr,sweeper,lipschitz_constant=0.5_x,step_maximum_error=1e-6_pr,
                                              minimum_spacial_order=1,minimum_temporal_order=4,maximum_spacial_order=3,maximum_temporal_order=8);
@@ -125,14 +132,17 @@ Void TestContinuousEvolution::test() const
 //    initial_box[0]=ExactIntervalType(1.01,1.02);
 //    initial_box[1]=ExactIntervalType(0.51,0.52);
 
-
-    VectorFieldEvolver evolver(vanderpol,integrator);
-    evolver.configuration().set_maximum_enclosure_radius(enclosure_radius);
-    evolver.configuration().set_maximum_step_size(step_size);
+    VectorFieldEvolver evolver(vanderpol,Configuration<VectorFieldEvolver>()
+        .set_integrator(integrator)
+        .set_enable_reconditioning(true)
+        .set_maximum_spacial_error(1e-2)
+        .set_maximum_enclosure_radius(enclosure_radius)
+        .set_maximum_step_size(step_size)
+    );
 
     // Over-approximate the initial set by a grid cell
     TaylorFunctionFactory function_factory(ThresholdSweeper<FloatDP>(dp,1e-8));
-    EnclosureType initial_set(initial_box,vanderpol.state_space(),function_factory);
+    EnclosureType initial_set(initial_box,vanderpol.state_space(),EnclosureConfiguration(function_factory));
     ARIADNE_TEST_PRINT(initial_set);
 
     Semantics semantics=Semantics::UPPER;
@@ -181,8 +191,13 @@ Void TestContinuousEvolution::failure_test() const
     ThresholdSweeper<FloatDP> sweeper(DoublePrecision(),1e-8_pr);
 
     // Set up the evaluators
-    TaylorPicardIntegrator integrator(maximum_error=1e-6_pr,sweeper,lipschitz_constant=0.5_x,
-                                      step_maximum_error=1e-8_pr,minimum_temporal_order=0,maximum_temporal_order=6);
+    TaylorPicardIntegrator integrator(Configuration<TaylorPicardIntegrator>()
+        .set_step_maximum_error(1e-8)
+        .set_sweeper(sweeper)
+        .set_lipschitz_tolerance(0.5)
+        .set_minimum_temporal_order(0)
+        .set_maximum_temporal_order(6)
+    );
 
     // Define the initial box
     ExactBoxType initial_box = ExactBoxType{{0.0_x,0.0_x},{0.9_pr,0.9_pr}};
@@ -194,13 +209,16 @@ Void TestContinuousEvolution::failure_test() const
     RealVariable x("x"), y("y");
 
     VectorField failone_vf({dot(x)=1,dot(y)=-p*y+p});
-
-    VectorFieldEvolver evolverone(failone_vf,integrator);
-    evolverone.configuration().set_maximum_enclosure_radius(enclosure_radius);
-    evolverone.configuration().set_maximum_step_size(step_size);
+    VectorFieldEvolver evolverone(failone_vf,Configuration<VectorFieldEvolver>()
+        .set_integrator(integrator)
+        .set_enable_reconditioning(true)
+        .set_maximum_spacial_error(1e-6)
+        .set_maximum_enclosure_radius(enclosure_radius)
+        .set_maximum_step_size(step_size)
+    );
 
     TaylorFunctionFactory function_factory(ThresholdSweeper<FloatDP>(dp,1e-10));
-    EnclosureType initial_set(initial_box,failone_vf.state_space(),function_factory);
+    EnclosureType initial_set(initial_box,failone_vf.state_space(),EnclosureConfiguration(function_factory));
     // cout << "initial_set=" << initial_set << endl << endl;
 
     Semantics semantics=Semantics::UPPER;
@@ -241,13 +259,16 @@ Void TestContinuousEvolution::failure_test() const
     EffectiveScalarMultivariateFunction x2=EffectiveScalarMultivariateFunction::coordinate(3,1);
     EffectiveVectorMultivariateFunction failtwo={o3,x1*x2/p,z3};
     VectorField failtwo_vf(failtwo);
-
-    VectorFieldEvolver evolvertwo(failtwo_vf,integrator);
-    evolvertwo.configuration().set_maximum_enclosure_radius(enclosure_radius);
-    evolvertwo.configuration().set_maximum_step_size(step_size);
+    VectorFieldEvolver evolvertwo(failtwo_vf,Configuration<VectorFieldEvolver>()
+        .set_integrator(integrator)
+        .set_enable_reconditioning(true)
+        .set_maximum_spacial_error(1e-2)
+        .set_maximum_enclosure_radius(enclosure_radius)
+        .set_maximum_step_size(step_size)
+    );
 
     ExactBoxType initial_box2 = ExactBoxType{{0.0_x,0.0_x},{1.0_x,1.0_x},{1.0_x,1.0_x}};
-    initial_set = EnclosureType(initial_box2,failtwo_vf.state_space(),function_factory);
+    initial_set = EnclosureType(initial_box2,failtwo_vf.state_space(),EnclosureConfiguration(function_factory));
 
     time = 1.5_dec;
 

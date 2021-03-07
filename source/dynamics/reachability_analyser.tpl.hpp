@@ -613,8 +613,8 @@ verify_safety(const CompactSetInterfaceType& initial_set,
 //    assert(bounded_safe_set_ptr != nullptr);
 //
 //    BoundingDomainType safe_set_bounding_box=cast_exact(bounded_safe_set_ptr->bounding_box());
-//    const GridType& grid=this->_configuration->grid();
-//    StorageType safe_cells=inner_approximation(safe_set, grid, safe_set_bounding_box, this->_configuration->maximum_grid_fineness());
+//    const GridType& grid=this->_base_configuration->grid();
+//    StorageType safe_cells=inner_approximation(safe_set, grid, safe_set_bounding_box, this->_base_configuration->maximum_grid_fineness());
 
     ARIADNE_LOG_SCOPE_CREATE;
     const RegularLocatedSetInterfaceType* bounded_safe_set_ptr=dynamic_cast<RegularLocatedSetInterfaceType const*>(&safe_set);

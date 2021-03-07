@@ -1,7 +1,7 @@
 /***************************************************************************
  *            test_inclusion_vector_field.cpp
  *
- *  Copyright  2008-20  Copyright  2008-20uca Geretti, Pieter Collins, Sanja Zivanovic
+ *  Copyright  2008-20  Luca Geretti, Pieter Collins, Sanja Zivanovic
  *
  ****************************************************************************/
 

@@ -37,29 +37,33 @@
 #include <queue>
 #include <map>
 #include <sstream>
-#include <thread>
-#include <mutex>
-#include <atomic>
 #include "utility/macros.hpp"
 #include "utility/pointer.hpp"
-#include "utility/writable.hpp"
 
+// Set the verbosity, i.e., the maximum level to be shown from println calls
+#define ARIADNE_LOG_SET_VERBOSITY(level) Logger::instance().configuration().set_verbosity(level);
 // Automatic level increase/decrease in a scope; meant to be used once within a function, at top scope; necessary for print holding.
 #define ARIADNE_LOG_SCOPE_CREATE auto logscopemanager = LogScopeManager(ARIADNE_PRETTY_FUNCTION);
 // Managed level increase/decrease around the function fn; if the function throws, manual decrease of the proper level is required.
-#define ARIADNE_LOG_RUN_AT(level,fn) Logger::increase_level(level); fn; Logger::decrease_level(level);
+#define ARIADNE_LOG_RUN_AT(level,fn) Logger::instance().increase_level(level); fn; Logger::instance().decrease_level(level);
 // Mute the logger for the function fn; if the function throws, manual decrease of the proper level is required.
-#define ARIADNE_LOG_RUN_MUTED(fn) Logger::mute_increase_level(); fn; Logger::mute_decrease_level();
+#define ARIADNE_LOG_RUN_MUTED(fn) Logger::instance().mute_increase_level(); fn; Logger::instance().mute_decrease_level();
 // Print one line at the current level; the text shouldn't have carriage returns, but for efficiency purposes this is not checked.
-#define ARIADNE_LOG_PRINTLN(text) { if (!Logger::is_muted_at(0)) { std::stringstream logger_stream; logger_stream << std::boolalpha << text; Logger::println(0,logger_stream.str()); } }
+#define ARIADNE_LOG_PRINTLN(text) { if (!Logger::instance().is_muted_at(0)) { std::ostringstream logger_stream; logger_stream << std::boolalpha << text; Logger::instance().println(0,logger_stream.str()); } }
 // Print one line at an increased level with respect to the current one; the text shouldn't have carriage returns, but for efficiency purposes this is not checked.
-#define ARIADNE_LOG_PRINTLN_AT(level,text) { if (!Logger::is_muted_at(level)) { std::stringstream logger_stream; logger_stream << std::boolalpha << text; Logger::println(level,logger_stream.str()); } }
+#define ARIADNE_LOG_PRINTLN_AT(level,text) { if (!Logger::instance().is_muted_at(level)) { std::ostringstream logger_stream; logger_stream << std::boolalpha << text; Logger::instance().println(level,logger_stream.str()); } }
+// Print variable in one line at the current level, using the formatting convention.
+#define ARIADNE_LOG_PRINTLN_VAR(var) { if (!Logger::instance().is_muted_at(0)) { std::ostringstream logger_stream; logger_stream << std::boolalpha << #var << " = " << var; Logger::instance().println(0,logger_stream.str()); } }
+// Print variable in one line at the increased level with respect to the current one, using the formatting convention.
+#define ARIADNE_LOG_PRINTLN_VAR_AT(level,var) { if (!Logger::instance().is_muted_at(level)) { std::ostringstream logger_stream; logger_stream << std::boolalpha << #var << " = " << var; Logger::instance().println(level,logger_stream.str()); } }
 // Print a text at the bottom line, holding it until the function scope ends; this requires creation of the scope.
 // Nested calls in separate functions append to the held line.
 // The text for obvious reasons shouldn't have newlines and carriage returns; for efficiency purposes this is not checked.
-#define ARIADNE_LOG_SCOPE_PRINTHOLD(text) { if (!Logger::is_muted_at(0)) { std::stringstream logger_stream; logger_stream << std::boolalpha << text; Logger::hold(logscopemanager.scope(),logger_stream.str()); } }
+#define ARIADNE_LOG_SCOPE_PRINTHOLD(text) { if (!Logger::instance().is_muted_at(0)) { std::ostringstream logger_stream; logger_stream << std::boolalpha << text; Logger::instance().hold(logscopemanager.scope(),logger_stream.str()); } }
 
 namespace Ariadne {
+
+class LoggableSmartThread;
 
 inline unsigned int get_verbosity(int argc, const char* argv[]) {
     if(argc>1) {
@@ -107,12 +111,12 @@ static TerminalTextStyle TT_STYLE_DARKGREY(244,0,false,false);
 static TerminalTextStyle TT_STYLE_LIGHTGREY(251,0,false,false);
 
 //! \brief A set of text styles for different elements of the logging interface
-struct TerminalTextTheme : public WritableInterface {
+struct TerminalTextTheme {
     TerminalTextTheme();
     TerminalTextTheme(TerminalTextStyle level_number, TerminalTextStyle level_shown_separator, TerminalTextStyle level_hidden_separator,
                       TerminalTextStyle multiline_separator, TerminalTextStyle assignment_comparison, TerminalTextStyle miscellaneous_operator,
                       TerminalTextStyle round_parentheses, TerminalTextStyle square_parentheses, TerminalTextStyle curly_parentheses,
-                      TerminalTextStyle colon, TerminalTextStyle comma, TerminalTextStyle number, TerminalTextStyle keyword);
+                      TerminalTextStyle colon, TerminalTextStyle comma, TerminalTextStyle number, TerminalTextStyle at, TerminalTextStyle keyword);
 
     TerminalTextStyle level_number; // The number representing the log level
     TerminalTextStyle level_shown_separator; // The separator when the level is shown
@@ -130,11 +134,12 @@ struct TerminalTextTheme : public WritableInterface {
     TerminalTextStyle comma; // Character: ,
     TerminalTextStyle number; // A 0-9 digit, or a dot after a digit, but not if parsing a numbered_variable
 
+    TerminalTextStyle at; // Character: @
     TerminalTextStyle keyword; // Specific words, not pre/post-fixed by an alphanumeric character: virtual, const, true, false, inf
 
     bool has_style() const; // Whether at least one style is set
 
-    virtual OutputStream& _write(OutputStream& os) const override;
+    friend OutputStream& operator<<(OutputStream& os, TerminalTextTheme const& theme);
 };
 
 //! \brief Empty theme, for not forcing any theme
@@ -144,13 +149,13 @@ static TerminalTextTheme TT_THEME_DARK = TerminalTextTheme(TT_STYLE_BRIGHTORANGE
                                                            TT_STYLE_DARKGREY,TT_STYLE_BRIGHTORANGE,TT_STYLE_LIGHTBROWN,
                                                            TT_STYLE_DARKORANGE,TT_STYLE_DARKGREY,TT_STYLE_LIGHTBROWN,
                                                            TT_STYLE_LIGHTBROWN,TT_STYLE_DARKGREY,TT_STYLE_CREAM,
-                                                           TT_STYLE_DARKGREY);
+                                                           TT_STYLE_DARKGREY,TT_STYLE_DARKGREY);
 //! \brief Theme for white background
 static TerminalTextTheme TT_THEME_LIGHT = TerminalTextTheme(TT_STYLE_BRIGHTORANGE,TT_STYLE_BRIGHTORANGE,TT_STYLE_DARKGREY,
                                                             TT_STYLE_DARKGREY,TT_STYLE_DARKBROWN,TT_STYLE_DARKBROWN,
                                                             TT_STYLE_DARKGREY,TT_STYLE_OBSIDIAN,TT_STYLE_LIGHTBROWN,
                                                             TT_STYLE_LIGHTBROWN,TT_STYLE_OBSIDIAN,TT_STYLE_DARKORANGE,
-                                                            TT_STYLE_DARKGREY);
+                                                            TT_STYLE_DARKGREY,TT_STYLE_DARKGREY);
 
 //! \brief Support class for managing log level increase/decrease in a scope
 //! \details Since it is possible to capture the scope string of a function only, nested scopes in a function have the same scope string
@@ -168,10 +173,11 @@ class LogScopeManager {
 //! \brief Supported kinds of log messages
 enum RawMessageKind { PRINTLN, HOLD, RELEASE };
 
-//! \brief A log message in raw form, as submitted, before formatting for actual output
-struct LogRawMessage {
+//! \brief A log message in raw form, as submitted to a concurrent scheduler
+//! \details This does not hold any thread identifier information yet, for efficiency
+struct LogThinRawMessage {
 
-    LogRawMessage(std::string scope, unsigned int level, std::string text);
+    LogThinRawMessage(std::string scope, unsigned int level, std::string text);
 
     std::string scope;
     unsigned int level;
@@ -180,59 +186,23 @@ struct LogRawMessage {
     RawMessageKind kind() const;
 };
 
+//! \brief Full log message information in raw form, before formatting for actual output
+struct LogRawMessage : public LogThinRawMessage {
+    LogRawMessage(std::string id, LogThinRawMessage msg) : LogThinRawMessage(msg), identifier(id) { }
+    LogRawMessage(std::string id, std::string scp, unsigned int lvl, std::string txt) : LogRawMessage(id,LogThinRawMessage(scp,lvl,txt)) { }
+    LogRawMessage(std::string scp, unsigned int lvl, std::string txt) : LogThinRawMessage(scp,lvl,txt), identifier("") { }
+    std::string identifier;
+};
+
 class LoggerData;
 
-class LoggerSchedulerInterface {
-  public:
-    virtual void println(unsigned int level_increase, std::string text) = 0;
-    virtual void hold(std::string scope, std::string text) = 0;
-    virtual void release(std::string scope) = 0;
-    virtual unsigned int current_level() const = 0;
-    virtual void increase_level(unsigned int i) = 0;
-    virtual void decrease_level(unsigned int i) = 0;
-    virtual ~LoggerSchedulerInterface() = default;
-};
+//! \brief The policy for printing the thread id with respect to the log level: NEVER, BEFORE or AFTER
+enum class ThreadNamePrintingPolicy { NEVER, BEFORE, AFTER };
 
-//! \brief A Logger scheduler that prints immediately. Not designed for concurrency, since
-//! the current level should change based on the thread. Also clearly the outputs can overlap arbitrarily.
-class ImmediateLoggerScheduler : public LoggerSchedulerInterface {
-public:
-    ImmediateLoggerScheduler();
-    virtual void println(unsigned int level_increase, std::string text) override;
-    virtual void hold(std::string scope, std::string text) override;
-    virtual void release(std::string scope) override;
-    virtual unsigned int current_level() const override;
-    virtual void increase_level(unsigned int i) override;
-    virtual void decrease_level(unsigned int i) override;
-private:
-    unsigned int _current_level;
-};
-
-//! \brief A Logger scheduler that enqueues messages and prints them sequentially.
-//! The order of printing takes into account the queue for each thread.
-class ConcurrentLoggerScheduler : public LoggerSchedulerInterface {
-  public:
-    ConcurrentLoggerScheduler();
-    virtual void println(unsigned int level_increase, std::string text) override;
-    virtual void hold(std::string scope, std::string text) override;
-    virtual void release(std::string scope) override;
-    virtual unsigned int current_level() const override;
-    virtual void increase_level(unsigned int i) override;
-    virtual void decrease_level(unsigned int i) override;
-    ~ConcurrentLoggerScheduler();
-  private:
-    SharedPointer<LoggerData> _local_data() const;
-    std::pair<std::thread::id,unsigned int> _largest_queue();
-    void _dequeue_msgs();
-    void _create_data_instance(std::thread::id const& id);
-  private:
-    std::map<std::thread::id,SharedPointer<LoggerData>> _data;
-    std::thread _dequeueing_thread;
-    std::atomic<bool> _terminate;
-};
+OutputStream& operator<<(OutputStream& os, const ThreadNamePrintingPolicy& p);
 
 //! \brief Configuration of visualisation settings for a Logger
-class LoggerConfiguration : public WritableInterface {
+class LoggerConfiguration {
   public:
 
     LoggerConfiguration();
@@ -253,6 +223,9 @@ class LoggerConfiguration : public WritableInterface {
     void set_handles_multiline_output(bool b);
     //! \brief If true, discards from printing all newlines and their immediately following whitespaces
     void set_discards_newlines_and_indentation(bool b);
+    //! \brief Decides if and where to append the thread name to the log level (if the latter is shown)
+    //! \details The policy is implicitly NEVER if the scheduler is immediate, or only one thread is registered (logging thread excluded)
+    void set_thread_name_printing_policy(ThreadNamePrintingPolicy p);
 
     //! \brief Configuration getters
 
@@ -263,6 +236,7 @@ class LoggerConfiguration : public WritableInterface {
     bool prints_scope_exit() const;
     bool handles_multiline_output() const;
     bool discards_newlines_and_indentation() const;
+    ThreadNamePrintingPolicy thread_name_printing_policy() const;
 
     //! \brief Style theme for terminal output
     void set_theme(TerminalTextTheme const& theme);
@@ -277,7 +251,7 @@ class LoggerConfiguration : public WritableInterface {
     //! \brief Get the map of keywords (a TerminalTextStyle equal to TT_STYLE_NONE implies no custom style forced)
     std::map<std::string,TerminalTextStyle> const& custom_keywords() const;
 
-    virtual OutputStream& _write(OutputStream& os) const override;
+    friend OutputStream& operator<<(OutputStream& os, LoggerConfiguration const& configuration);
 
   private:
     unsigned int _verbosity;
@@ -287,57 +261,80 @@ class LoggerConfiguration : public WritableInterface {
     bool _prints_scope_exit;
     bool _handles_multiline_output;
     bool _discards_newlines_and_indentation;
+    ThreadNamePrintingPolicy _thread_name_printing_policy;
+
     TerminalTextTheme _theme;
     std::map<std::string,TerminalTextStyle> _custom_keywords;
 };
+
+class LoggerSchedulerInterface;
 
 //! \brief A static class for log output handling.
 //! Configuration and final printing is done here, while scheduling is
 //! done in a separate class.
 class Logger {
-    friend class ConcurrentLoggerScheduler;
+  private:
     friend class ImmediateLoggerScheduler;
+    friend class BlockingLoggerScheduler;
+    friend class NonblockingLoggerScheduler;
+
+    Logger();
   public:
-    static void use_immediate_scheduler();
-    static void use_concurrent_scheduler();
+    Logger(Logger const&) = delete;
+    void operator=(Logger const&) = delete;
 
-    static void println(unsigned int level_increase, std::string text);
-    static void hold(std::string scope, std::string text);
-    static void release(std::string scope);
+    static Logger& instance() {
+        static Logger instance;
+        return instance;
+    }
 
-    static void increase_level(unsigned int i);
-    static void decrease_level(unsigned int i);
-    static void mute_increase_level();
-    static void mute_decrease_level();
+    void use_immediate_scheduler();
+    void use_blocking_scheduler();
+    void use_nonblocking_scheduler();
 
-    static bool is_muted_at(unsigned int i);
+    void register_thread(LoggableSmartThread const& thread);
+    void unregister_thread(LoggableSmartThread const& thread);
 
-    static unsigned int current_level();
-    static unsigned int cached_last_printed_level();
+    void println(unsigned int level_increase, std::string text);
+    void hold(std::string scope, std::string text);
+    void release(std::string scope);
 
-    static LoggerConfiguration& configuration();
+    void increase_level(unsigned int i);
+    void decrease_level(unsigned int i);
+    void mute_increase_level();
+    void mute_decrease_level();
+
+    bool is_muted_at(unsigned int i) const;
+
+    unsigned int current_level() const;
+    std::string current_thread_name() const;
+    unsigned int cached_last_printed_level() const;
+    std::string cached_last_printed_thread_name() const;
+
+    LoggerConfiguration& configuration();
 
   private:
-    static bool _is_assignment_comparison(char const& c);
-    static std::string _apply_theme(std::string const& text);
-    static std::string _apply_theme_for_keywords(std::string const& text);
-    static void _print_preamble_for_firstline(unsigned int level);
-    static void _print_preamble_for_extralines(unsigned int level);
-    static std::string _discard_newlines_and_indentation(std::string const& text);
-    static void _cover_held_columns_with_whitespaces(unsigned int printed_columns);
-    static void _print_held_line();
-    static void _println(LogRawMessage const& msg);
-    static void _hold(LogRawMessage const& msg);
-    static void _release(LogRawMessage const& msg);
-    static unsigned int _get_window_columns();
-    static bool _is_holding();
+    std::string _apply_theme(std::string const& text) const;
+    std::string _apply_theme_for_keywords(std::string const& text) const;
+    void _print_preamble_for_firstline(unsigned int level, std::string thread_name);
+    void _print_preamble_for_extralines(unsigned int level, std::string thread_name);
+    std::string _discard_newlines_and_indentation(std::string const& text);
+    void _cover_held_columns_with_whitespaces(unsigned int printed_columns);
+    void _print_held_line();
+    void _println(LogRawMessage const& msg);
+    void _hold(LogRawMessage const& msg);
+    void _release(LogRawMessage const& msg);
+    unsigned int _get_window_columns() const;
+    bool _is_holding() const;
+    bool _can_print_thread_name() const;
   private:
-    const static unsigned int _MUTE_LEVEL_OFFSET = 1024;
-    inline static std::vector<LogRawMessage> _current_held_stack;
-    inline static unsigned int _cached_num_held_columns = 0;
-    inline static unsigned int _cached_last_printed_level = 0;
-    inline static SharedPointer<LoggerSchedulerInterface> _scheduler = SharedPointer<LoggerSchedulerInterface>(new ConcurrentLoggerScheduler());
-    inline static LoggerConfiguration _configuration;
+    static const unsigned int _MUTE_LEVEL_OFFSET = 1024;
+    std::vector<LogRawMessage> _current_held_stack;
+    unsigned int _cached_num_held_columns;
+    unsigned int _cached_last_printed_level;
+    std::string _cached_last_printed_thread_name;
+    SharedPointer<LoggerSchedulerInterface> _scheduler;
+    LoggerConfiguration _configuration;
 };
 
 // Global log output file

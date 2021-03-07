@@ -31,6 +31,7 @@
 #include "output/logging.hpp"
 #include "utility/writable.hpp"
 #include "utility/macros.hpp"
+#include "concurrency/loggable_smart_thread.hpp"
 
 namespace Ariadne {
 
@@ -43,18 +44,6 @@ void redirect_log(const char* filename)
     }
     log_file_stream.open(filename);
     std::clog.rdbuf( log_file_stream.rdbuf() );
-}
-
-OutputStream& operator<<(OutputStream& os, const WritableInterface& w);
-
-void write_error(OutputStream& os, const char* i, const char* c, const char* t) {
-    os << "Error in dynamic_handle_cast: cannot convert object of static type " << c << " and dynamic type " << i << " to type " << t << "\n";
-}
-
-void write_error(OutputStream& os, const WritableInterface* w, const char* i, const char* c, const char* t) {
-    os << "Error in dynamic_handle_cast:" << std::flush;
-    os << " cannot convert "; assert(w); w->_write(os); os << std::flush;
-    os << " of static type " << c << " and dynamic type " << i << " to type " << t << std::endl;
 }
 
 std::string very_pretty_function(std::string msg) {
@@ -75,7 +64,7 @@ TerminalTextStyle::TerminalTextStyle(uint8_t fontcolor_, uint8_t bgcolor_, bool 
 { }
 
 std::string TerminalTextStyle::operator()() const {
-    std::stringstream ss;
+    std::ostringstream ss;
     if (((int)fontcolor) > 0) ss << "\u001b[38;5;" << (int)fontcolor << "m";
     if (((int)bgcolor) > 0) ss << "\u001b[48;5;" << (int)fontcolor << "m";
     if (bold) ss << "\u001b[1m";
@@ -90,74 +79,83 @@ bool TerminalTextStyle::is_styled() const {
 TerminalTextTheme::TerminalTextTheme(TerminalTextStyle level_number_, TerminalTextStyle level_shown_separator_, TerminalTextStyle level_hidden_separator_,
                                      TerminalTextStyle multiline_separator_, TerminalTextStyle assignment_comparison_, TerminalTextStyle miscellaneous_operator_,
                                      TerminalTextStyle round_parentheses_, TerminalTextStyle square_parentheses_, TerminalTextStyle curly_parentheses_,
-                                     TerminalTextStyle colon_, TerminalTextStyle comma_, TerminalTextStyle number_, TerminalTextStyle keyword_) :
+                                     TerminalTextStyle colon_, TerminalTextStyle comma_, TerminalTextStyle number_, TerminalTextStyle at_, TerminalTextStyle keyword_) :
         level_number(level_number_), level_shown_separator(level_shown_separator_), level_hidden_separator(level_hidden_separator_),
         multiline_separator(multiline_separator_), assignment_comparison(assignment_comparison_), miscellaneous_operator(miscellaneous_operator_),
         round_parentheses(round_parentheses_), square_parentheses(square_parentheses_), curly_parentheses(curly_parentheses_),
-        colon(colon_), comma(comma_), number(number_), keyword(keyword_) { }
+        colon(colon_), comma(comma_), number(number_), at(at_), keyword(keyword_) { }
 
 TerminalTextTheme::TerminalTextTheme() :
         level_number(TT_STYLE_NONE), level_shown_separator(TT_STYLE_NONE), level_hidden_separator(TT_STYLE_NONE),
         multiline_separator(TT_STYLE_NONE), assignment_comparison(TT_STYLE_NONE), miscellaneous_operator(TT_STYLE_NONE),
         round_parentheses(TT_STYLE_NONE), square_parentheses(TT_STYLE_NONE), curly_parentheses(TT_STYLE_NONE),
-        colon(TT_STYLE_NONE), comma(TT_STYLE_NONE), number(TT_STYLE_NONE), keyword(TT_STYLE_NONE) { }
+        colon(TT_STYLE_NONE), comma(TT_STYLE_NONE), number(TT_STYLE_NONE), at(TT_STYLE_NONE), keyword(TT_STYLE_NONE) { }
 
 bool TerminalTextTheme::has_style() const {
     return (level_number.is_styled() or level_shown_separator.is_styled() or level_hidden_separator.is_styled() or
             multiline_separator.is_styled() or assignment_comparison.is_styled() or miscellaneous_operator.is_styled() or
             round_parentheses.is_styled() or square_parentheses.is_styled() or curly_parentheses.is_styled() or
-            colon.is_styled() or comma.is_styled() or number.is_styled() or keyword.is_styled());
+            colon.is_styled() or comma.is_styled() or number.is_styled() or at.is_styled() or keyword.is_styled());
 }
 
-OutputStream& TerminalTextTheme::_write(OutputStream& os) const {
+OutputStream& operator<<(OutputStream& os, TerminalTextTheme const& theme) {
     // This should not be used by ARIADNE_LOG_PRINTLN, otherwise it will be parsed further, breaking level separator styling
     os << "TerminalTextTheme("
-       << "\n  level_number= " << level_number() << "1 2 3 4 5 6 7 8 9" << TerminalTextStyle::RESET
-            << ",\n  level_shown_separator= " << level_shown_separator() << "|" << TerminalTextStyle::RESET
-            << ",\n  level_hidden_separator= " << level_hidden_separator() << "|" << TerminalTextStyle::RESET
-            << ",\n  multiline_separator= " << multiline_separator() << "·" << TerminalTextStyle::RESET
-            << ",\n  assignment_comparison= " << assignment_comparison() << "= > < !" << TerminalTextStyle::RESET
-            << ",\n  miscellaneous_operator= " << miscellaneous_operator() << "+ - * / \\ ^ | & %" << TerminalTextStyle::RESET
-            << ",\n  round_parentheses= " << round_parentheses() << "( )" << TerminalTextStyle::RESET
-            << ",\n  square_parentheses= " << square_parentheses() << "[ ]" << TerminalTextStyle::RESET
-            << ",\n  curly_parentheses= " << curly_parentheses() << "{ }" << TerminalTextStyle::RESET
-            << ",\n  comma= " << comma() << ":" << TerminalTextStyle::RESET
-            << ",\n  number= " << number() << "1.2" << TerminalTextStyle::RESET
-            << ",\n  keyword= " << keyword() << "virtual const true false inf" << TerminalTextStyle::RESET
+       << "\n  level_number= " << theme.level_number() << "1 2 3 4 5 6 7 8 9" << TerminalTextStyle::RESET
+            << ",\n  level_shown_separator= " << theme.level_shown_separator() << "|" << TerminalTextStyle::RESET
+            << ",\n  level_hidden_separator= " << theme.level_hidden_separator() << "|" << TerminalTextStyle::RESET
+            << ",\n  multiline_separator= " << theme.multiline_separator() << "·" << TerminalTextStyle::RESET
+            << ",\n  assignment_comparison= " << theme.assignment_comparison() << "= > < !" << TerminalTextStyle::RESET
+            << ",\n  miscellaneous_operator= " << theme.miscellaneous_operator() << "+ - * / \\ ^ | & %" << TerminalTextStyle::RESET
+            << ",\n  round_parentheses= " << theme.round_parentheses() << "( )" << TerminalTextStyle::RESET
+            << ",\n  square_parentheses= " << theme.square_parentheses() << "[ ]" << TerminalTextStyle::RESET
+            << ",\n  curly_parentheses= " << theme.curly_parentheses() << "{ }" << TerminalTextStyle::RESET
+            << ",\n  comma= " << theme.comma() << ":" << TerminalTextStyle::RESET
+            << ",\n  number= " << theme.number() << "1.2" << TerminalTextStyle::RESET
+            << ",\n  at= " << theme.at() << ":" << TerminalTextStyle::RESET
+            << ",\n  keyword= " << theme.keyword() << "virtual const true false inf" << TerminalTextStyle::RESET
        << "\n)";
     return os;
 }
 
 //! \brief Thread-based enqueued log data
 class LoggerData {
-    friend class ConcurrentLoggerScheduler;
+    friend class NonblockingLoggerScheduler;
 protected:
-    LoggerData(unsigned int current_level);
+    LoggerData(unsigned int current_level, std::string const& thread_name);
 
     void enqueue_println(unsigned int level_increase, std::string text);
     void enqueue_hold(std::string scope, std::string text);
     void enqueue_release(std::string scope);
 
-    LogRawMessage dequeue();
+    LogThinRawMessage dequeue();
 
     void increase_level(unsigned int i);
     void decrease_level(unsigned int i);
 
+    //! \brief Set the object to be removed as soon as empty because it's detached from its thread
+    void kill();
+    //! \brief Notifies if the related thread has been joined and the object can be safely removed as soon as empty
+    Bool is_dead() const;
+
     unsigned int current_level() const;
+    std::string thread_name() const;
 
     unsigned int queue_size() const;
 private:
     unsigned int _current_level;
-    std::queue<LogRawMessage> _raw_messages;
+    std::string _thread_name;
+    std::queue<LogThinRawMessage> _raw_messages;
     std::mutex _queue_mutex;
+    Bool _is_dead;
 };
 
 LogScopeManager::LogScopeManager(std::string scope)
     : _scope(scope)
 {
-    Logger::increase_level(1);
-    if ((!Logger::is_muted_at(0)) and Logger::configuration().prints_scope_entrance()) {
-        Logger::println(0,"Enters '"+very_pretty_function(this->scope())+"'");
+    Logger::instance().increase_level(1);
+    if ((!Logger::instance().is_muted_at(0)) and Logger::instance().configuration().prints_scope_entrance()) {
+        Logger::instance().println(0,"Enters '"+very_pretty_function(this->scope())+"'");
     }
 }
 
@@ -166,51 +164,63 @@ std::string LogScopeManager::scope() const {
 }
 
 LogScopeManager::~LogScopeManager() {
-    if ((!Logger::is_muted_at(0)) and Logger::configuration().prints_scope_exit()) {
-        Logger::println(0,"Exits '"+very_pretty_function(this->scope())+"'");
+    if ((!Logger::instance().is_muted_at(0)) and Logger::instance().configuration().prints_scope_exit()) {
+        Logger::instance().println(0,"Exits '"+very_pretty_function(this->scope())+"'");
     }
-    Logger::decrease_level(1);
-    Logger::release(this->scope());
+    Logger::instance().decrease_level(1);
+    Logger::instance().release(this->scope());
 }
 
-LogRawMessage::LogRawMessage(std::string scope_, unsigned int level_, std::string text_) :
+LogThinRawMessage::LogThinRawMessage(std::string scope_, unsigned int level_, std::string text_) :
     scope(scope_), level(level_), text(text_)
 { }
 
-RawMessageKind LogRawMessage::kind() const {
+RawMessageKind LogThinRawMessage::kind() const {
     if (scope.empty()) return RawMessageKind::PRINTLN;
     else if (!text.empty()) return RawMessageKind::HOLD;
     else return RawMessageKind::RELEASE;
 }
 
-LoggerData::LoggerData(unsigned int current_level)
-    : _current_level(current_level)
+LoggerData::LoggerData(unsigned int current_level, std::string const& thread_name)
+    : _current_level(current_level), _thread_name(thread_name), _is_dead(false)
 { }
 
 unsigned int LoggerData::current_level() const {
     return _current_level;
 }
 
+std::string LoggerData::thread_name() const {
+    return _thread_name;
+}
+
 void LoggerData::enqueue_println(unsigned int level_increase, std::string text) {
     const std::lock_guard<std::mutex> lock(_queue_mutex);
-    _raw_messages.push(LogRawMessage(std::string(),_current_level+level_increase,text));
+    _raw_messages.push(LogThinRawMessage(std::string(), _current_level + level_increase, text));
 }
 
 void LoggerData::enqueue_hold(std::string scope, std::string text) {
     const std::lock_guard<std::mutex> lock(_queue_mutex);
-    _raw_messages.push(LogRawMessage(scope,_current_level,text));
+    _raw_messages.push(LogThinRawMessage(scope, _current_level, text));
 }
 
 void LoggerData::enqueue_release(std::string scope) {
     const std::lock_guard<std::mutex> lock(_queue_mutex);
-    _raw_messages.push(LogRawMessage(scope,_current_level,std::string()));
+    _raw_messages.push(LogThinRawMessage(scope, _current_level, std::string()));
 }
 
-LogRawMessage LoggerData::dequeue() {
+LogThinRawMessage LoggerData::dequeue() {
     const std::lock_guard<std::mutex> lock(_queue_mutex);
-    LogRawMessage result = _raw_messages.front();
+    LogThinRawMessage result = _raw_messages.front();
     _raw_messages.pop();
     return result;
+}
+
+void LoggerData::kill() {
+    _is_dead = true;
+}
+
+Bool LoggerData::is_dead() const {
+    return _is_dead;
 }
 
 void LoggerData::increase_level(unsigned int i) {
@@ -225,10 +235,97 @@ unsigned int LoggerData::queue_size() const {
     return _raw_messages.size();
 }
 
+class LoggerSchedulerInterface {
+  public:
+    virtual void println(unsigned int level_increase, std::string text) = 0;
+    virtual void hold(std::string scope, std::string text) = 0;
+    virtual void release(std::string scope) = 0;
+    virtual unsigned int current_level() const = 0;
+    virtual std::string current_thread_name() const = 0;
+    virtual SizeType largest_thread_name_size() const = 0;
+    virtual void increase_level(unsigned int i) = 0;
+    virtual void decrease_level(unsigned int i) = 0;
+    virtual ~LoggerSchedulerInterface() = default;
+};
+
+//! \brief A Logger scheduler that prints immediately. Not designed for concurrency, since
+//! the current level should be different for each thread that prints. Also the outputs can overlap arbitrarily.
+class ImmediateLoggerScheduler : public LoggerSchedulerInterface {
+  public:
+    ImmediateLoggerScheduler();
+    void println(unsigned int level_increase, std::string text) override;
+    void hold(std::string scope, std::string text) override;
+    void release(std::string scope) override;
+    unsigned int current_level() const override;
+    std::string current_thread_name() const override;
+    SizeType largest_thread_name_size() const override;
+    void increase_level(unsigned int i) override;
+    void decrease_level(unsigned int i) override;
+ private:
+    unsigned int _current_level;
+};
+
+//! \brief A Logger scheduler that enqueues messages and prints them sequentially.
+//! The order of printing respects the order of submission, thus blocking other submitters.
+class BlockingLoggerScheduler : public LoggerSchedulerInterface {
+  public:
+    BlockingLoggerScheduler();
+    void println(unsigned int level_increase, std::string text) override;
+    void hold(std::string scope, std::string text) override;
+    void release(std::string scope) override;
+    unsigned int current_level() const override;
+    std::string current_thread_name() const override;
+    SizeType largest_thread_name_size() const override;
+    void increase_level(unsigned int i) override;
+    void decrease_level(unsigned int i) override;
+    void create_data_instance(LoggableSmartThread const& thread);
+    ~BlockingLoggerScheduler() override = default;
+  private:
+    std::map<std::thread::id,std::pair<unsigned int,std::string>> _data;
+    std::mutex _data_mutex;
+};
+
+//! \brief A Logger scheduler that enqueues messages and prints them in a dedicated thread.
+//! The order of printing is respected only within a given thread.
+class NonblockingLoggerScheduler : public LoggerSchedulerInterface {
+  public:
+    NonblockingLoggerScheduler();
+    void println(unsigned int level_increase, std::string text) override;
+    void hold(std::string scope, std::string text) override;
+    void release(std::string scope) override;
+    unsigned int current_level() const override;
+    std::string current_thread_name() const override;
+    SizeType largest_thread_name_size() const override;
+    void increase_level(unsigned int i) override;
+    void decrease_level(unsigned int i) override;
+    void create_data_instance(LoggableSmartThread const& thread);
+    void kill_data_instance(LoggableSmartThread const& thread);
+    ~NonblockingLoggerScheduler() override;
+  private:
+    //! \brief Extracts one message from the largest queue, also removing dead data instances
+    SharedPointer<LogRawMessage> _dequeue_and_cleanup();
+    void _consume_msgs();
+ private:
+    std::map<std::thread::id,SharedPointer<LoggerData>> _data;
+    std::thread _dequeueing_thread;
+    std::atomic<bool> _terminate;
+    std::mutex _data_mutex;
+};
+
 ImmediateLoggerScheduler::ImmediateLoggerScheduler() : _current_level(1) { }
 
 unsigned int ImmediateLoggerScheduler::current_level() const {
     return _current_level;
+}
+
+std::string ImmediateLoggerScheduler::current_thread_name() const {
+    std::stringstream ss;
+    ss << std::this_thread::get_id();
+    return ss.str();
+}
+
+SizeType ImmediateLoggerScheduler::largest_thread_name_size() const {
+    return current_thread_name().size();
 }
 
 void ImmediateLoggerScheduler::increase_level(unsigned int i) {
@@ -240,104 +337,190 @@ void ImmediateLoggerScheduler::decrease_level(unsigned int i) {
 }
 
 void ImmediateLoggerScheduler::println(unsigned int level_increase, std::string text) {
-    Logger::_println(LogRawMessage(std::string(),_current_level+level_increase,text));
+    Logger::instance()._println(LogRawMessage(std::string(), _current_level + level_increase, text));
 }
 
 void ImmediateLoggerScheduler::hold(std::string scope, std::string text) {
-    Logger::_hold(LogRawMessage(scope,_current_level,text));
+    Logger::instance()._hold(LogRawMessage(scope, _current_level, text));
 }
 
 void ImmediateLoggerScheduler::release(std::string scope) {
-    Logger::_release(LogRawMessage(scope,_current_level,std::string()));
+    Logger::instance()._release(LogRawMessage(scope, _current_level, std::string()));
 }
 
-ConcurrentLoggerScheduler::ConcurrentLoggerScheduler() {
-    _data.insert({std::this_thread::get_id(),SharedPointer<LoggerData>(new LoggerData(1))});
-    _dequeueing_thread = std::thread(&ConcurrentLoggerScheduler::_dequeue_msgs, this);
+BlockingLoggerScheduler::BlockingLoggerScheduler() {
+    _data.insert({std::this_thread::get_id(),std::make_pair<unsigned int,std::string>(1,"main")});
+}
+
+void BlockingLoggerScheduler::create_data_instance(LoggableSmartThread const& thread) {
+    std::lock_guard<std::mutex> lock(_data_mutex);
+    // Won't replace if it already exists
+    _data.insert({thread.id(),std::make_pair<unsigned int,std::string>(current_level(),thread.name())});
+}
+
+unsigned int BlockingLoggerScheduler::current_level() const {
+    return _data.find(std::this_thread::get_id())->second.first;
+}
+
+std::string BlockingLoggerScheduler::current_thread_name() const {
+    return _data.find(std::this_thread::get_id())->second.second;
+}
+
+SizeType BlockingLoggerScheduler::largest_thread_name_size() const {
+    SizeType result = 0;
+    for (auto entry : _data) result = std::max(result,entry.second.second.size());
+    return result;
+}
+
+void BlockingLoggerScheduler::increase_level(unsigned int i) {
+    std::lock_guard<std::mutex> lock(_data_mutex);
+    _data.find(std::this_thread::get_id())->second.first += i;
+}
+
+void BlockingLoggerScheduler::decrease_level(unsigned int i) {
+    std::lock_guard<std::mutex> lock(_data_mutex);
+    _data.find(std::this_thread::get_id())->second.first -= i;
+}
+
+void BlockingLoggerScheduler::println(unsigned int level_increase, std::string text) {
+    std::lock_guard<std::mutex> lock(_data_mutex);
+    Logger::instance()._println(LogRawMessage(_data.find(std::this_thread::get_id())->second.second, std::string(), _data.find(std::this_thread::get_id())->second.first + level_increase, text));
+}
+
+void BlockingLoggerScheduler::hold(std::string scope, std::string text) {
+    std::lock_guard<std::mutex> lock(_data_mutex);
+    Logger::instance()._hold(LogRawMessage(_data.find(std::this_thread::get_id())->second.second, scope, _data.find(std::this_thread::get_id())->second.first, text));
+}
+
+void BlockingLoggerScheduler::release(std::string scope) {
+    std::lock_guard<std::mutex> lock(_data_mutex);
+    Logger::instance()._release(LogRawMessage(_data.find(std::this_thread::get_id())->second.second, scope, _data.find(std::this_thread::get_id())->second.first, std::string()));
+}
+
+NonblockingLoggerScheduler::NonblockingLoggerScheduler() {
+    _data.insert({std::this_thread::get_id(),SharedPointer<LoggerData>(new LoggerData(1,"main"))});
+    _dequeueing_thread = std::thread(&NonblockingLoggerScheduler::_consume_msgs, this);
     _terminate = false;
 }
 
-ConcurrentLoggerScheduler::~ConcurrentLoggerScheduler() {
+NonblockingLoggerScheduler::~NonblockingLoggerScheduler() {
     _terminate = true;
     _dequeueing_thread.join();
 }
 
-void ConcurrentLoggerScheduler::_create_data_instance(std::thread::id const& id) {
-    _data.insert({id,SharedPointer<LoggerData>(new LoggerData(current_level()))});
+void NonblockingLoggerScheduler::create_data_instance(LoggableSmartThread const& thread) {
+    std::lock_guard<std::mutex> lock(_data_mutex);
+    // Won't replace if it already exists
+    _data.insert({thread.id(),SharedPointer<LoggerData>(new LoggerData(current_level(),thread.name()))});
 }
 
-SharedPointer<LoggerData> ConcurrentLoggerScheduler::_local_data() const {
-    return _data.find(std::this_thread::get_id())->second;
+void NonblockingLoggerScheduler::kill_data_instance(LoggableSmartThread const& thread) {
+    std::lock_guard<std::mutex> lock(_data_mutex);
+    auto entry = _data.find(thread.id());
+    if (entry != _data.end()) entry->second->kill();
 }
 
-unsigned int ConcurrentLoggerScheduler::current_level() const {
-    return _local_data()->current_level();
+unsigned int NonblockingLoggerScheduler::current_level() const {
+    return _data.find(std::this_thread::get_id())->second->current_level();
 }
 
-void ConcurrentLoggerScheduler::increase_level(unsigned int i) {
-    _local_data()->increase_level(i);
+std::string NonblockingLoggerScheduler::current_thread_name() const {
+    return _data.find(std::this_thread::get_id())->second->thread_name();
 }
 
-void ConcurrentLoggerScheduler::decrease_level(unsigned int i) {
-    _local_data()->decrease_level(i);
-}
-
-void ConcurrentLoggerScheduler::println(unsigned int level_increase, std::string text) {
-    _local_data()->enqueue_println(level_increase,text);
-}
-
-void ConcurrentLoggerScheduler::hold(std::string scope, std::string text) {
-    _local_data()->enqueue_hold(scope,text);
-}
-
-void ConcurrentLoggerScheduler::release(std::string scope) {
-    _local_data()->enqueue_release(scope);
-}
-
-std::pair<std::thread::id,unsigned int> ConcurrentLoggerScheduler::_largest_queue() {
-
-    std::map<std::thread::id,SharedPointer<LoggerData>>::const_iterator it = _data.begin();
-
-    std::pair<std::thread::id,unsigned int> result = std::make_pair(it->first,it->second->queue_size());
-    for (++it; it != _data.end(); ++it) {
-        if (it->second->queue_size() > result.second)
-            result = std::make_pair(it->first,it->second->queue_size());
-    }
+SizeType NonblockingLoggerScheduler::largest_thread_name_size() const {
+    SizeType result = 0;
+    for (auto entry : _data) result = std::max(result,entry.second->thread_name().size());
     return result;
 }
 
-void ConcurrentLoggerScheduler::_dequeue_msgs() {
-    while(true) {
-        auto largest_queue = _largest_queue();
-        if (largest_queue.second>0) {
-            LogRawMessage msg = _data.find(largest_queue.first)->second->dequeue();
+void NonblockingLoggerScheduler::increase_level(unsigned int i) {
+    std::lock_guard<std::mutex> lock(_data_mutex);
+    _data.find(std::this_thread::get_id())->second->increase_level(i);
+}
 
+void NonblockingLoggerScheduler::decrease_level(unsigned int i) {
+    std::lock_guard<std::mutex> lock(_data_mutex);
+    _data.find(std::this_thread::get_id())->second->decrease_level(i);
+}
+
+void NonblockingLoggerScheduler::println(unsigned int level_increase, std::string text) {
+    std::lock_guard<std::mutex> lock(_data_mutex);
+    _data.find(std::this_thread::get_id())->second->enqueue_println(level_increase,text);
+}
+
+void NonblockingLoggerScheduler::hold(std::string scope, std::string text) {
+    std::lock_guard<std::mutex> lock(_data_mutex);
+    _data.find(std::this_thread::get_id())->second->enqueue_hold(scope,text);
+}
+
+void NonblockingLoggerScheduler::release(std::string scope) {
+    std::lock_guard<std::mutex> lock(_data_mutex);
+    _data.find(std::this_thread::get_id())->second->enqueue_release(scope);
+}
+
+SharedPointer<LogRawMessage> NonblockingLoggerScheduler::_dequeue_and_cleanup() {
+    // TODO: address cleanup that causes segfaults
+    SharedPointer<LogRawMessage> result;
+    SharedPointer<LoggerData> largest_data;
+    SizeType largest_size = 0;
+    std::lock_guard<std::mutex> lock(_data_mutex);
+    auto it = _data.begin();
+    while (it != _data.end()) {
+        SizeType size = it->second->queue_size();
+        if (size == 0 and it->second->is_dead()) {
+            //_data.erase(it);
+            ++it;
+            //--it;
+        } else {
+            if (size > largest_size) {
+                largest_data = it->second;
+                largest_size = size;
+            }
+            ++it;
+        }
+    }
+    if (largest_size > 0)
+        result.reset(new LogRawMessage(largest_data->thread_name(),largest_data->dequeue()));
+
+    return result;
+}
+
+void NonblockingLoggerScheduler::_consume_msgs() {
+    while(true) {
+        auto msg_ptr = _dequeue_and_cleanup();
+        if (msg_ptr != nullptr) {
+            LogRawMessage msg = *msg_ptr;
             switch (msg.kind()) {
-                case RawMessageKind::PRINTLN :
-                    Logger::_println(msg);
-                    break;
-                case RawMessageKind::HOLD :
-                    Logger::_hold(msg);
-                    break;
-                case RawMessageKind::RELEASE :
-                    Logger::_release(msg);
-                    break;
-                default:
-                    ARIADNE_FAIL_MSG("Unhandled RawMessageKind for printing.");
+                case RawMessageKind::PRINTLN : Logger::instance()._println(msg); break;
+                case RawMessageKind::HOLD : Logger::instance()._hold(msg); break;
+                case RawMessageKind::RELEASE : Logger::instance()._release(msg); break;
+                default: ARIADNE_FAIL_MSG("Unhandled RawMessageKind for printing.");
             }
         } else {
             // Allow the thread to sleep, for a larger time in the case of high verbosity (for verbosity 1, a 50ms sleep)
             // The current level is used as an average of the levels printed
-            if (not _terminate) std::this_thread::sleep_for(std::chrono::microseconds(std::max(1,100000>>Logger::cached_last_printed_level())));
+            if (not _terminate) std::this_thread::sleep_for(std::chrono::microseconds(std::max(1,100000>>Logger::instance().cached_last_printed_level())));
             else break;
         }
     }
 }
 
+OutputStream& operator<<(OutputStream& os, const ThreadNamePrintingPolicy& p) {
+    switch(p) {
+        case ThreadNamePrintingPolicy::NEVER : os << "NEVER"; break;
+        case ThreadNamePrintingPolicy::BEFORE : os << "BEFORE"; break;
+        case ThreadNamePrintingPolicy::AFTER : os << "AFTER"; break;
+        default: ARIADNE_FAIL_MSG("Unhandled ThreadNamePrintingPolicy for printing");
+    }
+    return os;
+}
+
 LoggerConfiguration::LoggerConfiguration() :
-    _verbosity(0), _indents_based_on_level(true), _prints_level_on_change_only(true), _prints_scope_entrance(false),
-    _prints_scope_exit(false), _handles_multiline_output(true), _discards_newlines_and_indentation(false),
-    _theme(TT_THEME_NONE)
+        _verbosity(0), _indents_based_on_level(true), _prints_level_on_change_only(true), _prints_scope_entrance(false),
+        _prints_scope_exit(false), _handles_multiline_output(true), _discards_newlines_and_indentation(false),
+        _thread_name_printing_policy(ThreadNamePrintingPolicy::NEVER),
+        _theme(TT_THEME_NONE)
 { }
 
 LoggerConfiguration& Logger::configuration() {
@@ -372,6 +555,10 @@ void LoggerConfiguration::set_discards_newlines_and_indentation(bool b) {
     _discards_newlines_and_indentation = b;
 }
 
+void LoggerConfiguration::set_thread_name_printing_policy(ThreadNamePrintingPolicy p) {
+    _thread_name_printing_policy = p;
+}
+
 void LoggerConfiguration::set_theme(TerminalTextTheme const& theme) {
     _theme = theme;
 }
@@ -404,6 +591,10 @@ bool LoggerConfiguration::discards_newlines_and_indentation() const {
     return _discards_newlines_and_indentation;
 }
 
+ThreadNamePrintingPolicy LoggerConfiguration::thread_name_printing_policy() const {
+    return _thread_name_printing_policy;
+}
+
 TerminalTextTheme const& LoggerConfiguration::theme() const {
     return _theme;
 }
@@ -420,26 +611,47 @@ std::map<std::string,TerminalTextStyle> const& LoggerConfiguration::custom_keywo
     return _custom_keywords;
 }
 
-OutputStream& LoggerConfiguration::_write(OutputStream& os) const {
+OutputStream& operator<<(OutputStream& os, LoggerConfiguration const& c) {
     os << "LoggerConfiguration("
-       << "\n  verbosity=" << _verbosity
-       << ",\n  indents_based_on_level=" << _indents_based_on_level
-       << ",\n  prints_level_on_change_only=" << _prints_level_on_change_only
-       << ",\n  prints_scope_entrance=" << _prints_scope_entrance
-       << ",\n  prints_scope_exit=" << _prints_scope_exit
-       << ",\n  handles_multiline_output=" << _handles_multiline_output
-       << ",\n  discards_newlines_and_indentation=" << _discards_newlines_and_indentation
+       << "\n  verbosity=" << c._verbosity
+       << ",\n  indents_based_on_level=" << c._indents_based_on_level
+       << ",\n  prints_level_on_change_only=" << c._prints_level_on_change_only
+       << ",\n  prints_scope_entrance=" << c._prints_scope_entrance
+       << ",\n  prints_scope_exit=" << c._prints_scope_exit
+       << ",\n  handles_multiline_output=" << c._handles_multiline_output
+       << ",\n  discards_newlines_and_indentation=" << c._discards_newlines_and_indentation
+       << ",\n  thread_name_printing_policy=" << c._thread_name_printing_policy
        << ",\n  theme=(not shown)" // To show theme colors appropriately, print the theme object directly on standard output
        << "\n)";
     return os;
 }
 
+Logger::Logger() :
+    _cached_num_held_columns(0), _cached_last_printed_level(0), _cached_last_printed_thread_name(std::string()),
+    _scheduler(SharedPointer<LoggerSchedulerInterface>(new NonblockingLoggerScheduler())) { }
+
 void Logger::use_immediate_scheduler() {
     _scheduler.reset(new ImmediateLoggerScheduler());
 }
 
-void Logger::use_concurrent_scheduler() {
-    _scheduler.reset(new ConcurrentLoggerScheduler());
+void Logger::use_blocking_scheduler() {
+    _scheduler.reset(new BlockingLoggerScheduler());
+}
+
+void Logger::use_nonblocking_scheduler() {
+    _scheduler.reset(new NonblockingLoggerScheduler());
+}
+
+void Logger::register_thread(LoggableSmartThread const& thread) {
+    auto nbls = dynamic_cast<NonblockingLoggerScheduler*>(_scheduler.get());
+    auto bls = dynamic_cast<BlockingLoggerScheduler*>(_scheduler.get());
+    if (nbls != nullptr) nbls->create_data_instance(thread);
+    else if (bls != nullptr) bls->create_data_instance(thread);
+}
+
+void Logger::unregister_thread(LoggableSmartThread const& thread) {
+    auto nbls = dynamic_cast<NonblockingLoggerScheduler*>(_scheduler.get());
+    if (nbls != nullptr) nbls->kill_data_instance(thread);
 }
 
 void Logger::increase_level(unsigned int i) {
@@ -458,16 +670,24 @@ void Logger::mute_decrease_level() {
     _scheduler->decrease_level(_MUTE_LEVEL_OFFSET);
 }
 
-bool Logger::is_muted_at(unsigned int i) {
+bool Logger::is_muted_at(unsigned int i) const {
     return (_configuration.verbosity() < current_level()+i);
 }
 
-unsigned int Logger::current_level() {
+unsigned int Logger::current_level() const {
     return _scheduler->current_level();
 }
 
-unsigned int Logger::cached_last_printed_level() {
+std::string Logger::current_thread_name() const {
+    return _scheduler->current_thread_name();
+}
+
+unsigned int Logger::cached_last_printed_level() const {
     return _cached_last_printed_level;
+}
+
+std::string Logger::cached_last_printed_thread_name() const {
+    return _cached_last_printed_thread_name;
 }
 
 void Logger::println(unsigned int level_increase, std::string text) {
@@ -482,20 +702,29 @@ void Logger::release(std::string scope) {
     _scheduler->release(scope);
 }
 
-bool Logger::_is_holding() {
+bool Logger::_is_holding() const {
     return !_current_held_stack.empty();
 }
 
-unsigned int Logger::_get_window_columns() {
-    struct winsize ws;
-    ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws);
-    return ws.ws_col;
+bool Logger::_can_print_thread_name() const {
+    auto sch = dynamic_cast<ImmediateLoggerScheduler*>(_scheduler.get());
+    // Only if we don't use an immediate scheduler and we have the right printing policy
+    if (sch == nullptr and _configuration.thread_name_printing_policy() != ThreadNamePrintingPolicy::NEVER)
+        return true;
+    else return false;
 }
 
-std::string Logger::_apply_theme(std::string const& text) {
+unsigned int Logger::_get_window_columns() const {
+    const unsigned int DEFAULT_COLUMNS = 80;
+    struct winsize ws;
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws);
+    return (ws.ws_col > 0 ? ws.ws_col : DEFAULT_COLUMNS);
+}
+
+std::string Logger::_apply_theme(std::string const& text) const {
     auto theme = _configuration.theme();
     if (theme.has_style()) {
-        std::stringstream ss;
+        std::ostringstream ss;
         for(auto it = text.begin(); it != text.end(); ++it) {
             const char& c = *it;
             switch (c) {
@@ -522,6 +751,9 @@ std::string Logger::_apply_theme(std::string const& text) {
                     break;
                 case ',':
                     ss << theme.comma() << c << TerminalTextStyle::RESET;
+                    break;
+                case '@':
+                    ss << theme.at() << c << TerminalTextStyle::RESET;
                     break;
                 case '.':
                     if (it != text.begin() and isdigit(*(it-1)))
@@ -597,7 +829,7 @@ bool isalpha_withstylecodes(std::string text, size_t pos) {
     } else return true;
 }
 
-std::string Logger::_apply_theme_for_keywords(std::string const& text) {
+std::string Logger::_apply_theme_for_keywords(std::string const& text) const {
     std::string result = text;
     std::map<std::string,TerminalTextStyle> keyword_styles = {{"virtual",_configuration.theme().keyword},
                                                               {"const",_configuration.theme().keyword},
@@ -607,7 +839,7 @@ std::string Logger::_apply_theme_for_keywords(std::string const& text) {
     keyword_styles.insert(_configuration.custom_keywords().begin(),_configuration.custom_keywords().end());
 
     for (auto kws : keyword_styles) {
-        std::stringstream current_result;
+        std::ostringstream current_result;
         size_t kw_length = kws.first.length();
         size_t kw_pos = std::string::npos;
         size_t scan_pos = 0;
@@ -629,20 +861,37 @@ std::string Logger::_apply_theme_for_keywords(std::string const& text) {
     return result;
 }
 
-void Logger::_print_preamble_for_firstline(unsigned int level) {
+void Logger::_print_preamble_for_firstline(unsigned int level, std::string thread_name) {
     auto theme = _configuration.theme();
-    bool level_printed = true;
-    if (_configuration.prints_level_on_change_only() and _cached_last_printed_level == level) {
-        level_printed = false;
-        std::clog << " ";
+    bool can_print_thread_name = _can_print_thread_name();
+    bool thread_name_changed = (_cached_last_printed_thread_name != thread_name);
+    bool level_changed = (_cached_last_printed_level != level);
+    bool always_print_level = not(_configuration.prints_level_on_change_only());
+    auto largest_thread_name_size = _scheduler->largest_thread_name_size();
+    std::string thread_name_prefix = std::string(largest_thread_name_size-thread_name.size(),' ');
+
+    if (can_print_thread_name and _configuration.thread_name_printing_policy() == ThreadNamePrintingPolicy::BEFORE) {
+        if (thread_name_changed) {
+            if (theme.at.is_styled()) std::clog << thread_name_prefix << thread_name << theme.at() << "@" << TerminalTextStyle::RESET;
+            else std::clog << thread_name_prefix << thread_name << "@";
+        } else std::clog << std::string(largest_thread_name_size+1, ' ');
     }
-    else {
+
+    if ((can_print_thread_name and thread_name_changed) or always_print_level or level_changed) {
         if (theme.level_number.is_styled()) std::clog << theme.level_number() << level << TerminalTextStyle::RESET;
         else std::clog << level;
+    } else std::clog << (level>9 ? "  " : " ");
+
+    if (can_print_thread_name and _configuration.thread_name_printing_policy() == ThreadNamePrintingPolicy::AFTER) {
+        if (thread_name_changed) {
+            if (theme.at.is_styled()) std::clog << theme.at() << "@" << TerminalTextStyle::RESET << thread_name;
+            else std::clog << thread_name << "@";
+        } else std::clog << std::string(largest_thread_name_size+1, ' ');
     }
-    if (not level_printed and theme.level_hidden_separator.is_styled()) {
+
+    if (not level_changed and _configuration.prints_level_on_change_only() and theme.level_hidden_separator.is_styled()) {
         std::clog << theme.level_hidden_separator() << "|" << TerminalTextStyle::RESET;
-    } else if (level_printed and theme.level_shown_separator.is_styled()) {
+    } else if (level_changed and theme.level_shown_separator.is_styled()) {
         std::clog << theme.level_shown_separator() << "|" << TerminalTextStyle::RESET;
     } else {
         std::clog << "|";
@@ -650,9 +899,10 @@ void Logger::_print_preamble_for_firstline(unsigned int level) {
     if (_configuration.indents_based_on_level()) std::clog << std::string(level, ' ');
 }
 
-void Logger::_print_preamble_for_extralines(unsigned int level) {
+void Logger::_print_preamble_for_extralines(unsigned int level, std::string thread_name) {
     auto theme = _configuration.theme();
-    std::clog << " ";
+    std::clog << (level>9 ? "  " : " ");
+    if (_can_print_thread_name()) std::clog << std::string(_scheduler->largest_thread_name_size() + 1, ' ');
     if (theme.multiline_separator.is_styled()) std::clog << theme.multiline_separator() << "·" << TerminalTextStyle::RESET;
     else std::clog << "·";
 
@@ -660,7 +910,7 @@ void Logger::_print_preamble_for_extralines(unsigned int level) {
 }
 
 std::string Logger::_discard_newlines_and_indentation(std::string const& text) {
-    std::stringstream result;
+    std::ostringstream result;
     size_t text_ptr = 0;
     while(true) {
         std::size_t newline_pos = text.find('\n',text_ptr);
@@ -719,12 +969,13 @@ void Logger::_cover_held_columns_with_whitespaces(unsigned int printed_columns) 
 }
 
 void Logger::_println(LogRawMessage const& msg) {
-    const unsigned int preamble_columns = (msg.level>9 ? 3:2)+msg.level;
+
+    const unsigned int preamble_columns = (msg.level>9 ? 3:2)+(_can_print_thread_name() ? _scheduler->largest_thread_name_size()+1 : 0)+msg.level;
 
     // If holding, we must write over the held line first
     if (_is_holding()) std::clog << '\r';
 
-    _print_preamble_for_firstline(msg.level);
+    _print_preamble_for_firstline(msg.level,msg.identifier);
 
     std::string text = msg.text;
     if (configuration().discards_newlines_and_indentation()) text = _discard_newlines_and_indentation(text);
@@ -751,7 +1002,7 @@ void Logger::_println(LogRawMessage const& msg) {
                 if (_is_holding()) _print_held_line();
                 if (_is_holding()) std::clog << '\r';
 
-                _print_preamble_for_extralines(msg.level);
+                _print_preamble_for_extralines(msg.level,msg.identifier);
             } else { // (remaining) Text shorter than the terminal line
                 std::string to_print = text.substr(text_ptr,text_size-text_ptr);
                 std::size_t newline_pos = to_print.find('\n');
@@ -765,7 +1016,7 @@ void Logger::_println(LogRawMessage const& msg) {
                     }
 
                     text_ptr += newline_pos+1;
-                    _print_preamble_for_extralines(msg.level);
+                    _print_preamble_for_extralines(msg.level,msg.identifier);
                 } else { // Text reaches the end of the terminal line
                     std::clog << _apply_theme(to_print);
                     _cover_held_columns_with_whitespaces(preamble_columns+to_print.size());
@@ -784,6 +1035,7 @@ void Logger::_println(LogRawMessage const& msg) {
     }
 
     _cached_last_printed_level = msg.level;
+    _cached_last_printed_thread_name = msg.identifier;
 }
 
 void Logger::_hold(LogRawMessage const& msg) {
@@ -829,12 +1081,12 @@ void Logger::_release(LogRawMessage const& msg) {
 
 } // namespace Ariadne
 
-inline bool startup_function() {
+inline bool startup_logging() {
     std::cerr << std::boolalpha;
     std::cout << std::boolalpha;
     std::clog << std::boolalpha;
     return true;
 }
 
-static const bool startup = startup_function();
+static const bool startup_logging_ = startup_logging();
 

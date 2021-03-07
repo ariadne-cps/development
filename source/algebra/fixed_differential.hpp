@@ -188,7 +188,7 @@ class FirstDifferential
     //! \brief \brief A vector of differentials of degree \a deg in \a as arguments with values \f$c_i+x_i\f$.
     static Vector< FirstDifferential<X> > variables(const Vector<X>& x) {
         Vector< FirstDifferential<X> > result(x.size(),FirstDifferential<X>(x.size(),x.zero_element()));
-        for(SizeType j=0; j!=x.size(); ++j) { result[j]._value=x[j]; result[j]._gradient[j]=1; }
+        for(SizeType j=0; j!=x.size(); ++j) { result[j]._threshold=x[j]; result[j]._gradient[j]=1; }
         return result; }
 
     //! \brief Equality operator.
@@ -450,9 +450,9 @@ class SecondDifferential
     explicit SecondDifferential(const X& v, const Covector<X>& g) : _value(v), _gradient(g), _half_hessian(g.size(),g.size(),nul(v)) { }
 
     //! \brief Constructs a differential with degree zero in \a as variables with value \a v, gradient \a g and hessian \a h.
-    //explicit SecondDifferential(const X& v, const Covector<X>& g, const Matrix<X>& h) : _value(v), _gradient(g), _half_hessian(h/2) {
+    //explicit SecondDifferential(const X& v, const Covector<X>& g, const Matrix<X>& h) : _threshold(v), _gradient(g), _half_hessian(h/2) {
     //    ARIADNE_ASSERT_MSG(h.row_size()==g.size() && h.column_size()==g.size(), "SecondDifferential(v,g,h): v="<<v<<", g="<<g<<", h="<<h); }
-//    explicit SecondDifferential(const X& v, const Covector<X>& g, const Matrix<X>& half_h) : _value(v), _gradient(g), _half_hessian(half_h) {
+//    explicit SecondDifferential(const X& v, const Covector<X>& g, const Matrix<X>& half_h) : _threshold(v), _gradient(g), _half_hessian(half_h) {
 //        ARIADNE_ASSERT_MSG(half_h.row_size()==g.size() && half_h.column_size()==g.size(), "SecondDifferential(v,g,half_h): v="<<v<<", g="<<g<<", half_h="<<half_h); }
 
     //! \brief Conversion constructor from a different numerical type.
@@ -475,7 +475,7 @@ class SecondDifferential
     //! \brief \brief A vector of differentials of degree \a deg in \a as arguments with values \f$c_i+x_i\f$.
     static Vector< SecondDifferential<X> > variables(const Vector<X>& x) {
         Vector< SecondDifferential<X> > result(x.size(),SecondDifferential<X>(x.size(),x.zero_element()));
-        for(SizeType j=0; j!=x.size(); ++j) { result[j]._value=x[j]; result[j]._gradient[j]=1; }
+        for(SizeType j=0; j!=x.size(); ++j) { result[j]._threshold=x[j]; result[j]._gradient[j]=1; }
         return result; }
 
     //! \brief Equality operator.

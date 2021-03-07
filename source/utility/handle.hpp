@@ -115,8 +115,15 @@ template<class I> class Handle {
     template<class D, class B> friend const Handle<D> dynamic_handle_cast(const Handle<B>& h);
 };
 
-void write_error(OutputStream& os, const char* i, const char* c, const char* t);
-void write_error(OutputStream& os, const WritableInterface* w, const char* i, const char* c, const char* t);
+inline void write_error(OutputStream& os, const char* i, const char* c, const char* t) {
+    os << "Error in dynamic_handle_cast: cannot convert object of static type " << c << " and dynamic type " << i << " to type " << t << "\n";
+}
+
+inline void write_error(OutputStream& os, const WritableInterface* w, const char* i, const char* c, const char* t) {
+    os << "Error in dynamic_handle_cast:" << std::flush;
+    os << " cannot convert "; assert(w); w->_write(os); os << std::flush;
+    os << " of static type " << c << " and dynamic type " << i << " to type " << t << std::endl;
+}
 
 template<class D, class B> D dynamic_handle_cast(B const& h) {
     typedef typename B::Interface BI;

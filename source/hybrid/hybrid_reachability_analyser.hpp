@@ -29,8 +29,7 @@
 #ifndef ARIADNE_HYBRID_REACHABILITY_ANALYSER_HPP
 #define ARIADNE_HYBRID_REACHABILITY_ANALYSER_HPP
 
-
-#include "solvers/configuration_interface.hpp"
+#include "configuration/configuration_interface.hpp"
 #include "dynamics/reachability_analyser.hpp"
 #include "hybrid/hybrid_set.decl.hpp"
 #include "hybrid/hybrid_set_interface.hpp"
@@ -44,7 +43,6 @@
 #include "hybrid/hybrid_storage.hpp"
 
 #include "output/logging.hpp"
-
 
 namespace Ariadne {
 

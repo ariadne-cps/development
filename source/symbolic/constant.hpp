@@ -30,7 +30,7 @@
 #define ARIADNE_CONSTANT_HPP
 
 #include "utility/string.hpp"
-#include "symbolic/identifier.hpp"
+#include "utility/identifier.hpp"
 
 namespace Ariadne {
 

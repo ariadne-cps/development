@@ -1,5 +1,5 @@
 /***************************************************************************
- *            test_reachability_analysis.cpp
+ *            test_finite_time_reachability.cpp
  *
  *  Copyright  2006-20  Pieter Collins
  *
@@ -56,7 +56,6 @@ Colour safe_set_colour(0.50,1.00,0.50);
 
 class TestReachabilityAnalyser
 {
-
     typedef VectorFieldEvolver EvolverType;
     typedef EvolverType::SystemType SystemType;
     typedef SystemType::TimeType TimeType;
@@ -97,9 +96,15 @@ class TestReachabilityAnalyser
 
     static AnalyserType build_analyser(const SystemType& system)
     {
-        GradedTaylorSeriesIntegrator integrator(MaximumError(1e-2_pr));
+        Configuration<TaylorPicardIntegrator> integrator_configuration;
+        integrator_configuration.set_step_maximum_error(1e-2);
+        TaylorPicardIntegrator integrator(integrator_configuration);
 
-        EvolverType evolver(system,integrator);
+        EvolverType evolver(system,Configuration<EvolverType>()
+            .set_integrator(integrator)
+            .set_enable_reconditioning(true)
+            .set_maximum_spacial_error(1e-2)
+        );
 
         AnalyserType analyser(evolver);
         analyser.configuration().set_maximum_grid_fineness(3);
@@ -189,71 +194,11 @@ class TestReachabilityAnalyser
              reach_set_colour,reach_evolve_set.first,final_set_colour,reach_evolve_set.second);
     }
 
-    Void test_infinite_time_lower_reach() {
-        analyser.configuration().set_transient_time(4.0_dec);
-        analyser.configuration().set_bounding_domain_ptr(shared_ptr<BoundingDomainType>(new BoundingDomainType(bounding)));
-        cout << analyser.configuration();
-
-        cout << "Computing infinite time lower reachable set" << endl;
-        StorageType lower_reach_set=analyser.lower_reach(initial_set);
-
-        ARIADNE_TEST_ASSERT(lower_reach_set.size() > 0);
-
-        cout << "Reached " << lower_reach_set.size() << " cells " << endl << endl;
-
-        plot("test_reachability_analyser-map_infinite_time_lower_reach.png",Projection2d(2,0,1),graphics_box,
-             reach_set_colour,lower_reach_set);
-    }
-
-    Void test_outer_chain_reach() {
-        cout << "Computing outer chain reachable set" << endl;
-        analyser.configuration().set_transient_time(12.0_dec);
-        analyser.configuration().set_lock_to_grid_time(6.0_dec);
-        analyser.configuration().set_maximum_grid_fineness(3);
-        analyser.configuration().set_bounding_domain_ptr(shared_ptr<BoundingDomainType>(new BoundingDomainType(bounding)));
-        cout << analyser.configuration();
-
-        StorageType outer_chain_reach_set=analyser.outer_chain_reach(initial_set);
-
-        ARIADNE_TEST_ASSERT(outer_chain_reach_set.size() > 0);
-
-        cout << "Reached " << outer_chain_reach_set.size() << " cells " << endl << endl;
-
-        plot("test_reachability_analyser-map_outer_chain_reach.png",Projection2d(2,0,1),graphics_box,
-             reach_set_colour,outer_chain_reach_set);
-
-        cout << "Recomputing with tight restriction" << endl;
-
-        analyser.configuration().set_maximum_grid_extent(1);
-        ARIADNE_TEST_THROWS(analyser.outer_chain_reach(initial_set),OuterChainOverspill);
-    }
-
-    Void test_verify_safety() {
-        cout << "Verifying safety" << endl;
-
-        cout << analyser.configuration();
-
-        auto safety_certificate=analyser.verify_safety(initial_set,safe_set);
-
-        ARIADNE_TEST_ASSERT(definitely(safety_certificate.is_safe));
-
-        auto safe_cells=inner_approximation(safe_set, grid, analyser.configuration().maximum_grid_fineness());
-        plot("test_reachability_analyser-verify_safety.png",Projection2d(2,0,1),graphics_box,
-             safe_set_colour,safety_certificate.safe_set,
-             reach_set_colour,safety_certificate.chain_reach_set,
-             initial_set_colour,initial_set);
-    }
-
     Void test() {
-
         ARIADNE_TEST_CALL(test_lower_reach_lower_evolve());
         ARIADNE_TEST_CALL(test_lower_reach_evolve());
         ARIADNE_TEST_CALL(test_upper_reach_upper_evolve());
         ARIADNE_TEST_CALL(test_upper_reach_evolve());
-
-        ARIADNE_TEST_CALL(test_infinite_time_lower_reach());
-        ARIADNE_TEST_CALL(test_outer_chain_reach());
-        ARIADNE_TEST_CALL(test_verify_safety());
     }
 
 };
@@ -261,7 +206,7 @@ class TestReachabilityAnalyser
 
 Int main(Int argc, const char* argv[])
 {
-    Logger::configuration().set_verbosity(get_verbosity(argc,argv));
+    ARIADNE_LOG_SET_VERBOSITY(get_verbosity(argc,argv));
 
     TestReachabilityAnalyser().test();
     return ARIADNE_TEST_FAILURES;

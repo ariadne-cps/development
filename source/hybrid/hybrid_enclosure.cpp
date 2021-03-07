@@ -79,41 +79,41 @@ HybridEnclosure::HybridEnclosure()
 {
 }
 
-HybridEnclosure::HybridEnclosure(EnclosureConfiguration const& config)
-    : _location(), _events(), _set(config)
+HybridEnclosure::HybridEnclosure(EnclosureConfiguration const& configuration)
+    : _location(), _events(), _set(configuration)
 {
 }
 
 HybridEnclosure::HybridEnclosure(const HybridBoxSet& hbox,
                                  const RealSpace& state_space,
-                                 const ValidatedFunctionModelDPFactory& factory)
-    : HybridEnclosure(hbox.location(),state_space,hbox.euclidean_set(state_space),factory)
+                                 const EnclosureConfiguration& configuration)
+    : HybridEnclosure(hbox.location(),state_space,hbox.euclidean_set(state_space),configuration)
 {
 }
 
 HybridEnclosure::HybridEnclosure(const HybridBoundedConstraintSet& hybrid_set,
                                  const RealSpace& state_space,
-                                 const ValidatedFunctionModelDPFactory& factory)
+                                 const EnclosureConfiguration& configuration)
     : _location(hybrid_set.location()), _events(), _set()
 {
     BoundedConstraintSet euclidean_set=hybrid_set.euclidean_set(this->_location,state_space);
-    this->_set=LabelledEnclosure(euclidean_set,state_space,factory);
+    this->_set=LabelledEnclosure(euclidean_set,state_space,configuration);
 }
 
 
 HybridEnclosure::HybridEnclosure(const DiscreteLocation& location, const RealSpace& state_space,
-                                 const RealBox& box, const ValidatedFunctionModelDPFactory& factory)
-    : _location(location), _events(), _set(box,state_space,factory)
+                                 const RealBox& box, const EnclosureConfiguration& configuration)
+    : _location(location), _events(), _set(box,state_space,configuration)
 {
 }
 
-HybridEnclosure::HybridEnclosure(const HybridRealBox& hbox, const ValidatedFunctionModelDPFactory& factory)
-    : HybridEnclosure(hbox.location(),hbox.space(),hbox.euclidean_set(),factory)
+HybridEnclosure::HybridEnclosure(const HybridRealBox& hbox, const EnclosureConfiguration& configuration)
+    : HybridEnclosure(hbox.location(),hbox.space(),hbox.euclidean_set(),configuration)
 {
 }
 
-HybridEnclosure::HybridEnclosure(const HybridExactBoxType& hbox, const ValidatedFunctionModelDPFactory& factory)
-    : HybridEnclosure(hbox.location(),LabelledEnclosure(hbox.euclidean_set(),hbox.space(),factory))
+HybridEnclosure::HybridEnclosure(const HybridExactBoxType& hbox, const EnclosureConfiguration& configuration)
+    : HybridEnclosure(hbox.location(),LabelledEnclosure(hbox.euclidean_set(),hbox.space(),configuration))
 {
 }
 
@@ -453,7 +453,7 @@ HybridBasicSet<Enclosure> HybridEnclosure::state_set() const {
 HybridBasicSet<Enclosure> HybridEnclosure::state_time_set() const {
     auto state_time_space=join(this->state_space(),TimeVariable());
     auto state_time_function=join(this->state_function(),this->time_function());
-    Enclosure enclosure(this->parameter_domain(),state_time_function,this->time_function(),this->constraints(),this->function_factory());
+    Enclosure enclosure(this->parameter_domain(),state_time_function,this->time_function(),this->constraints(),this->configuration());
     HybridBasicSet<Enclosure> hset(this->location(),state_time_space,enclosure);
     return hset;
 }
@@ -463,7 +463,7 @@ HybridBasicSet<Enclosure> HybridEnclosure::state_auxiliary_set() const {
     auto state_auxiliary_function=join(this->state_function(),this->auxiliary_function());
 //    ValidatedConstrainedImageSet set(this->parameter_domain(),join(this->state_function(),this->auxiliary_function()),this->constraints());
 //    ValidatedConstrainedImageSet set(this->parameter_domain(),join(this->state_function(),this->auxiliary_function()),this->constraints());
-    Enclosure enclosure(this->parameter_domain(),state_auxiliary_function,this->time_function(),this->constraints(),this->function_factory());
+    Enclosure enclosure(this->parameter_domain(),state_auxiliary_function,this->time_function(),this->constraints(),this->configuration());
     HybridBasicSet<Enclosure> hset(this->location(),state_auxiliary_space,enclosure);
     return hset;
 }
@@ -471,7 +471,7 @@ HybridBasicSet<Enclosure> HybridEnclosure::state_auxiliary_set() const {
 HybridBasicSet<Enclosure> project(HybridEnclosure const& encl, RealSpace const& spc) {
     ValidatedVectorMultivariateFunctionModelDP spc_funct=encl.function_factory().create_zeros(spc.dimension(),encl.parameter_domain());
     for(SizeType i=0; i!=spc.dimension(); ++i) { spc_funct[i] = encl.function(spc[i]); }
-    Enclosure spc_set(encl.parameter_domain(),spc_funct,encl.time_function(),encl.constraints(),encl.function_factory());
+    Enclosure spc_set(encl.parameter_domain(),spc_funct,encl.time_function(),encl.constraints(),encl.configuration());
     return HybridBasicSet<Enclosure>(encl.location(),spc,spc_set);
 }
 

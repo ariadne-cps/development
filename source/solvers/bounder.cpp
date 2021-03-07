@@ -49,23 +49,17 @@ Pair<StepSizeType,UpperBoxType> EulerBounder::compute(ValidatedVectorMultivariat
     return this->_compute(f,D,t,A,hsug);
 }
 
-Pair<StepSizeType,UpperBoxType> EulerBounder::_compute(ValidatedVectorMultivariateFunction const& f, BoxDomainType const& D, StepSizeType const& t, BoxDomainType const& A, StepSizeType const& hsug) const {
+Pair<StepSizeType,UpperBoxType> EulerBounder::_compute(ValidatedVectorMultivariateFunction const& f, BoxDomainType const& D, StepSizeType const& t, BoxDomainType const& A, StepSizeType const& hst) const {
     ARIADNE_LOG_SCOPE_CREATE;
     const PositiveFloatDPValue BOX_RADIUS_WIDENING=cast_positive(0.25_exact);
     const PositiveFloatDPValue NO_WIDENING=cast_positive(1.0_exact);
     const PositiveFloatDPValue INITIAL_STARTING_WIDENING=cast_positive(2.0_exact);
     const PositiveFloatDPValue INITIAL_REFINING_WIDENING=cast_positive(1.125_exact);
-    const PositiveFloatDPValue LIPSCHITZ_TOLERANCE=cast_positive(0.5_exact);
     const StepSizeType MINIMUM_STEP_SIZE(1,20u);
     const CounterType EXPANSION_STEPS=4;
     const CounterType REFINEMENT_STEPS=4;
 
-    StepSizeType h=hsug;
-
-    FloatDPUpperBound lipschitz = norm(f.jacobian(Vector<FloatDPBounds>(cast_singleton(product(D,to_time_bounds(t,t+h),A))))).upper();
-    StepSizeType hlip = static_cast<StepSizeType>(cast_exact(LIPSCHITZ_TOLERANCE/lipschitz));
-    h=min(hlip,h);
-    ARIADNE_LOG_PRINTLN("min(hlip,h)="<<h);
+    StepSizeType h=hst;
 
     IntervalDomainType T = to_time_bounds(t,t+h);
 

@@ -102,7 +102,7 @@ void run_single(String name, InclusionVectorField const& ivf, BoxDomainType cons
 }
 
 void run_each_approximation(String name, InclusionVectorField const& ivf, BoxDomainType const& initial, Real evolution_time, double step, List<InputApproximation> approximations, SweeperDP sweeper, IntegratorInterface const& integrator, ReconditionerHandle const& reconditioner, bool draw) {
-
+    ARIADNE_LOG_SCOPE_CREATE;
     for (auto appro: approximations) {
         List<InputApproximation> singleapproximation = {appro};
         ARIADNE_LOG_PRINTLN(appro);
@@ -130,13 +130,13 @@ void run_noisy_system(String name, const DottedRealAssignments& dynamics, const 
     approximations.append(SinusoidalApproximation());
     approximations.append(PiecewiseApproximation());
 
-    TaylorPicardIntegrator integrator(
-            maximum_error=1e-3,
-            sweeper,
-            lipschitz_constant=0.5,
-            step_maximum_error=1e-3,
-            minimum_temporal_order=4,
-            maximum_temporal_order=12);
+    TaylorPicardIntegrator integrator(Configuration<TaylorPicardIntegrator>()
+                                              .set_step_maximum_error(1e-3)
+                                              .set_sweeper(sweeper)
+                                              .set_lipschitz_tolerance(0.5)
+                                              .set_maximum_temporal_order(12)
+                                              .set_minimum_temporal_order(4)
+    );
 
     LohnerReconditioner reconditioner(initial.variables().size(),inputs.variables().size(),period_of_parameter_reduction,ratio_of_parameters_to_keep);
 

@@ -34,7 +34,7 @@
 #include "numeric/numeric.hpp"
 #include "algebra/vector.hpp"
 #include "geometry/set_interface.hpp"
-#include "symbolic/identifier.hpp"
+#include "utility/identifier.hpp"
 #include "output/graphics_interface.hpp"
 #include "output/drawer_interface.hpp"
 
@@ -76,13 +76,15 @@ struct EnclosureConfiguration {
     ValidatedFunctionModelDPFactory _function_factory;
     Paver _paver;
     Drawer _drawer;
-    EnclosureConfiguration(ValidatedFunctionModelDPFactory function_factory);
-    EnclosureConfiguration(ValidatedFunctionModelDPFactory::Interface const& function_factory)
-        : EnclosureConfiguration(ValidatedFunctionModelDPFactory(function_factory.clone())) { }
-    EnclosureConfiguration(ValidatedFunctionModelDPFactory function_factory, Paver paver, Drawer drawer)
-        : _function_factory(function_factory), _paver(paver), _drawer(drawer) { }
+    SizeType _reconditioning_num_blocks;
+    explicit EnclosureConfiguration(ValidatedFunctionModelDPFactory function_factory, SizeType reconditioning_num_blocks = 3u);
+    explicit EnclosureConfiguration(ValidatedFunctionModelDPFactory::Interface const& function_factory, SizeType reconditioning_num_blocks = 3u)
+        : EnclosureConfiguration(ValidatedFunctionModelDPFactory(function_factory.clone()),reconditioning_num_blocks) { }
+    EnclosureConfiguration(ValidatedFunctionModelDPFactory function_factory, Paver paver, Drawer drawer, SizeType reconditioning_num_blocks = 3u)
+        : _function_factory(function_factory), _paver(paver), _drawer(drawer), _reconditioning_num_blocks(reconditioning_num_blocks) { }
     EnclosureConfiguration& set_paver(Paver paver) { _paver=paver; return *this; }
     EnclosureConfiguration& set_drawer(Drawer drawer) { _drawer=drawer; return *this; }
+    EnclosureConfiguration& set_reconditioning_num_blocks(SizeType num_blocks) { _reconditioning_num_blocks = num_blocks; return *this; }
     friend OutputStream& operator<<(OutputStream& os, EnclosureConfiguration const& ec);
 };
 
