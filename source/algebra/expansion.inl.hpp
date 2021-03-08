@@ -75,7 +75,7 @@ struct CoefficientLess {
 
 struct CoefficientIsZero {
     template<class M> bool operator()(M const& m) const {
-        return decide(m.coefficient() == 0);
+        return decide(m.coefficient() == 0.0_x);
     }
 };
 
@@ -262,7 +262,7 @@ Void Expansion<I,X>::_fill(Expansion<I,Y> const& other, PRS... prs)
     {
         a=iter->index();
         x=X(iter->coefficient(),prs...);
-        if(decide(x!=0)) { this->append(a,x); }
+        if(decide(x!=0.0_x)) { this->append(a,x); }
     }
 }
 

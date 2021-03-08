@@ -34,6 +34,8 @@
 
 namespace Ariadne {
 
+static_assert(Comparible<Decimal,Decimal>);
+
 const Integer Decimal::_ten = Integer(10);
 
 namespace {

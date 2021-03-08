@@ -39,6 +39,7 @@
 #include "utility/metaprogramming.hpp"
 #include "numeric/sign.hpp"
 #include "numeric/logical.hpp"
+#include "numeric/concepts.hpp"
 #include "numeric/arithmetic.hpp"
 #include "numeric/number.decl.hpp"
 
@@ -101,11 +102,12 @@ template<> struct IsNumber<Integer> : True { };
 //! \ingroup NumericModule
 //! \brief Arbitrarily-sized integers.
 class Integer
-    : DeclareRingOperations<Integer,Integer,Natural>
-    , DeclareLatticeOperations<Integer,Natural>
-    , DeclareComparisonOperations<Integer,Boolean,Boolean>
-    , DefineRingOperators<Integer>
-    , DefineComparisonOperators<Integer,Boolean,Boolean>
+    : ProvideOperators<Integer>
+//    : DeclareRingOperations<Integer,Integer,Natural>
+//    , DeclareLatticeOperations<Integer,Natural>
+//    , DeclareComparisonOperations<Integer,Boolean,Boolean>
+//    , DefineRingOperators<Integer>
+//    , DefineComparisonOperators<Integer,Boolean,Boolean>
 {
   public:
     mpz_t _mpz;
@@ -123,7 +125,7 @@ class Integer
     Integer& operator=(Integer&&);
     operator ExactNumber () const;
 
-    friend Rational operator/(Integer const& z1, Integer const& z2);
+//    friend Rational operator/(Integer const& z1, Integer const& z2);
     friend Integer& operator++(Integer& z);
     friend Integer& operator--(Integer& z);
     friend Integer& operator+=(Integer& z1, Integer const& z2);
@@ -131,13 +133,27 @@ class Integer
 
     friend Int log2floor(Natural const& n);
 
+    friend Integer nul(Integer const& z);
+    friend Integer pos(Integer const& z);
+    friend Integer neg(Integer const& z);
+    friend Natural sqr(Integer const& z);
+    friend Integer add(Integer const& z1, Integer const& z2);
+    friend Integer sub(Integer const& z1, Integer const& z2);
+    friend Integer mul(Integer const& z1, Integer const& z2);
+    friend Integer pow(Integer const& z, Nat m);
+
     friend Dyadic hlf(Integer const& z);
     friend Rational rec(Integer const& z);
     friend Rational div(Integer const& z1, Integer const& z2);
     friend Rational pow(Integer const& z, Int n);
+
     friend Integer quot(Integer const& z1, Integer const& z2);
     friend Integer rem(Integer const& z1, Integer const& z2);
     friend Integer operator%(Integer const& z1, Integer const& z2);
+
+    friend Natural abs(Integer const& z);
+    friend Integer max(Integer const& z1, Integer const& z2);
+    friend Integer min(Integer const& z1, Integer const& z2);
 
     friend Bool is_nan(Integer const& z);
     friend Bool is_inf(Integer const& z);
@@ -149,15 +165,7 @@ class Integer
 
     friend OutputStream& operator<<(OutputStream& os, Integer const& z);
     friend Integer operator"" _z(unsigned long long int n);
-/*
-    // Comparisons with arbitary ints go through Int64
-    template<BuiltinIntegral N> friend inline auto operator==(Integer const& x, N n) -> decltype(x==Int64(n)) { return x==Int64(n); }
-    template<BuiltinIntegral N> friend inline auto operator!=(Integer const& x, N n) -> decltype(x!=Int64(n)) { return x!=Int64(n); }
-    template<BuiltinIntegral N> friend inline auto operator< (Integer const& x, N n) -> decltype(x!=Int64(n)) { return x< Int64(n); }
-    template<BuiltinIntegral N> friend inline auto operator> (Integer const& x, N n) -> decltype(x!=Int64(n)) { return x> Int64(n); }
-    template<BuiltinIntegral N> friend inline auto operator<=(Integer const& x, N n) -> decltype(x!=Int64(n)) { return x<=Int64(n); }
-    template<BuiltinIntegral N> friend inline auto operator>=(Integer const& x, N n) -> decltype(x!=Int64(n)) { return x>=Int64(n); }
-*/
+
   public:
     template<BuiltinIntegral N> N get() const;
     long int get_si() const;
@@ -176,6 +184,7 @@ Integer operator"" _z(unsigned long long int n);
 
 template<BuiltinIntegral N> inline N Integer::get() const {
     N n=static_cast<N>(this->get_si()); ARIADNE_ASSERT(Integer(n)==*this); return n; }
+
 
 template<class R, class A> R integer_cast(const A& a) {
     return cast_integer(a).template get<R>(); }
@@ -202,6 +211,7 @@ class Natural : public Positive<Integer> {
 };
 
 inline Natural cast_positive(Integer const& z) { return Natural(z); }
+
 
 } // namespace Ariadne
 

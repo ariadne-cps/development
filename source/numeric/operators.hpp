@@ -34,6 +34,7 @@
 
 #include "logical.decl.hpp"
 #include "number.decl.hpp"
+#include "concepts.hpp"
 
 #include "utility/variant.hpp"
 #include "utility/variant.inl.hpp"
@@ -479,8 +480,8 @@ struct BinaryFieldOperator : OperatorVariant<Add,Sub,Mul,Div> { using OperatorVa
         return this->accept([&x1,&x2](auto op){return static_cast<QuotientType<X1,X2>>(op(std::forward<X1>(x1),std::forward<X2>(x2)));}); } };
 using BinaryArithmeticOperator = BinaryFieldOperator;
 struct BinaryElementaryOperator : OperatorVariant<Add,Sub,Mul,Div,Max,Min> { using OperatorVariant::OperatorVariant;
-    template<class X1,class X2> QuotientType<X1,X2> operator()(X1&& x1, X2&& x2) const {
-        return this->accept([&x1,&x2](auto op){return static_cast<QuotientType<X1,X2>>(op(std::forward<X1>(x1),std::forward<X2>(x2)));}); } };
+    template<class X1,class X2> DivType<X1,X2> operator()(X1&& x1, X2&& x2) const {
+        return this->accept([&x1,&x2](auto op){return static_cast<DivType<X1,X2>>(op(std::forward<X1>(x1),std::forward<X2>(x2)));}); } };
 struct GradedRingOperator : OperatorVariant<Pow> { using OperatorVariant::OperatorVariant;
     template<class X,class N> decltype(pow(declval<X>(),declval<N>())) operator()(X&& x, N const& n) const {
         return this->accept([&x,&n](auto op){return static_cast<decltype(pow(declval<X>(),declval<N>()))>(op(std::forward<X>(x),n));}); } };

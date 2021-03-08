@@ -28,6 +28,7 @@
 
 #include "float_lower_bound.hpp"
 
+#include "builtin.hpp"
 #include "float_value.hpp"
 #include "float_bounds.hpp"
 #include "float_upper_bound.hpp"

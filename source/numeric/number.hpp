@@ -215,14 +215,14 @@ template<class P> class Number
     friend Number<P> min(Number<P> const& y1, Number<P> const& y2) { return _apply<P>(Min(),y1,y2); } //! <p/>
 
 
-    friend LogicalType<Equality<P>> operator==(Number<P> const& y1, Number<P> const& y2) {
-        return LogicalType<Equality<P>>(y1.ref()._equals(y2.ref())); } //! <p/>
-    friend LogicalType<LessThan<P>> operator< (Number<P> const& y1, Number<P> const& y2) {
-        return LogicalType<LessThan<P>>(y1.ref()._less(y2.ref())); } //! <p/>
-    friend LogicalType<LessThan<P>> operator> (Number<P> const& y1, Number<P> const& y2) { return (y2<y1); } //! <p/>
-    friend LogicalNegationType<LogicalType<Equality<P>>> operator!=(Number<P> const& y1, Number<P> const& y2) { return !(y1==y2); } //! <p/>
-    friend LogicalType<LessThan<P>> operator<=(Number<P> const& y1, Number<P> const& y2) { return !(y1>y2); } //! <p/>
-    friend LogicalType<LessThan<P>> operator>=(Number<P> const& y1, Number<P> const& y2) { return !(y1<y2); }
+    friend LogicalType<EqualityInformation<P>> operator==(Number<P> const& y1, Number<P> const& y2) {
+        return LogicalType<EqualityInformation<P>>(y1.ref()._equals(y2.ref())); } //! <p/>
+    friend LogicalType<LessThanInformation<P>> operator< (Number<P> const& y1, Number<P> const& y2) {
+        return LogicalType<LessThanInformation<P>>(y1.ref()._less(y2.ref())); } //! <p/>
+    friend LogicalType<LessThanInformation<P>> operator> (Number<P> const& y1, Number<P> const& y2) { return (y2<y1); } //! <p/>
+    friend LogicalNegationType<LogicalType<EqualityInformation<P>>> operator!=(Number<P> const& y1, Number<P> const& y2) { return !(y1==y2); } //! <p/>
+    friend LogicalType<LessThanInformation<P>> operator<=(Number<P> const& y1, Number<P> const& y2) { return !(y1>y2); } //! <p/>
+    friend LogicalType<LessThanInformation<P>> operator>=(Number<P> const& y1, Number<P> const& y2) { return !(y1<y2); }
 
     //! \brief The name of the dynamic type held by the %Number object.
     String class_name() const { return this->ref()._class_name(); }

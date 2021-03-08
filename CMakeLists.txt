@@ -31,6 +31,8 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fdiagnostics-color")
+
 foreach(WARN ${ANY_TARGET_WARN})
     add_compile_options(-W${WARN})
 endforeach()

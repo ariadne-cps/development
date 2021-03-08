@@ -111,7 +111,7 @@ class ExactDouble {
     typedef ExactTag Paradigm;
     double get_d() const { return this->_d; }
     ExactDouble() : _d() { }
-    template<BuiltinIntegral N> ExactDouble(N n) : _d(n) { assert(_d==n); }
+    template<BuiltinIntegral N> explicit ExactDouble(N n) : _d(n) { assert(_d==n); }
     template<BuiltinFloatingPoint X> explicit ExactDouble(X const& x) : _d(x) { assert(std::isnan(_d) || (_d==x)); }
     static ExactDouble infinity() { return ExactDouble(std::numeric_limits<double>::infinity()); }
     operator ExactNumber() const;

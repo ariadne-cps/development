@@ -95,7 +95,7 @@ template<class I, class X> Expansion<I,X>::Expansion(InitializerList<Pair<IndexI
     {
         a=iter->first;
         x=iter->second;
-        if(!decide(x==0)) { this->append(a,x); }
+        if(!decide(x==0.0_x)) { this->append(a,x); }
     }
 }
 
@@ -280,21 +280,21 @@ template<class I, class X, class CMP> EqualityType<X,X> SortedExpansion<I,X,CMP>
             r = r && (iter1->coefficient()==iter2->coefficient());
             ++iter1; ++iter2;
         } else if (less(*iter1,*iter2)) {
-            r = r && (iter1->coefficient()==0);
+            r = r && (iter1->coefficient()==0.0_x);
             ++iter1;
         } else if (less(*iter2,*iter1)) {
-            r = r && (0==iter2->coefficient());
+            r = r && (0.0_x==iter2->coefficient());
             ++iter2;
         } else {
-             r = r && (iter1->coefficient()==0) && (0==iter2->coefficient());
+             r = r && (iter1->coefficient()==0.0_x) && (0.0_x==iter2->coefficient());
         }
     }
     while (iter1!=e1.end()) {
-        r = r && (iter1->coefficient()==0);
+        r = r && (iter1->coefficient()==0.0_x);
         ++iter1;
     }
     while (iter2!=e2.end()) {
-        r = r && (0==iter2->coefficient());
+        r = r && (0.0_x==iter2->coefficient());
         ++iter2;
     }
     return r;
@@ -525,11 +525,11 @@ OutputStream& Expansion<I,X>::_write(OutputStream& os, const typename IndexTrait
             I a=iter->index();
             X v=iter->coefficient();
             os << " ";
-            if(decide(v>=0) && !first_term) { os<<"+"; }
+            if(decide(v>=0.0_x) && !first_term) { os<<"+"; }
             first_term=false;
             bool first_factor=true;
-            if(decide(v<0)) { os<<"-"; }
-            if(possibly(abs(v)!=1) || degree_of(a)==0) { os<<abs(v); first_factor=false; }
+            if(decide(v<0.0_x)) { os<<"-"; }
+            if(possibly(abs(v)!=1.0_x) || degree_of(a)==0) { os<<abs(v); first_factor=false; }
             write(os,a,variable_names,first_factor);
         }
     }

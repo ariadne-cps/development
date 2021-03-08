@@ -30,10 +30,12 @@
 #define ARIADNE_ARITHMETIC_HPP
 
 #include "utility/metaprogramming.hpp"
+
 #include "logical.decl.hpp"
 #include "number.decl.hpp"
 #include "sign.hpp"
 #include "logical.hpp" // TODO: Try to remove; needed for specialisation of Boolean DefineMixedComparisonOperators
+#include "concepts.hpp"
 
 namespace Ariadne {
 
@@ -48,6 +50,7 @@ template<class X> X generic_pow(X const& x, Nat m) {
 template<class X> X generic_pow(const X& x, Int n) {
     return n>=0 ? generic_pow(x,Nat(n)) : rec(generic_pow(x,Nat(-n))); }
 
+/*
 template<class T, class NT=T> struct Directed {
     friend NT neg(T const&);
 };
@@ -206,8 +209,9 @@ template<class T, class PT=T> struct DirectedLattice : Lattice<T> {
     //! \brief Absolute value. Equal to max(t,-t);
     friend PT abs(T const&);
 };
+*/
 
-
+/*
 //! \brief A type with an apartness relation \f$ x_1 \neq x_2\f$.
 template<class T, class A> struct Apartness {
     friend A neq(T const&, T const&);
@@ -217,7 +221,7 @@ template<class T, class A> struct Apartness {
 template<class T, class O, class A=O> struct Ordered : Apartness<T,A> {
     friend O leq(T const&, T const&);
 };
-
+*/
 
 
 
@@ -817,6 +821,7 @@ template<class X, class Y, class R=X> struct DefineMixedFieldOperators : DefineI
 
 template<class X, class LT, class EQ=LT> struct DefineComparisonOperators {
     typedef LT GT; typedef decltype(not declval<EQ>()) NEQ; typedef decltype(not declval<LT>()) GEQ; typedef decltype(not declval<GT>()) LEQ;
+/*
     friend EQ eq(X const& x1, X const& x2);
     friend LT lt(X const& x1, X const& x2);
     friend EQ  operator==(X const& x1, X const& x2) { return eq(x1,x2); }
@@ -825,10 +830,12 @@ template<class X, class LT, class EQ=LT> struct DefineComparisonOperators {
     friend GT  operator> (X const& x1, X const& x2) { return lt(x2,x1); }
     friend LEQ operator<=(X const& x1, X const& x2) { return not lt(x2,x1); }
     friend GEQ operator>=(X const& x1, X const& x2) { return not lt(x1,x2); }
+*/
 };
 
 template<class X, class Y, class LT, class EQ=LT> struct DefineMixedComparisonOperators {
     typedef LT GT; typedef decltype(not declval<EQ>()) NEQ; typedef decltype(not declval<LT>()) GEQ; typedef decltype(not declval<GT>()) LEQ;
+/*
     friend EQ eq(X const& x1, Y const& y2);
     friend LT lt(X const& x1, Y const& y2);
     friend GT gt(X const& x1, Y const& y2);
@@ -844,6 +851,7 @@ template<class X, class Y, class LT, class EQ=LT> struct DefineMixedComparisonOp
     friend LT  operator> (Y const& y1, X const& x2) { return lt(x2,y1); }
     friend GEQ operator<=(Y const& y1, X const& x2) { return not lt(x2,y1); }
     friend LEQ operator>=(Y const& y1, X const& x2) { return not gt(x2,y1); }
+*/
 };
 
 template<class X, class Y> struct DefineMixedComparisonOperators<X,Y,Boolean> {
@@ -983,12 +991,14 @@ template<class X, class NX, class Y, class NY, class R=X, class NR=NX> struct Pr
 template<class X, class QX, class Y, class QY, class R=X, class QR=QX> struct ProvideConcreteGenericDirectedSemiFieldOperators
     : DefineInplaceDirectedSemiFieldOperators<X,Y,QY,R>
 {
+/*
     friend R operator+(const X& x1, const Y& y2) { return operator+(x1,x1.create(y2)); }
     friend R operator*(const X& x1, const Y& y2) { return operator*(x1,x1.create(y2)); }
     friend R operator/(const X& x1, const QY& qy2) { return operator/(x1,x1.create(qy2)); }
     friend R operator+(const Y& y1, const X& x2) { return operator+(x2.create(y1),x2); }
     friend R operator*(const Y& y1, const X& x2) { return operator*(x2.create(y1),x2); }
     friend QR operator/(const QY& y1, const X& x2) { return operator/(x2.create(y1),x2); }
+*/
 };
 template<class X, class QX, class Y, class QY, class R=X, class QR=QX> struct ProvideConcreteGenericDirectedSemiFieldOperations
     : ProvideConcreteGenericDirectedSemiFieldOperators<X,QX,Y,QY,R,QR>
@@ -1165,6 +1175,7 @@ template<class X> struct DefineConcreteGenericArithmeticOperations {
 template<class X> struct DefineConcreteGenericArithmeticOperators
     : DefineConcreteGenericArithmeticOperations<X>
 {
+/*
     template<GenericNumber Y> friend decltype(auto) operator+(X const& x, Y const& y) { return x+factory(x).create(y); }
     template<GenericNumber Y> friend decltype(auto) operator-(X const& x, Y const& y) { return x-factory(x).create(y); }
     template<GenericNumber Y> friend decltype(auto) operator*(X const& x, Y const& y) { return x*factory(x).create(y); }
@@ -1179,6 +1190,7 @@ template<class X> struct DefineConcreteGenericArithmeticOperators
     template<GenericNumber Y> friend decltype(auto) operator-=(X& x, Y const& y) { return x-=factory(x).create(y); }
     template<GenericNumber Y> friend decltype(auto) operator*=(X& x, Y const& y) { return x*=factory(x).create(y); }
     template<GenericNumber Y> friend decltype(auto) operator/=(X& x, Y const& y) { return x/=factory(x).create(y); }
+*/
 };
 
 template<class X> struct DefineConcreteGenericComparisonOperators {
@@ -1332,6 +1344,119 @@ template<class X, class NX, class LT, class EQ> struct DispatchDirectedCompariso
     friend LT lt(X const& x1, NX const& nx2) { return OperationsType::_lt(x1,nx2); }
 };
 
+
+template<class X> struct ProvideOperators {
+    friend decltype(auto) operator+(X const& x) { return pos(x); }
+    friend decltype(auto) operator-(X const& x) { return neg(x); }
+    friend decltype(auto) operator+(X const& x1, X const& x2) { return add(x1,x2); }
+    friend decltype(auto) operator-(X const& x1, X const& x2) { return sub(x1,x2); }
+    friend decltype(auto) operator*(X const& x1, X const& x2) { return mul(x1,x2); }
+    friend decltype(auto) operator/(X const& x1, X const& x2) { return div(x1,x2); }
+/*
+    friend decltype(auto) operator+(X&& x) { return pos(std::forward<X>(x)); }
+    friend decltype(auto) operator-(X&& x) { return neg(std::forward<X>(x)); }
+    friend decltype(auto) operator+(X&& x1, X&& x2) { return add(std::forward<X>(x1),std::forward<X>(x2)); }
+    friend decltype(auto) operator-(X&& x1, X&& x2) { return sub(std::forward<X>(x1),std::forward<X>(x2)); }
+    friend decltype(auto) operator*(X&& x1, X&& x2) { return mul(std::forward<X>(x1),std::forward<X>(x2)); }
+    friend decltype(auto) operator/(X&& x1, X&& x2) { return div(std::forward<X>(x1),std::forward<X>(x2)); }
+*/
+};
+
+/*
+template<AbelianGroup X> decltype(auto) operator+(X const& x) { return pos(x); }
+template<AbelianGroup X> decltype(auto) operator-(X const& x) { return neg(x); }
+
+template<AbelianGroup X> decltype(auto) operator+(X const& x1, X const& x2) { return add(x1,x2); }
+template<AbelianGroup X> decltype(auto) operator-(X const& x1, X const& x2) { return sub(x1,x2); }
+template<Ring X> decltype(auto) operator*(X const& x1, X const& x2) { return mul(x1,x2); }
+template<Field X> decltype(auto) operator/(X const& x1, X const& x2) { return div(x1,x2); }
+*/
+
+template<AbelianGroup X> X& operator+=(X& x1, SelfType<X> const& x2) { return x1=add(x1,x2); }
+template<AbelianGroup X> X& operator-=(X& x1, SelfType<X> const& x2) { return x1=sub(x1,x2); }
+template<Ring X> X& operator*=(X& x1, SelfType<X> const& x2) { return x1=mul(x1,x2); }
+template<Field X> X& operator/=(X& x1, SelfType<X> const& x2) { return x1=div(x1,x2); }
+
+/*
+template<class X1, class X2> requires HasAdd<X1,X2> decltype(auto) operator+(X1 const& x1, X2 const& x2) { return add(x1,x2); }
+template<class X1, class X2> requires HasSub<X1,X2> decltype(auto) operator-(X1 const& x1, X2 const& x2) { return sub(x1,x2); }
+template<class X1, class X2> requires HasMul<X1,X2> decltype(auto) operator*(X1 const& x1, X2 const& x2) { return mul(x1,x2); }
+template<class X1, class X2> requires HasDiv<X1,X2> decltype(auto) operator/(X1 const& x1, X2 const& x2) { return div(x1,x2); }
+*/
+
+/*
+template<IsAbelianGroup X> decltype(auto) operator+(X const& x1, SelfType<X> const& x2) { return add(x1,x2); }
+template<IsAbelianGroup X> decltype(auto) operator-(X const& x1, SelfType<X> const& x2) { return sub(x1,x2); }
+template<IsRing X> decltype(auto) operator*(X const& x1, SelfType<X> const& x2) { return mul(x1,x2); }
+template<IsField X, ConvertibleTo<X> Y> decltype(auto) operator/(Y const& x1, X const& x2) { return div(x1,x2); }
+
+template<IsAbelianGroup X> decltype(auto) operator+(SelfType<X> const& x1, X const& x2) { return add(x1,x2); }
+template<IsAbelianGroup X> decltype(auto) operator-(SelfType<X> const& x1, X const& x2) { return sub(x1,x2); }
+template<IsRing X> decltype(auto) operator*(SelfType<X> const& x1, X const& x2) { return mul(x1,x2); }
+template<IsField X, ConvertibleTo<X> Y> decltype(auto) operator/(X const& x1, Y const& x2) { return div(x1,x2); }
+*/
+
+template<class X> concept ConcreteAbelianGroup = Concrete<X> and AbelianGroup<X>;
+template<class X> concept ConcreteRing = Concrete<X> and Ring<X>;
+template<class X> concept ConcreteField = Concrete<X> and Field<X>;
+
+template<class X> concept HasAddConcrete = Concrete<X> and HasAdd<X,X>;
+template<class X> concept HasSubConcrete = Concrete<X> and HasSub<X,X>;
+template<class X> concept HasMulConcrete = Concrete<X> and HasMul<X,X>;
+template<class X> concept HasDivConcrete = Concrete<X> and HasDiv<X,X>;
+
+
+template<class X> using GenericTypeOf = typename X::GenericType;
+
+template<HasAddConcrete X> decltype(auto) operator+(X const& x, GenericTypeOf<X> const& y) { return add(x,factory(x).create(y)); }
+template<HasSubConcrete X> decltype(auto) operator-(X const& x, typename X::GenericType const& y) { return sub(x,factory(x).create(y)); }
+template<HasMulConcrete X> decltype(auto) operator*(X const& x, typename X::GenericType const& y) { return mul(x,factory(x).create(y)); }
+template<HasDivConcrete X> decltype(auto) operator/(X const& x, typename X::GenericType const& y) { return div(x,factory(x).create(y)); }
+
+template<HasAddConcrete X> decltype(auto) operator+(GenericTypeOf<X> const& y, X const& x) { return add(factory(x).create(y),x); }
+template<HasSubConcrete X> decltype(auto) operator-(GenericTypeOf<X> const& y, X const& x) { return sub(factory(x).create(y),x); }
+template<HasMulConcrete X> decltype(auto) operator*(GenericTypeOf<X> const& y, X const& x) { return mul(factory(x).create(y),x); }
+template<HasDivConcrete X> decltype(auto) operator/(GenericTypeOf<X> const& y, X const& x) { return div(factory(x).create(y),x); }
+
+template<ConcreteAbelianGroup X> decltype(auto) operator+=(X& x, GenericTypeOf<X> const& y) { return x+=factory(x).create(y); }
+template<ConcreteAbelianGroup X> decltype(auto) operator-=(X& x, GenericTypeOf<X> const& y) { return x-=factory(x).create(y); }
+template<ConcreteRing X> decltype(auto) operator*=(X& x, GenericTypeOf<X> const& y) { return x*=factory(x).create(y); }
+template<ConcreteField X> decltype(auto) operator/=(X& x, GenericTypeOf<X> const& y) { return x/=factory(x).create(y); }
+
+
+
+template<class T1, class T2> requires Comparible<T1,T2> decltype(auto)
+    operator==(T1 const& t1, T2 const& t2) { return cmp(t1,t2) == Comparison::EQUAL; }
+template<class T1, class T2> requires Comparible<T1,T2> decltype(auto)
+    operator!=(T1 const& t1, T2 const& t2) { return cmp(t1,t2) != Comparison::EQUAL; }
+template<class T1, class T2> requires Comparible<T1,T2> decltype(auto)
+    operator< (T1 const& t1, T2 const& t2) { return cmp(t1,t2) == Comparison::LESS; }
+template<class T1, class T2> requires Comparible<T1,T2> decltype(auto)
+    operator> (T1 const& t1, T2 const& t2) { return cmp(t1,t2) == Comparison::GREATER; }
+template<class T1, class T2> requires Comparible<T1,T2> decltype(auto)
+    operator<=(T1 const& t1, T2 const& t2) { return cmp(t1,t2) != Comparison::GREATER; }
+template<class T1, class T2> requires Comparible<T1,T2> decltype(auto)
+    operator>=(T1 const& t1, T2 const& t2) { return cmp(t1,t2) != Comparison::LESS; }
+
+template<class T1, class T2> requires Equality<T1,T2> and (not Comparible<T1,T2>) decltype(auto)
+    operator==(T1 const& t1, T2 const& t2) { return eq(t1,t2); }
+template<class T1, class T2> requires Equality<T1,T2> and (not Comparible<T1,T2>) decltype(auto)
+    operator!=(T1 const& t1, T2 const& t2) { return not eq(t2,t1); }
+template<class T1, class T2> requires Ordered<T1,T2> and (not Comparible<T1,T2>) decltype(auto)
+    operator< (T1 const& t1, T2 const& t2) { return lt(t1,t2); }
+template<class T1, class T2> requires Ordered<T1,T2> and (not Comparible<T1,T2>) decltype(auto)
+    operator> (T1 const& t1, T2 const& t2) { return lt(t2,t1); }
+template<class T1, class T2> requires Ordered<T1,T2> and (not Comparible<T1,T2>) decltype(auto)
+    operator<=(T1 const& t1, T2 const& t2) { return not lt(t2,t1); }
+template<class T1, class T2> requires Ordered<T1,T2> and (not Comparible<T1,T2>) decltype(auto)
+    operator>=(T1 const& t1, T2 const& t2) { return not lt(t1,t2); }
+
+
+template<class X> requires Equality<X,X> and Concrete<X> decltype(auto)
+    operator==(X const& x1, GenericTypeOf<X> const& y2) { return x1==factory(x1).create(y2); }
+
+template<class X> requires Equality<X,X> and Concrete<X> decltype(auto)
+    operator==(GenericTypeOf<X> const& y1, X const& x2) { return factory(x2).create(y1)==x2; }
 
 
 } // namespace Ariadne

@@ -430,5 +430,8 @@ OutputStream& operator<<(OutputStream& os, Sign s) {
     return os << ( (s==Sign::ZERO) ? "ZERO" : (s==Sign::NEGATIVE) ? "NEGATIVE" : "POSITIVE" );
 }
 
+static_assert(IsOrderedLatticeRing<Integer>);
+static_assert(AreMixedOrderedLatticeRing<Integer,Int>);
+
 
 } // namespace Ariadne

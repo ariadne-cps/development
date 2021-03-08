@@ -90,8 +90,8 @@ using BoundedTag = OrderTag;
 
 class NegatedSierpinskian;
 class LowerKleenean;
-template<class P> using Equality = P;
-template<class P> using LessThan = P;
+template<class P> using EqualityInformation = P;
+template<class P> using LessThanInformation = P;
 
 template<class P1, class P2=P1> struct ParadigmTraits;
 

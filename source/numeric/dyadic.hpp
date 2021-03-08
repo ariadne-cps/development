@@ -40,6 +40,7 @@
 #include "utility/handle.hpp"
 #include "utility/writable.hpp"
 
+#include "numeric/concepts.hpp"
 #include "numeric/logical.hpp"
 #include "numeric/integer.hpp"
 #include "numeric/twoexp.hpp"
@@ -58,11 +59,12 @@ class InfinityException : public std::runtime_error {
 //! \related FloatDP, ExactIntervalType
 //! \brief A floating-point number, which is taken to represent the \em exact value of a real quantity.
 class Dyadic
-    : DeclareRingOperations<Dyadic>
-    , DeclareLatticeOperations<Dyadic,Dyadic>
-    , DeclareComparisonOperations<Dyadic,Boolean,Boolean>
-    , DefineRingOperators<Dyadic>
-    , DefineComparisonOperators<Dyadic,Boolean,Boolean>
+//    : DeclareRingOperations<Dyadic>
+//    , DeclareLatticeOperations<Dyadic,Dyadic>
+//    , DeclareComparisonOperations<Dyadic,Boolean,Boolean>
+//    , DefineRingOperators<Dyadic>
+//    , DefineComparisonOperators<Dyadic,Boolean,Boolean>
+    : ProvideOperators<Dyadic>
 {
     static Writer<Dyadic> _default_writer;
   public:
@@ -124,16 +126,23 @@ class Dyadic
     friend Dyadic operator"" _bin(long double x);
     //! \brief Convert a floating-point literal to Dyadic.
     friend Dyadic operator"" _dyadic(long double x);
+
+    friend Dyadic nul(Dyadic const&);
+    friend Dyadic pos(Dyadic const&);
+    friend Dyadic neg(Dyadic const&);
+    friend Dyadic sqr(Dyadic const& q);
+    friend Dyadic add(Dyadic const&, Dyadic const&);
+    friend Dyadic sub(Dyadic const&, Dyadic const&);
+    friend Dyadic mul(Dyadic const&, Dyadic const&);
     //! \brief Halve the number.
     friend Dyadic hlf(Dyadic const&);
-    //| \brief Power of a number (m always positive). DEPRECATED
-    friend Dyadic pow(Dyadic const& x, Int m);
     //| \brief Power of a number (m always positive).
-    friend Dyadic pow(Dyadic const& x, Nat m);
+    friend Dyadic pow(Dyadic const&, Int);
+    friend Dyadic pow(Dyadic const&, Nat);
 
-    friend Rational rec(Rational const&); //!< <p/>
-    friend Rational div(Rational const&, Rational const&); //!< <p/>
-    friend Rational operator/(Rational const&, Rational const&); //!< <p/>
+    friend Rational rec(Rational const&);
+    friend Rational div(Rational const&, Rational const&);
+//    friend Rational operator/(Rational const&, Rational const&);
 
     friend Real sqrt(Real const&); //!< <p/>
     friend Real exp(Real const&); //!< <p/>
@@ -144,6 +153,12 @@ class Dyadic
     friend Real asin(Real const&); //!< <p/>
     friend Real acos(Real const&); //!< <p/>
     friend Real atan(Real const&); //!< <p/>
+
+    friend Dyadic abs(Dyadic const&);
+    friend Dyadic max(Dyadic const&, Dyadic const&);
+    friend Dyadic min(Dyadic const&, Dyadic const&);
+
+    friend Comparison cmp(Dyadic const&, Dyadic const&);
 
     //! \brief The sign of the number.
     friend Sign sgn(Dyadic const&);
@@ -334,6 +349,20 @@ template<> class Positive<LowerBound<Dyadic>> : public LowerBound<Dyadic> { publ
 template<> class Positive<UpperBound<Dyadic>> : public UpperBound<Dyadic> { public: Positive(UpperBound<Dyadic> w) : UpperBound<Dyadic>(w) { } ; };
 template<> class Positive<Approximation<Dyadic>> : public Approximation<Dyadic> { public: Positive(Approximation<Dyadic> w) : Approximation<Dyadic>(w) { } };
 
+template<class F> class Bounds;
+template<class F, class FE> class Ball;
+
+template<class Y> requires (not RoundedRing<Y>) and LatticeRing<Y> class Bounds<Y>;
+template<class Y> requires (not RoundedRing<Y>) and LatticeRing<Y> class Ball<Y>;
+
+using DyadicBounds = Bounds<Dyadic>; //!< Alias for dyadic bounds on a number. //!< \ingroup NumericModule
+using DyadicBall = Ball<Dyadic,Dyadic>;
+
+static_assert(LatticeRing<Dyadic>);
+static_assert(not RoundedRing<Dyadic>);
+
+using DyadicApproximation = Approximation<Dyadic>;
+
 inline Dyadic operator"" _dyadic(long double x) { return Dyadic(static_cast<double>(x)); }
 inline Dyadic operator"" _dy(long double x) { return operator"" _dyadic(x); }
 inline Dyadic operator"" _q2(long double x) { return operator"" _dyadic(x); }
@@ -341,6 +370,7 @@ inline Dyadic operator"" _bin(long double x) { return operator"" _dyadic(x); }
 
 Comparison cmp(Dyadic const& x1, Dyadic const& x2);
 Dyadic make_dyadic(unsigned long long int n);
+
 
 } // namespace Ariadne
 

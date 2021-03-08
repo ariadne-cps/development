@@ -163,7 +163,7 @@ void TestDyadic::test_comparisons() {
 
 void TestDyadic::test_infinity() {
 
-    mpf_t mpf; static_assert(std::is_signed<decltype(mpf[0]._mp_exp)>::value,"");
+    mpf_t mpf; static_assert(std::is_signed<decltype(mpf[0]._mp_exp)>::value);
 
     mp_exp_t mp_exp_t_min = std::numeric_limits<mp_exp_t>::min();
     assert(-mp_exp_t_min == mp_exp_t_min);

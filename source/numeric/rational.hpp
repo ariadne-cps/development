@@ -53,12 +53,13 @@ enum class Comparison : char;
 //! \ingroup NumericModule
 //! \brief %Rational numbers.
 class Rational
-    : DeclareFieldOperations<Rational>
-    , DeclareLatticeOperations<Rational,Rational>
-    , DeclareComparisonOperations<Rational,Boolean,Boolean>
-    , DefineFieldOperators<Rational>
-    , DefineComparisonOperators<Rational,Boolean,Boolean>
-    , DeclareTranscendentalOperations<Real>
+    : ProvideOperators<Rational>
+//    : DeclareFieldOperations<Rational>
+//    , DeclareLatticeOperations<Rational,Rational>
+//    , DeclareComparisonOperations<Rational,Boolean,Boolean>
+//    , DefineFieldOperators<Rational>
+//    , DefineComparisonOperators<Rational,Boolean,Boolean>
+//    , DeclareTranscendentalOperations<Real>
 {
   public:
     mpq_t _mpq;
@@ -92,7 +93,18 @@ class Rational
     Integer get_den() const;
     Integer numerator() const;
     Natural denominator() const;
-    friend Rational operator/(Integer const& z1, Integer const& z2);
+
+    friend Rational nul(Rational const& q);
+    friend Rational pos(Rational const& q);
+    friend Rational neg(Rational const& q);
+    friend Rational sqr(Rational const& q);
+    friend Rational hlf(Rational const& q);
+    friend Rational rec(Rational const& q);
+    friend Rational add(Rational const& q1, Rational const& q2);
+    friend Rational sub(Rational const& q1, Rational const& q2);
+    friend Rational mul(Rational const& q1, Rational const& q2);
+    friend Rational div(Rational const& q1, Rational const& q2);
+    friend Rational pow(Rational const& q1, Int n2);
 
     friend Real sqrt(Real const&);
     friend Real exp(Real const&);
@@ -104,6 +116,12 @@ class Rational
     friend Real acos(Real const&);
     friend Real atan(Real const&);
 
+    friend Rational abs(Rational const& q);
+    friend Rational max(Rational const& q1, Rational const& q2);
+    friend Rational min(Rational const& q1, Rational const& q2);
+
+    friend Comparison cmp(Rational const& q1, Rational const& q2);
+
     friend Sign sgn(Rational const& q);
     friend Integer floor(Rational const&);
     friend Integer round(Rational const&);
@@ -113,10 +131,6 @@ class Rational
     friend Bool is_inf(Rational const& q);
     friend Bool is_finite(Rational const& q);
     friend Bool is_zero(Rational const& q);
-
-    friend Comparison cmp(Rational const& q1, Rational const& q2);
-    friend Comparison cmp(Rational const& q1, ExactDouble const& d2);
-    friend Comparison cmp(ExactDouble const& d1, Rational const& q2);
 
     friend OutputStream& operator<<(OutputStream& os, Rational const& q);
     friend InputStream& operator>>(InputStream& os, Rational& q);
@@ -132,6 +146,7 @@ Rational operator"" _q(unsigned long long int n);
 Rational operator"" _q(long double x);
 
 template<BuiltinIntegral N> inline Rational::Rational(N n) : Rational(Int64(n)) { }
+
 
 OutputStream& write(OutputStream& os, mpz_t const z);
 InputStream& operator>>(InputStream& is, Rational& q1);

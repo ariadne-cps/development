@@ -83,11 +83,9 @@ class Rational;
 class Real;
 
 template<class F> class Bounds;
-template<> class Bounds<Dyadic>;
 using DyadicBounds = Bounds<Dyadic>;
 
 template<class F> class Approximation;
-template<> class Approximation<Dyadic>;
 using DyadicApproximation = Approximation<Dyadic>;
 
 template<class R, class A> R integer_cast(const A& a);
@@ -100,9 +98,9 @@ Integer ceil(Dyadic const&);
 //! \brief A modifier declaring that a number is positive.
 template<class X> class Positive;
 
-template<class P=Void> class Number;
-template<class P> class LowerNumber;
+template<class P> class Number;
 template<class P> class UpperNumber;
+template<class P> class LowerNumber;
 
 template<class X> struct IsNumber : False { };
 
@@ -167,6 +165,8 @@ using PositiveApproximateNumber=PositiveNumber<ApproximateTag>; //!< <p/>
 
 using ValidatedErrorNumber = PositiveValidatedUpperNumber; //!< Alias for validated error bounds.
 //@!}
+
+
 
 } // namespace Ariadne
 

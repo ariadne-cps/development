@@ -43,6 +43,9 @@
 
 namespace Ariadne {
 
+
+int abslog10floor(double x);
+
 namespace {
 template<class FE, class FLT> requires (not SameAs<FE,FLT>) inline FE _make_error(FLT const& x) {
     typename FE::PrecisionType pre; return FE(Dyadic(x),upward,pre); }

@@ -31,6 +31,7 @@
 
 #include <string>
 #include <iostream>
+
 #include "utility/typedefs.hpp"
 #include "numeric/number.decl.hpp"
 #include "numeric/integer.hpp"
@@ -41,7 +42,7 @@ namespace Ariadne {
 //! \related Rational, Real
 //! \brief A decimal number.
 class Decimal
-    : public DefineComparisonOperators<Decimal,Boolean,Boolean>
+//    : public DefineComparisonOperators<Decimal,Boolean,Boolean>
 {
   public:
     static const Integer _ten;

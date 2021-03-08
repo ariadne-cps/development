@@ -40,7 +40,7 @@ namespace Ariadne {
 template class UnivariateDifferential<RoundedFloatDP>;
 template class UnivariateDifferential<FloatDPApproximation>;
 template class UnivariateDifferential<FloatDPBounds>;
-template class UnivariateDifferential<FloatDPUpperInterval>;
+//template class UnivariateDifferential<FloatDPUpperInterval>;
 
 template class UnivariateDifferential<FloatMPApproximation>;
 template class UnivariateDifferential<FloatMPBounds>;
@@ -48,7 +48,8 @@ template class UnivariateDifferential<FloatMPBounds>;
 template class Differential<RoundedFloatDP>;
 template class Differential<FloatDPBounds>;
 template class Differential<FloatDPApproximation>;
-template class Differential<FloatDPUpperInterval>;
+#warning
+//template class Differential<FloatDPUpperInterval>;
 
 template struct AlgebraOperations<Differential<RoundedFloatDP>>;
 template struct AlgebraOperations<Differential<FloatDPApproximation>>;
@@ -57,22 +58,22 @@ template struct AlgebraOperations<Differential<FloatDPUpperInterval>>;
 template class GradedAlgebraOperations<Differential<RoundedFloatDP>>;
 template class GradedAlgebraOperations<Differential<FloatDPApproximation>>;
 template class GradedAlgebraOperations<Differential<FloatDPBounds>>;
-template class GradedAlgebraOperations<Differential<FloatDPUpperInterval>>;
+//template class GradedAlgebraOperations<Differential<FloatDPUpperInterval>>;
 
 template class Vector<Differential<RoundedFloatDP>>;
 template class Vector<Differential<FloatDPBounds>>;
 template class Vector<Differential<FloatDPApproximation>>;
-template class Vector<Differential<FloatDPUpperInterval>>;
+//template class Vector<Differential<FloatDPUpperInterval>>;
 
 template class Differential<FloatMPBounds>;
 template class Differential<FloatMPApproximation>;
-template class Differential<FloatMPUpperInterval>;
+//template class Differential<FloatMPUpperInterval>;
 template struct AlgebraOperations<Differential<FloatMPApproximation>>;
 template struct AlgebraOperations<Differential<FloatMPBounds>>;
-template struct AlgebraOperations<Differential<FloatMPUpperInterval>>;
+//template struct AlgebraOperations<Differential<FloatMPUpperInterval>>;
 template class GradedAlgebraOperations<Differential<FloatMPApproximation>>;
 template class GradedAlgebraOperations<Differential<FloatMPBounds>>;
-template class GradedAlgebraOperations<Differential<FloatMPUpperInterval>>;
+//template class GradedAlgebraOperations<Differential<FloatMPUpperInterval>>;
 
 template class Vector<Differential<FloatMPBounds>>;
 template class Vector<Differential<FloatMPApproximation>>;

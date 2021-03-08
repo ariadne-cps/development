@@ -123,11 +123,11 @@ using NaiveRealInterface = RealInterface;
 //! \sa LowerReal, UpperReal, NaiveReal
 class Real
     : public Handle<const RealInterface>
-    , public DeclareRealOperations<Real,PositiveReal>
-    , public DeclareAnalyticFieldOperations<Real>
-    , public DeclareLatticeOperations<Real,PositiveReal>
-    , public DeclareComparisonOperations<Real,Kleenean,NegatedSierpinskian>
-    , public DefineFieldOperators<Real>
+//    , public DeclareRealOperations<Real,PositiveReal>
+//    , public DeclareAnalyticFieldOperations<Real>
+//    , public DeclareLatticeOperations<Real,PositiveReal>
+//    , public DeclareComparisonOperations<Real,Kleenean,NegatedSierpinskian>
+//    , public DefineFieldOperators<Real>
 {
   public:
     typedef RealInterface Interface;
@@ -207,6 +207,7 @@ class Real
 
     //! \name Named arithmetical functions
     //!@{
+    friend Real nul(Real const& r); //!< Constant \a 0.
     friend Real pos(Real const& r); //!< Identity \a +r.
     friend Real neg(Real const& r); //!< Negative \a -r.
     friend Real hlf(Real const& r); //!< Half \a r÷2.
@@ -251,11 +252,13 @@ class Real
 
     //! \name Comparison operations and operators.
     //!@{
-    friend Kleenean leq(Real const& r1, Real const& r2); //!< Returns \c true if \a r1<r2, \c false if \a r1\>r2, and \c indetermiate if \a r1==r2.
+    friend Kleenean lt(Real const& r1, Real const& r2); //!< Returns \c true if \a r1<r2, \c false if \a r1\>r2, and \c indetermiate if \a r1==r2.
     friend NegatedSierpinskian operator==(Real const& r1, Real const& r2); //!< Equality is undecidable and may only robustly be falsified.
     friend Sierpinskian operator!=(Real const& r1, Real const& r2); //!< Inequality is undecidable and may only robustly be verified.
-    friend Kleenean operator<=(Real const& r1, Real const& r2); //!< Comparison \c leq.
-    friend Kleenean operator>=(Real const& r1, Real const& r2); //!< Comparison .
+//    friend Kleenean operator<=(Real const& r1, Real const& r2); //!< Comparison \c leq.
+//    friend Kleenean operator>=(Real const& r1, Real const& r2); //!< Comparison .
+    friend Kleenean operator< (Real const& r1, Real const& r2); //!< Comparison \c lt.
+    friend Kleenean operator> (Real const& r1, Real const& r2); //!< Comparison .
 
     friend Kleenean sgn(Real const& r); //!< Returns \c true if \a r>0, \c false if \a r<0, and \c indeterminate if \a r==0.
     ValidatedKleenean check_sgn(Real r, Effort eff);
@@ -323,7 +326,6 @@ Real when(Case<UpperKleenean,Real> const& c1, Case<UpperKleenean,Real> const& c2
 //! \sa Real, UpperReal, NaiveReal
 class LowerReal
     : public Handle<const LowerRealInterface>
-    , public DirectedAbelian<LowerReal,UpperReal>
 {
   public:
     typedef EffectiveTag Paradigm;
@@ -424,7 +426,6 @@ class LowerReal
 //! \sa Real, LowerReal, NaiveReal
 class UpperReal
     : public Handle<const UpperRealInterface>
-    , public DirectedAbelian<UpperReal,LowerReal>
 {
   public:
     typedef EffectiveTag Paradigm;
@@ -661,7 +662,7 @@ class PositiveReal : public Real
 
 //! \ingroup UserNumericTypeSubModule
 //! \brief Computable lower real numbers defined by conversion to concrete floats.
-class PositiveLowerReal : public LowerReal, public DirectedSemiRing<PositiveLowerReal,PositiveUpperReal>
+class PositiveLowerReal : public LowerReal
 {
   public:
     PositiveLowerReal(PositiveReal r) : LowerReal(r) { }
@@ -678,7 +679,7 @@ class PositiveLowerReal : public LowerReal, public DirectedSemiRing<PositiveLowe
 
 //! \ingroup UserNumericTypeSubModule
 //! \brief Computable lower real numbers defined by conversion to concrete floats.
-class PositiveUpperReal : public UpperReal, public DirectedSemiRing<PositiveUpperReal,PositiveLowerReal>
+class PositiveUpperReal : public UpperReal
 {
   public:
     PositiveUpperReal(PositiveReal r) : UpperReal(r) { }

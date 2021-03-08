@@ -37,7 +37,8 @@ namespace Ariadne {
     template class Expansion<UniIndex,RoundedFloatDP>;
     template class Expansion<UniIndex,FloatDPApproximation>;
 
-    template class Expansion<MultiIndex,double>;
+#warning
+//    template class Expansion<MultiIndex,double>;
     template class Expansion<MultiIndex,ExactDouble>;
     template class Expansion<MultiIndex,Dyadic>;
 
@@ -57,10 +58,10 @@ namespace Ariadne {
     template class SortedExpansion<MultiIndex,FloatDPValue,ReverseLexicographicIndexLess>;
     template class SortedExpansion<MultiIndex,FloatDPBounds,ReverseLexicographicIndexLess>;
     template class SortedExpansion<MultiIndex,FloatDPApproximation,ReverseLexicographicIndexLess>;
-
-    template class Expansion<MultiIndex,FloatDPUpperInterval>;
-    template class SortedExpansion<MultiIndex,FloatDPUpperInterval,GradedIndexLess>;
-    template class SortedExpansion<MultiIndex,FloatDPUpperInterval,ReverseLexicographicIndexLess>;
+#warning
+//    template class Expansion<MultiIndex,FloatDPUpperInterval>;
+//    template class SortedExpansion<MultiIndex,FloatDPUpperInterval,GradedIndexLess>;
+//    template class SortedExpansion<MultiIndex,FloatDPUpperInterval,ReverseLexicographicIndexLess>;
 
 
     template class Expansion<MultiIndex,FloatMP>;
@@ -78,9 +79,9 @@ namespace Ariadne {
     template class SortedExpansion<MultiIndex,FloatMPBounds,ReverseLexicographicIndexLess>;
     template class SortedExpansion<MultiIndex,FloatMPApproximation,ReverseLexicographicIndexLess>;
 
-    template class Expansion<MultiIndex,FloatMPUpperInterval>;
-    template class SortedExpansion<MultiIndex,FloatMPUpperInterval,GradedIndexLess>;
-    template class SortedExpansion<MultiIndex,FloatMPUpperInterval,ReverseLexicographicIndexLess>;
+//    template class Expansion<MultiIndex,FloatMPUpperInterval>;
+//    template class SortedExpansion<MultiIndex,FloatMPUpperInterval,GradedIndexLess>;
+//    template class SortedExpansion<MultiIndex,FloatMPUpperInterval,ReverseLexicographicIndexLess>;
 
     // FIXME: Put in accessible header file
     template Void Expansion<MultiIndex,FloatDPUpperInterval>::_fill(Expansion<MultiIndex,FloatDPBounds> const&);

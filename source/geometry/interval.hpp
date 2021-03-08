@@ -383,6 +383,14 @@ template<class U> inline auto operator==(Interval<U> const& ivl1, Interval<U> co
 //! \related Interval \brief Inequality operator.
 template<class U> inline auto operator!=(Interval<U> const& ivl1, Interval<U> const& ivl2) -> decltype(ivl1.upper_bound()!=ivl2.upper_bound());
 
+//! \related Interval \brief Equality comparison with number.
+template<class U, class X> inline auto operator==(Interval<U> const& ivl1, X const& x2) -> decltype(ivl1.upper()==x2);
+template<class U, class X> inline auto operator!=(Interval<U> const& ivl1, X const& x2) -> decltype(ivl1.upper()!=x2);
+template<class U, class X> inline auto operator>=(Interval<U> const& ivl1, X const& x2) -> decltype(ivl1.upper()>=x2);
+template<class U, class X> inline auto operator< (Interval<U> const& ivl1, X const& x2) -> decltype(ivl1.upper()< x2);
+
+template<class U, class X> inline auto operator==(X const& x1, Interval<U> const& ivl2) -> decltype(x1==ivl2.upper());
+template<class U, class X> inline auto operator!=(X const& x1, Interval<U> const& ivl2) -> decltype(x1!=ivl2.upper());
 
 //! \related FloatDPApproximationInterval \related FloatDPExactInterval \brief Allows the over-approximating interval \a ivl to be treated as exact.
 Interval<FloatDPValue> cast_exact(Interval<FloatDPApproximation> const& ivl);

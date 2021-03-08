@@ -46,6 +46,17 @@
 
 namespace Ariadne {
 
+static_assert(Constructible<FloatDPUpperBound,Real,DP>);
+static_assert(Constructible<FloatDPUpperBound,FloatDPValue,DP>);
+
+void foo () {
+    Real r; DP dpr;
+    FloatDPValue v(dpr);
+    FloatDPUpperBound x={r,dpr};
+    Interval<FloatDPUpperBound> xi({v,dpr},{v,dpr});
+}
+
+
 //! \related TaylorConstrainedImageSet \brief The possible types of method used to discretise a nonlinear set.
 enum class DiscretisationMethod : std::uint8_t { SUBDIVISION, AFFINE, CONSTRAINT };
 //! \related TaylorConstrainedImageSet \brief The type of method currently used to discretise a nonlinear set.

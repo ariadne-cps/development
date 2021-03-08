@@ -36,6 +36,7 @@
 
 #include "float_operations.hpp"
 #include "float_traits.hpp"
+#include "concepts.hpp"
 
 namespace Ariadne {
 
@@ -56,6 +57,8 @@ template<class F, class FE> class Ball
 {
     typedef ValidatedTag P; typedef typename F::PrecisionType PR; typedef typename FE::PrecisionType PRE;
     static_assert(Constructible<PR,PRE> or DefaultConstructible<PRE>);
+    static_assert(IsRoundedLatticeField<F>);
+    static_assert(IsRoundedLatticeField<FE>);
   public:
     //! <p/>
     typedef P Paradigm;

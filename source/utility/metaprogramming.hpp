@@ -110,26 +110,6 @@ template<class X1, class X2=X1> using InplaceProductType = RemoveReference<declt
 template<class X1, class X2=X1> using InplaceQuotientType = RemoveReference<decltype(declval<X1&>()/=declval<X2>())>;
 
 
-template<class F, class... AS> struct IsInvocable;
-template<class R, class F, class... AS> struct IsInvocableReturning;
-
-template<class F, class A> struct IsInvocable<F,A> {
-    template<class FF, class AA, class=decltype(std::declval<FF>()(std::declval<AA>()))>
-        static std::true_type test(int);
-    template<class FF, class AA>
-        static std::false_type test(...);
-    static const bool value = decltype(test<F,A>(1))::value;
-};
-
-template<class R, class F, class A> struct IsInvocableReturning<R,F,A> {
-    template<class RR, class FF, class AA, class=decltype(std::declval<RR>()=std::declval<FF>()(std::declval<AA>()))>
-        static std::true_type test(int);
-    template<class RR, class FF, class AA>
-        static std::false_type test(...);
-    static const bool value = decltype(test<R,F,A>(1))::value;
-};
-
-
 template<class T> concept BuiltinArithmetic = std::is_arithmetic<T>::value;
 template<class T> concept BuiltinIntegral = std::integral<T>;
 template<class T> concept BuiltinFloatingPoint = std::floating_point<T>;
@@ -144,6 +124,7 @@ template<class T1, class T2> concept Same = std::is_same<T1,T2>::value;
 //template<class F, class T> concept Convertible = std::convertible_to<F,T>;
 template<class F, class T> concept Convertible = std::is_convertible<F,T>::value;
 template<class F, class T> concept ConvertibleTo = std::is_convertible<F,T>::value;
+template<class T, class F> concept ConvertibleFrom = std::is_convertible<F,T>::value;
 //template<class T, class... US> concept ConstructibleFrom = std::constructible_from<T,US...>;
 //template<class T, class... US> concept Constructible = std::constructible_from<T,US...>;
 template<class T, class... US> concept ConstructibleFrom = std::is_constructible<T,US...>::value;

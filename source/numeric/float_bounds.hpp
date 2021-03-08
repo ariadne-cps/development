@@ -34,6 +34,7 @@
 #include "number.decl.hpp"
 #include "float.decl.hpp"
 
+#include "concepts.hpp"
 #include "float_operations.hpp"
 #include "float_traits.hpp"
 
@@ -76,9 +77,10 @@ struct DefaultTag;
 //! \endcode
 template<class F> class Bounds
     : public DefineConcreteGenericOperators<Bounds<F>>
-    , public DefineFieldOperators<Bounds<F>>
+//    , public DefineFieldOperators<Bounds<F>>
     , public DefineComparisonOperators<Bounds<F>,LessTrait<Bounds<F>>,EqualsTrait<Bounds<F>>>
 {
+    static_assert(IsRoundedLatticeField<F>);
   protected:
     typedef ValidatedTag P; typedef typename F::RoundingModeType RND; typedef typename F::PrecisionType PR;
   public:
@@ -309,6 +311,47 @@ template<class F> class Bounds
     friend OutputStream& operator<<(OutputStream& os, Bounds<F> const& x) { return Operations<Bounds<F>>::_write(os,x); }
     //! <p/>
     friend InputStream& operator>>(InputStream& is, Bounds<F>& x) { return Operations<Bounds<F>>::_read(is,x); }
+/*
+  public:
+    friend Bounds<F> add(Bounds<F> const&, ValidatedNumber const&);
+    friend Bounds<F> sub(Bounds<F> const&, ValidatedNumber const&);
+    friend Bounds<F> mul(Bounds<F> const&, ValidatedNumber const&);
+    friend Bounds<F> div(Bounds<F> const&, ValidatedNumber const&);
+    friend Bounds<F> add(ValidatedNumber const&, Bounds<F> const&);
+    friend Bounds<F> sub(ValidatedNumber const&, Bounds<F> const&);
+    friend Bounds<F> mul(ValidatedNumber const&, Bounds<F> const&);
+    friend Bounds<F> div(ValidatedNumber const&, Bounds<F> const&);
+
+    friend Bounds<F> max(Bounds<F> const&, ValidatedNumber const&);
+    friend Bounds<F> min(Bounds<F> const&, ValidatedNumber const&);
+    friend Bounds<F> max(ValidatedNumber const&, Bounds<F> const&);
+    friend Bounds<F> min(ValidatedNumber const&, Bounds<F> const&);
+*/
+    friend Bounds<F> operator+(Bounds<F> const&);
+    friend Bounds<F> operator-(Bounds<F> const&);
+    friend Bounds<F> operator+(Bounds<F> const&, Bounds<F> const&);
+    friend Bounds<F> operator-(Bounds<F> const&, Bounds<F> const&);
+    friend Bounds<F> operator*(Bounds<F> const&, Bounds<F> const&);
+    friend Bounds<F> operator/(Bounds<F> const&, Bounds<F> const&);
+
+/*
+    friend Bounds<F> operator+(Bounds<F> const&, ValidatedNumber const&);
+    friend Bounds<F> operator-(Bounds<F> const&, ValidatedNumber const&);
+    friend Bounds<F> operator*(Bounds<F> const&, ValidatedNumber const&);
+    friend Bounds<F> operator/(Bounds<F> const&, ValidatedNumber const&);
+    friend Bounds<F> operator+(ValidatedNumber const&, Bounds<F> const&);
+    friend Bounds<F> operator-(ValidatedNumber const&, Bounds<F> const&);
+    friend Bounds<F> operator*(ValidatedNumber const&, Bounds<F> const&);
+    friend Bounds<F> operator/(ValidatedNumber const&, Bounds<F> const&);
+
+#warning FIXME
+    friend ValidatedKleenean operator==(Bounds<F> const&, Bounds<F> const&);
+    friend ValidatedKleenean operator!=(Bounds<F> const&, Bounds<F> const&);
+    friend ValidatedKleenean operator<=(Bounds<F> const&, Bounds<F> const&);
+    friend ValidatedKleenean operator>=(Bounds<F> const&, Bounds<F> const&);
+    friend ValidatedKleenean operator< (Bounds<F> const&, Bounds<F> const&);
+    friend ValidatedKleenean operator> (Bounds<F> const&, Bounds<F> const&);
+*/
   public:
     static Nat output_places;
     //! %Set the number of output places used to display the number. DEPRECATED
@@ -317,6 +360,7 @@ template<class F> class Bounds
     RawType _l, _u;
 };
 
+//template<class F> template<class FE> Bounds<F>::Bounds(Ball<F,FE> const& x) : Bounds<F>(x.lower_raw(),x.upper_raw()) { }
 template<class F> template<class FE> Bounds<F>::Bounds(Ball<F,FE> const& x) : Bounds<F>(x.lower_raw(),x.upper_raw()) { }
 
 template<class FE> inline Bounds<FE> make_bounds(Error<FE> const& e) { return pm(e); }
@@ -394,6 +438,8 @@ template<class F> class Positive<Bounds<F>> : public Bounds<F>
 
 template<class F> inline PositiveBounds<F> cast_positive(Bounds<F> const& x) {
     return PositiveBounds<F>(x); }
+
+static_assert(IsRoundedLatticeField<FloatDP>);
 
 extern template Ariadne::Nat Ariadne::Bounds<Ariadne::FloatDP>::output_places;
 extern template Ariadne::Nat Ariadne::Bounds<Ariadne::FloatMP>::output_places;

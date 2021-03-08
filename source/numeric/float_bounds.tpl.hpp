@@ -45,7 +45,13 @@ template<class F> Nat Bounds<F>::output_places=8;
 template<class F> Bounds<F>::Bounds(Value<F> const& x) : Bounds<F>(x.raw(),x.raw()) { }
 template<class F> Bounds<F>::Bounds(LowerBound<F> const& lower, UpperBound<F> const& upper) : Bounds<F>(lower.raw(),upper.raw()) { }
 
-template<class F> Bounds<F>::Bounds(Real const& x, PR pr) : Bounds(x.get(pr)) {}
+template<class PR> auto get_lower(ValidatedLowerNumber const& lower, PR pr) -> LowerBound<RawFloat<PR>>;
+template<class PR> auto get_upper(ValidatedUpperNumber const& lower, PR pr) -> UpperBound<RawFloat<PR>>;
+template<class PR> auto get_bounds(ValidatedNumber const&, PR pr) -> Bounds<RawFloat<PR>>;
+template<class PR> auto get_bounds(Real const&, PR pr) -> Bounds<RawFloat<PR>>;
+
+//template<class F> Bounds<F>::Bounds(Real const& x, PR pr) : Bounds(x.get(pr)) {}
+template<class F> Bounds<F>::Bounds(Real const& x, PR pr) : Bounds(get_bounds(x,pr)) {}
 template<class F> Bounds<F>::Bounds(LowerBound<F> const& lower, ValidatedUpperNumber const& upper) : Bounds<F>(lower,lower.create(upper)) { }
 template<class F> Bounds<F>::Bounds(ValidatedLowerNumber const& lower, UpperBound<F> const& upper) : Bounds<F>(upper.create(lower),upper) { }
 template<class F> Bounds<F>::Bounds(ValidatedLowerNumber const& lower, ValidatedUpperNumber const& upper, PR pr) : Bounds<F>(lower.get(pr),upper.get(pr)) { }

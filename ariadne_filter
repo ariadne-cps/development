@@ -47,6 +47,8 @@ s/Variable<Integer>/IntegerVariable/g
 s/Variable<Real>/RealVariable/g
 
 s/Number<\(\w*\)Tag>/\1Number/g
+s/LowerNumber<\(\w*\)Tag>/\1LowerNumber/g
+s/UpperNumber<\(\w*\)Tag>/\1UpperNumber/g
 s/Float<\(\w\w*\), Precision\(..\)>/\1Float\2/g
 s/ValidatedMetricTag/MetricTag/g
 s/ValidatedBoundedTag/BoundedTag/g

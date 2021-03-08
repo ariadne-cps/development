@@ -50,7 +50,7 @@
 #include "float_approximation.hpp"
 
 /************ Number *********************************************************/
-
+#warning "XxxInformation" in paradigm.hpp and number.hpp REMOVE
 namespace Ariadne {
 
 using NumberHandle = Handle<NumberInterface>;
@@ -91,7 +91,7 @@ template class NumberWrapper<FloatDPBounds>;
 template class NumberWrapper<FloatDPBall>;
 template class NumberWrapper<FloatDPValue>;
 
-DyadicBounds::operator ValidatedNumber() const { return ValidatedNumber(new NumberWrapper<FloatDPBounds>(FloatDPBounds(*this,dp))); }
+Bounds<Dyadic>::operator ValidatedNumber() const { return ValidatedNumber(new NumberWrapper<FloatDPBounds>(FloatDPBounds(*this,dp))); }
 
 template<> FloatDPApproximation::operator ApproximateNumber() const { return ApproximateNumber(new NumberWrapper<FloatDPApproximation>(*this)); }
 //template<> FloatDPLowerBound::operator ValidatedLowerNumber() const { return ValidatedLowerNumber(new NumberWrapper<FloatDPLowerBound>(*this)); }
@@ -121,8 +121,8 @@ template<> FloatMPValue::operator ExactNumber() const { return ExactNumber(new N
 
 template<> String class_name<NumberHandle>() { return "NumberHandle"; }
 
-//inline Bool refines(Number<UpperTag> const& y1, Number<UpperTag> const& y2) {
-//    return y1.get(dp).raw() <= y2.get(dp).raw(); }
+inline Bool refines(UpperNumber<ValidatedTag> const& y1, UpperNumber<ValidatedTag> const& y2) {
+    return y1.get(dp).raw() <= y2.get(dp).raw(); }
 
 PositiveValidatedUpperNumber mag(PositiveValidatedUpperNumber const& y) {
     return y; }

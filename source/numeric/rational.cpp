@@ -258,10 +258,6 @@ Natural Rational::denominator() const {
     return n;
 }
 
-Rational operator/(Integer const& z1, Integer const& z2) {
-    return Rational(z1,z2);
-}
-
 
 Rational operator+(Rational& q1, Rational const& q2) {
     Rational r; ExtendedOperations<Rational>::add(r,q1,q2); return r;
@@ -627,9 +623,9 @@ Bounds<Rational> rec(RationalBounds const& q) {
 template<> String class_name<Rational>() { return "Rational"; }
 
 
-// TODO: Move to dyadic.cpp
-Bounds<Dyadic> operator*(DyadicBounds const& w1, DyadicBounds const& w2) {
-    return _mul(RoundExact(),w1,w2); }
-
+static_assert(IsOrderedLatticeRing<Rational>);
+static_assert(AreMixedOrderedLatticeRing<Rational,Int>);
+static_assert(AreMixedOrderedLatticeRing<Rational,Integer>);
+static_assert(AreMixedOrderedLatticeRing<Rational,Dyadic>);
 
 } // namespace Ariadne

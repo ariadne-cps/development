@@ -81,7 +81,7 @@ class Constraint {
     UpperBoundType const& upper_bound() const { return this->_upper_bound; }
 
     // FIXME: This function should not be used as it breaks type safety
-    const Interval<FloatDPValue> bounds() const { DoublePrecision pr; return cast_exact(Interval<FloatDPUpperBound>({_lower_bound,pr},{_upper_bound,pr})); }
+    const Interval<FloatDPValue> bounds() const { DoublePrecision pr; return cast_exact(Interval<FloatDPUpperBound>(FloatDPLowerBound{_lower_bound,pr},FloatDPUpperBound{_upper_bound,pr})); }
   private:
     F _function;
     R _lower_bound;
