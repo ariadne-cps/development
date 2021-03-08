@@ -281,9 +281,9 @@ InclusionIntegrator<A>::reach(BoxDomainType const& domx, ValidatedVectorMultivar
     auto doma = this->build_parameter_domain(_inputs);
 
     auto w = build_w_functions<A>(domt,doma,_f.result_size(),_inputs.size());
-    ARIADNE_LOG_PRINTLN_AT(1,"w:"<<w);
+    ARIADNE_LOG_PRINTLN("w:"<<w);
     auto Fw = substitute_v_with_w(_f, w);
-    ARIADNE_LOG_PRINTLN_AT(1,"Fw:"<<Fw);
+    ARIADNE_LOG_PRINTLN("Fw:"<<Fw);
     auto phi = this->_integrator->flow_step(Fw,domx,domt,doma,B);
     add_errors(phi,e);
 

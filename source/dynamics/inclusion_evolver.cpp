@@ -148,7 +148,7 @@ class InclusionEvolverState {
 };
 
 inline Map<InclusionIntegratorHandle,ApproximateDouble> convert_to_percentages(Map<InclusionIntegratorHandle,Nat> const& approximation_global_frequencies) {
-
+    ARIADNE_LOG_PRINTLN(approximation_global_frequencies);
     Nat total_steps(0);
     for (auto entry: approximation_global_frequencies) {
         total_steps += entry.second;
@@ -156,7 +156,7 @@ inline Map<InclusionIntegratorHandle,ApproximateDouble> convert_to_percentages(M
 
     Map<InclusionIntegratorHandle,ApproximateDouble> result;
     for (auto entry: approximation_global_frequencies) {
-        result[entry.first] = 1/total_steps*entry.second;
+        result[entry.first] = 1.0/total_steps*entry.second;
     }
 
     return result;
@@ -232,7 +232,7 @@ List<ValidatedVectorMultivariateFunctionModelDP> InclusionEvolver::reach(BoxDoma
         for (auto approximator : approximators_to_use) {
             ARIADNE_LOG_PRINTLN_AT(3,"checking "<<approximator<<" approximator");
 
-            auto current_reach=approximator.reach(domx,evolve_function,B,t,h);
+            ARIADNE_LOG_RUN_AT(2,auto current_reach=approximator.reach(domx,evolve_function,B,t,h));
             auto current_evolve=approximator.evolve(current_reach.at(current_reach.size()-1u),new_t);
 
             FloatDPApproximation current_volume = volume(current_evolve.range());
