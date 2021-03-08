@@ -28,10 +28,11 @@
 namespace Ariadne {
 
 typedef Tuple<String,DottedRealAssignments,RealVariablesBox,RealVariablesBox,Real,double> SystemType;
+typedef Real ContinuousTimeType;
 
-void run_single(String name, InclusionVectorField const& ivf, BoxDomainType const& initial, TimeType evolution_time, double step, List<InputApproximation> approximations, SweeperDP sweeper, ReconditionerHandle const& reconditioner, unsigned int verbosity, bool draw);
-void run_each_approximation(String name, InclusionVectorField const& ivf, BoxDomainType const& initial, TimeType evolution_time, double step, List<InputApproximation> approximations, SweeperDP sweeper, ReconditionerHandle const& reconditioner, unsigned int verbosity, bool draw);
-void run_noisy_system(String name, DottedRealAssignments const& dynamics, RealVariablesBox const& inputs, RealVariablesBox const& initial, TimeType evolution_time, double step);
+void run_single(String name, InclusionVectorField const& ivf, BoxDomainType const& initial, ContinuousTimeType evolution_time, double step, List<InputApproximation> approximations, SweeperDP sweeper, ReconditionerHandle const& reconditioner, bool draw);
+void run_each_approximation(String name, InclusionVectorField const& ivf, BoxDomainType const& initial, ContinuousTimeType evolution_time, double step, List<InputApproximation> approximations, SweeperDP sweeper, ReconditionerHandle const& reconditioner, bool draw);
+void run_noisy_system(String name, DottedRealAssignments const& dynamics, RealVariablesBox const& inputs, RealVariablesBox const& initial, ContinuousTimeType evolution_time, double step);
 void run_noisy_system(SystemType system);
 
 
@@ -39,7 +40,7 @@ template<class F, class S> List<ResultOf<F(S)>> map(F const& f, List<S> const& l
     List<ResultOf<F(S)>> result; for(auto item : list) { result.append(f(item)); } return result;
 }
 
-inline FloatDP score(ValidatedConstrainedImageSet const& evolve_set) {
+inline ApproximateDouble score(ValidatedConstrainedImageSet const& evolve_set) {
     auto bbx = evolve_set.bounding_box();
     return 1.0/std::pow(volume(bbx).get_d(),1.0/bbx.size());
 }
@@ -53,12 +54,11 @@ template<class C> struct Reverse {
 template<class C> Reverse<C> reverse(C const& c) { return Reverse<C>(c); }
 
 
-void run_single(String name, InclusionVectorField const& ivf, BoxDomainType const& initial, Real evolution_time, double step, List<InputApproximation> approximations, SweeperDP sweeper, IntegratorInterface const& integrator, ReconditionerHandle const& reconditioner, unsigned int verbosity, bool draw) {
-
+void run_single(String name, InclusionVectorField const& ivf, BoxDomainType const& initial, Real evolution_time, ApproximateDouble step, List<InputApproximation> approximations, SweeperDP sweeper, IntegratorInterface const& integrator, ReconditionerHandle const& reconditioner, bool draw) {
+    ARIADNE_LOG_SCOPE_CREATE;
     auto evolver = InclusionEvolver(ivf,sweeper,integrator,reconditioner);
     evolver.configuration().approximations(approximations);
     evolver.configuration().maximum_step_size(step);
-    evolver.verbosity = verbosity;
 
     StopWatch sw;
 
@@ -67,14 +67,14 @@ void run_single(String name, InclusionVectorField const& ivf, BoxDomainType cons
 
     List<ValidatedConstrainedImageSet> reach_sets = map([](ValidatedVectorMultivariateFunctionModelType const& fm){return ValidatedConstrainedImageSet(fm.domain(),fm);},flow_functions);
     auto final_set = flow_functions.back();
-    ValidatedVectorMultivariateFunctionModelType evolve_function = 
-        partial_evaluate(final_set,final_set.result_size(),final_set.domain()[final_set.result_size()].upper());
+    ValidatedVectorMultivariateFunctionModelType evolve_function =
+        partial_evaluate(final_set,final_set.result_size(),final_set.domain()[final_set.result_size()].upper_bound());
     auto evolve_set = ValidatedConstrainedImageSet(evolve_function.domain(),evolve_function);
 
-    std::cout << "score: " << score(evolve_set) << ", time: " << sw.elapsed() << " s" << std::endl;
+    ARIADNE_LOG_PRINTLN("Score: " << score(evolve_set) << ", time: " << sw.elapsed() << " s");
 
     if (draw) {
-        std::cout << "plotting..." << std::endl;
+        ARIADNE_LOG_PRINTLN("Plotting...");
         auto n = ivf.dimension();
         Box<FloatDPUpperInterval> graphics_box(n);
         for (auto set: reach_sets) {
@@ -92,20 +92,21 @@ void run_single(String name, InclusionVectorField const& ivf, BoxDomainType cons
                 fig.set_fill_colour(1.0,0.75,0.5);
                 for (auto set : reverse(reach_sets)) { fig.draw(set); }
                 fig.draw(evolve_set);
-                char num_char[7] = "";
+                char num_char[64] = "";
                 if (n > 2) sprintf(num_char,"[%lu,%lu]",i,j);
-                fig.write((name+num_char).c_str());
+                ARIADNE_LOG_RUN_MUTED(fig.write((name+num_char).c_str()));
             }
         }
+        ARIADNE_LOG_PRINTLN("Done.");
     }
 }
 
-void run_each_approximation(String name, InclusionVectorField const& ivf, BoxDomainType const& initial, Real evolution_time, double step, List<InputApproximation> approximations, SweeperDP sweeper, IntegratorInterface const& integrator, ReconditionerHandle const& reconditioner, unsigned int verbosity, bool draw) {
+void run_each_approximation(String name, InclusionVectorField const& ivf, BoxDomainType const& initial, Real evolution_time, double step, List<InputApproximation> approximations, SweeperDP sweeper, IntegratorInterface const& integrator, ReconditionerHandle const& reconditioner, bool draw) {
 
     for (auto appro: approximations) {
         List<InputApproximation> singleapproximation = {appro};
-        std::cout << appro << std::endl;
-        run_single(name,ivf,initial,evolution_time,step,singleapproximation,sweeper,integrator,reconditioner,verbosity,draw);
+        ARIADNE_LOG_PRINTLN(appro);
+        run_single(name,ivf,initial,evolution_time,step,singleapproximation,sweeper,integrator,reconditioner,draw);
     }
 }
 
@@ -115,13 +116,12 @@ void run_noisy_system(String name, const DottedRealAssignments& dynamics, const 
     InclusionVectorField ivf(dynamics,inputs);
 
     SizeType period_of_parameter_reduction=12;
-    FloatDP ratio_of_parameters_to_keep(6.0);
+    ExactDouble ratio_of_parameters_to_keep=6.0_x;
     double sw_threshold = 1e-8;
     ThresholdSweeperDP sweeper(DoublePrecision(),sw_threshold);
 
-    unsigned int verbosity = 1;
-    bool draw = false;
-    DRAWING_METHOD = DrawingMethod::BOX;
+    bool draw = true;
+    DRAWING_METHOD = DrawingMethod::AFFINE;
 
     List<InputApproximation> approximations;
     approximations.append(ZeroApproximation());
@@ -130,7 +130,7 @@ void run_noisy_system(String name, const DottedRealAssignments& dynamics, const 
     approximations.append(SinusoidalApproximation());
     approximations.append(PiecewiseApproximation());
 
-   TaylorPicardIntegrator integrator(
+    TaylorPicardIntegrator integrator(
             maximum_error=1e-3,
             sweeper,
             lipschitz_constant=0.5,
@@ -140,8 +140,8 @@ void run_noisy_system(String name, const DottedRealAssignments& dynamics, const 
 
     LohnerReconditioner reconditioner(initial.variables().size(),inputs.variables().size(),period_of_parameter_reduction,ratio_of_parameters_to_keep);
 
-    run_single(name,ivf,initial_ranges_to_box(initial),evolution_time,step,approximations,sweeper,integrator,reconditioner,verbosity,draw);
-    //run_each_approximation(name,ivf,initial_ranges_to_box(initial),evolution_time,step,approximations,sweeper,integrator,reconditioner,verbosity,draw);
+    run_single(name,ivf,initial_ranges_to_box(initial),evolution_time,step,approximations,sweeper,integrator,reconditioner,draw);
+    //run_each_approximation(name,ivf,initial_ranges_to_box(initial),evolution_time,step,approximations,sweeper,integrator,reconditioner,draw);
 }
 
 void run_noisy_system(SystemType system) {

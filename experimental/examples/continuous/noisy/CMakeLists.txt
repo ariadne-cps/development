@@ -8,6 +8,7 @@ set(EXAMPLES_NOISY
 	sphere
 	order7
 	wiggins1873
+	ross-mcdonald
 )
 
 foreach(example ${EXAMPLES_NOISY})

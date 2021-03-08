@@ -148,7 +148,7 @@ class InclusionEvolverState {
 };
 
 inline Map<InclusionIntegratorHandle,ApproximateDouble> convert_to_percentages(Map<InclusionIntegratorHandle,Nat> const& approximation_global_frequencies) {
-    ARIADNE_LOG_PRINTLN(approximation_global_frequencies);
+
     Nat total_steps(0);
     for (auto entry: approximation_global_frequencies) {
         total_steps += entry.second;
