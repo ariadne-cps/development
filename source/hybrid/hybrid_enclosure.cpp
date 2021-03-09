@@ -86,14 +86,14 @@ HybridEnclosure::HybridEnclosure(EnclosureConfiguration const& config)
 
 HybridEnclosure::HybridEnclosure(const HybridBoxSet& hbox,
                                  const RealSpace& state_space,
-                                 const ValidatedFunctionModelDPFactory& factory)
+                                 const ValidatedFunctionPatchFactory& factory)
     : HybridEnclosure(hbox.location(),state_space,hbox.euclidean_set(state_space),factory)
 {
 }
 
 HybridEnclosure::HybridEnclosure(const HybridBoundedConstraintSet& hybrid_set,
                                  const RealSpace& state_space,
-                                 const ValidatedFunctionModelDPFactory& factory)
+                                 const ValidatedFunctionPatchFactory& factory)
     : _location(hybrid_set.location()), _events(), _set()
 {
     BoundedConstraintSet euclidean_set=hybrid_set.euclidean_set(this->_location,state_space);
@@ -102,17 +102,17 @@ HybridEnclosure::HybridEnclosure(const HybridBoundedConstraintSet& hybrid_set,
 
 
 HybridEnclosure::HybridEnclosure(const DiscreteLocation& location, const RealSpace& state_space,
-                                 const RealBox& box, const ValidatedFunctionModelDPFactory& factory)
+                                 const RealBox& box, const ValidatedFunctionPatchFactory& factory)
     : _location(location), _events(), _set(box,state_space,factory)
 {
 }
 
-HybridEnclosure::HybridEnclosure(const HybridRealBox& hbox, const ValidatedFunctionModelDPFactory& factory)
+HybridEnclosure::HybridEnclosure(const HybridRealBox& hbox, const ValidatedFunctionPatchFactory& factory)
     : HybridEnclosure(hbox.location(),hbox.space(),hbox.euclidean_set(),factory)
 {
 }
 
-HybridEnclosure::HybridEnclosure(const HybridExactBoxType& hbox, const ValidatedFunctionModelDPFactory& factory)
+HybridEnclosure::HybridEnclosure(const HybridExactBoxType& hbox, const ValidatedFunctionPatchFactory& factory)
     : HybridEnclosure(hbox.location(),LabelledEnclosure(hbox.euclidean_set(),hbox.space(),factory))
 {
 }
@@ -169,13 +169,13 @@ HybridEnclosure::configuration() const
     return this->_set.configuration();
 }
 
-ValidatedFunctionModelDPFactory const&
+ValidatedFunctionPatchFactory const&
 HybridEnclosure::function_factory() const
 {
     return this->_set.function_factory();
 }
 
-ValidatedScalarMultivariateFunctionModelDP const
+ValidatedScalarMultivariateFunctionPatch const
 HybridEnclosure::function(RealVariable var) const
 {
     if(this->state_space().contains(var)) {
@@ -190,44 +190,44 @@ HybridEnclosure::function(RealVariable var) const
     }
 }
 
-ValidatedVectorMultivariateFunctionModelDP const&
+ValidatedVectorMultivariateFunctionPatch const&
 HybridEnclosure::state_function() const
 {
     return this->_set.state_function();
 }
 
-ValidatedScalarMultivariateFunctionModelDP const&
+ValidatedScalarMultivariateFunctionPatch const&
 HybridEnclosure::time_function() const
 {
     return this->_set.time_function();
 }
 
-ValidatedScalarMultivariateFunctionModelDP const&
+ValidatedScalarMultivariateFunctionPatch const&
 HybridEnclosure::dwell_time_function() const
 {
     return this->_set.dwell_time_function();
 }
 
-ValidatedVectorMultivariateFunctionModelDP const
+ValidatedVectorMultivariateFunctionPatch const
 HybridEnclosure::auxiliary_function() const
 {
     return this->_set.auxiliary_function();
 }
 
-ValidatedVectorMultivariateFunctionModelDP const
+ValidatedVectorMultivariateFunctionPatch const
 HybridEnclosure::state_auxiliary_function() const
 {
     return this->_set.state_auxiliary_function();
 }
 
-ValidatedVectorMultivariateFunctionModelDP const
+ValidatedVectorMultivariateFunctionPatch const
 HybridEnclosure::state_time_auxiliary_function() const
 {
     return this->_set.state_time_auxiliary_function();
 }
 
 
-Void HybridEnclosure::set_time_function(const ValidatedScalarMultivariateFunctionModelDP& time_function)
+Void HybridEnclosure::set_time_function(const ValidatedScalarMultivariateFunctionPatch& time_function)
 {
     ARIADNE_NOT_IMPLEMENTED;
     ARIADNE_ASSERT_MSG(Ariadne::subset(this->parameter_domain(),time_function.domain()),
@@ -360,44 +360,44 @@ Void HybridEnclosure::apply_reset(DiscreteEvent event, DiscreteLocation target, 
     this->_set.apply_map(map,state_space,auxiliary_mapping,auxiliary_space);
 }
 
-Void HybridEnclosure::apply_fixed_evolve_step(const ValidatedVectorMultivariateFunctionModelDP& phi, const StepSizeType& elps)
+Void HybridEnclosure::apply_fixed_evolve_step(const ValidatedVectorMultivariateFunctionPatch& phi, const StepSizeType& elps)
 {
     this->_set.apply_fixed_evolve_step(phi,elps);
 }
 
-Void HybridEnclosure::apply_space_evolve_step(const ValidatedVectorMultivariateFunctionModelDP& phi, const ValidatedScalarMultivariateFunctionModelDP& elps)
+Void HybridEnclosure::apply_space_evolve_step(const ValidatedVectorMultivariateFunctionPatch& phi, const ValidatedScalarMultivariateFunctionPatch& elps)
 {
     this->_set.apply_space_evolve_step(phi,elps);
 }
 
-Void HybridEnclosure::apply_spacetime_evolve_step(const ValidatedVectorMultivariateFunctionModelDP& phi, const ValidatedScalarMultivariateFunctionModelDP& elps)
+Void HybridEnclosure::apply_spacetime_evolve_step(const ValidatedVectorMultivariateFunctionPatch& phi, const ValidatedScalarMultivariateFunctionPatch& elps)
 {
     this->_set.apply_spacetime_evolve_step(phi,elps);
 }
 
-Void HybridEnclosure::apply_spacetime_reach_step(const ValidatedVectorMultivariateFunctionModelDP& phi, const ValidatedScalarMultivariateFunctionModelDP& elps)
+Void HybridEnclosure::apply_spacetime_reach_step(const ValidatedVectorMultivariateFunctionPatch& phi, const ValidatedScalarMultivariateFunctionPatch& elps)
 {
     this->_set.apply_spacetime_reach_step(phi,elps);
 }
 
 
-Void HybridEnclosure::apply_parameter_evolve_step(const ValidatedVectorMultivariateFunctionModelDP& phi, const ValidatedScalarMultivariateFunctionModelDP& elps)
+Void HybridEnclosure::apply_parameter_evolve_step(const ValidatedVectorMultivariateFunctionPatch& phi, const ValidatedScalarMultivariateFunctionPatch& elps)
 {
     this->_set.apply_parameter_evolve_step(phi,elps);
 }
 
-Void HybridEnclosure::apply_finishing_parameter_evolve_step(const ValidatedVectorMultivariateFunctionModelDP& phi, const ValidatedScalarMultivariateFunctionModelDP& omega)
+Void HybridEnclosure::apply_finishing_parameter_evolve_step(const ValidatedVectorMultivariateFunctionPatch& phi, const ValidatedScalarMultivariateFunctionPatch& omega)
 {
     this->_set.apply_finishing_parameter_evolve_step(phi,omega);
 }
 
 
-Void HybridEnclosure::apply_parameter_reach_step(const ValidatedVectorMultivariateFunctionModelDP& phi, const ValidatedScalarMultivariateFunctionModelDP& elps)
+Void HybridEnclosure::apply_parameter_reach_step(const ValidatedVectorMultivariateFunctionPatch& phi, const ValidatedScalarMultivariateFunctionPatch& elps)
 {
     this->_set.apply_parameter_reach_step(phi,elps);
 }
 
-Void HybridEnclosure::apply_full_reach_step(const ValidatedVectorMultivariateFunctionModelDP& phi)
+Void HybridEnclosure::apply_full_reach_step(const ValidatedVectorMultivariateFunctionPatch& phi)
 {
     this->_set.apply_full_reach_step(phi);
 }
@@ -424,10 +424,10 @@ Void HybridEnclosure::set_time(ValidatedScalarMultivariateFunction time)
     this->_set.new_zero_parameter_constraint(this->time_function()-this->function_factory().create(this->_set.domain(),time));
 }
 
-
+#warning
 Void HybridEnclosure::set_maximum_time(DiscreteEvent event, FloatDP final_time)
 {
-    this->_set.new_negative_parameter_constraint(this->time_function()-FloatDPValue(final_time)); // Deprecated
+    this->_set.new_negative_parameter_constraint(this->time_function()-ExactNumber(FloatDPValue(final_time))); // Deprecated
 }
 
 Void HybridEnclosure::new_time_step_bound(DiscreteEvent event, ValidatedScalarMultivariateFunction constraint) {
@@ -469,7 +469,7 @@ HybridBasicSet<Enclosure> HybridEnclosure::state_auxiliary_set() const {
 }
 
 HybridBasicSet<Enclosure> project(HybridEnclosure const& encl, RealSpace const& spc) {
-    ValidatedVectorMultivariateFunctionModelDP spc_funct=encl.function_factory().create_zeros(spc.dimension(),encl.parameter_domain());
+    ValidatedVectorMultivariateFunctionPatch spc_funct=encl.function_factory().create_zeros(spc.dimension(),encl.parameter_domain());
     for(SizeType i=0; i!=spc.dimension(); ++i) { spc_funct[i] = encl.function(spc[i]); }
     Enclosure spc_set(encl.parameter_domain(),spc_funct,encl.time_function(),encl.constraints(),encl.function_factory());
     return HybridBasicSet<Enclosure>(encl.location(),spc,spc_set);

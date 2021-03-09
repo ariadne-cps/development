@@ -35,6 +35,7 @@
 #include "algebra/sweeper.hpp"
 #include "algebra/algebra.hpp"
 #include "function/domain.hpp"
+#include "function/function_patch.hpp"
 #include "function/function_model.hpp"
 #include "function/formula.hpp"
 #include "function/symbolic_function.hpp"
@@ -74,8 +75,8 @@ class ReconditionerInterface {
   public:
     virtual Bool must_reduce_parameters(InclusionEvolverState const& state) const = 0;
     virtual Bool must_incorporate_errors(InclusionEvolverState const& state) const = 0;
-    virtual Void reduce_parameters(ValidatedVectorMultivariateFunctionModelType& phi) const = 0;
-    virtual ValidatedVectorMultivariateFunctionModelType incorporate_errors(ValidatedVectorMultivariateFunctionModelType const& Phi) const = 0;
+    virtual Void reduce_parameters(ValidatedVectorMultivariateFunctionPatch& phi) const = 0;
+    virtual ValidatedVectorMultivariateFunctionPatch incorporate_errors(ValidatedVectorMultivariateFunctionPatch const& Phi) const = 0;
     virtual Void update_from(InclusionEvolverState const& state) = 0;
   public:
     virtual ReconditionerInterface* clone() const = 0;
@@ -96,8 +97,8 @@ public:
           _number_of_parameters_to_keep(USHRT_MAX),
           _ratio_of_parameters_to_keep(cast_exact(ratio_of_parameters_to_keep)) { }
     virtual LohnerReconditioner* clone() const override { return new LohnerReconditioner(*this); }
-    virtual ValidatedVectorMultivariateFunctionModelType incorporate_errors(ValidatedVectorMultivariateFunctionModelType const& f) const override;
-    virtual Void reduce_parameters(ValidatedVectorMultivariateFunctionModelType& f) const override;
+    virtual ValidatedVectorMultivariateFunctionPatch incorporate_errors(ValidatedVectorMultivariateFunctionPatch const& f) const override;
+    virtual Void reduce_parameters(ValidatedVectorMultivariateFunctionPatch& f) const override;
     virtual Bool must_reduce_parameters(InclusionEvolverState const& state) const override;
     virtual Bool must_incorporate_errors(InclusionEvolverState const& state) const override;
     virtual Void update_from(InclusionEvolverState const& state) override;
@@ -115,8 +116,8 @@ public:
     Bool must_reduce_parameters(InclusionEvolverState const& state) const { return _impl->must_reduce_parameters(state); }
     Bool must_incorporate_errors(InclusionEvolverState const& state) const { return _impl->must_incorporate_errors(state); }
 
-    Void reduce_parameters(ValidatedVectorMultivariateFunctionModelType& phi) const { _impl->reduce_parameters(phi); }
-    ValidatedVectorMultivariateFunctionModelType incorporate_errors(ValidatedVectorMultivariateFunctionModelType const& Phi) const { return _impl->incorporate_errors(Phi); }
+    Void reduce_parameters(ValidatedVectorMultivariateFunctionPatch& phi) const { _impl->reduce_parameters(phi); }
+    ValidatedVectorMultivariateFunctionPatch incorporate_errors(ValidatedVectorMultivariateFunctionPatch const& Phi) const { return _impl->incorporate_errors(Phi); }
 
     Void update_from(InclusionEvolverState const& state) {_impl->update_from(state); }
 
@@ -145,9 +146,9 @@ class InclusionEvolver {
     const ConfigurationType& configuration() const { return *this->_configuration; }
 
   public:
-    List<ValidatedVectorMultivariateFunctionModelType> reach(BoxDomainType const& initial, Real const& T);
+    List<ValidatedVectorMultivariateFunctionPatch> reach(BoxDomainType const& initial, Real const& T);
   private:
-    Void _recondition_and_update(ValidatedVectorMultivariateFunctionModelType& function, InclusionEvolverState& state);
+    Void _recondition_and_update(ValidatedVectorMultivariateFunctionPatch& function, InclusionEvolverState& state);
 };
 
 //! \brief Configuration for an InclusionEvolver, essentially for controlling the accuracy of continuous evolution methods.

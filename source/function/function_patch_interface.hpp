@@ -58,6 +58,8 @@ template<class P> using VectorUnivariateFunctionPatchInterface = FunctionPatchIn
 template<class P> using ScalarMultivariateFunctionPatchInterface = FunctionPatchInterface<P,RealScalar(RealVector)>;
 template<class P> using VectorMultivariateFunctionPatchInterface = FunctionPatchInterface<P,RealVector(RealVector)>;
 
+using ValidatedFunctionPatchFactoryInterface = FunctionPatchFactoryInterface<ValidatedTag>;
+
 template<class P, class SIG> class FunctionPatchAlgebraInterface;
 
 template<class P, class... ARGS> class FunctionPatchAlgebraInterface<P,RealScalar(ARGS...)>

@@ -30,6 +30,14 @@
 #include "inclusion_evolver.hpp"
 
 namespace Ariadne {
+
+#warning
+inline ValidatedVectorMultivariateTaylorFunctionModelDP compose(ValidatedVectorMultivariateFunctionPatch const&,
+                                                                ValidatedVectorMultivariateTaylorFunctionModelDP const&);
+
+inline FloatDPUpperInterval operator*(PositiveValidatedUpperNumber x, FloatDPUpperInterval ivl) {
+    return cast_exact(x.get(double_precision)*ivl); }
+
 /*
 FloatDP volume(Vector<IntervalValidatedRangeType> const& box) {
     FloatDP result = 1.0;
@@ -173,7 +181,7 @@ InclusionEvolver::InclusionEvolver(SystemType const& system, SweeperDP const& sw
     ARIADNE_LOG_SCOPE_CREATE;
 }
 
-Void InclusionEvolver::_recondition_and_update(ValidatedVectorMultivariateFunctionModelType& function, InclusionEvolverState& state) {
+Void InclusionEvolver::_recondition_and_update(ValidatedVectorMultivariateFunctionPatch& function, InclusionEvolverState& state) {
     if (_reconditioner.must_reduce_parameters(state)) {
         _reconditioner.update_from(state);
         _reconditioner.reduce_parameters(function);
@@ -185,20 +193,21 @@ Void InclusionEvolver::_recondition_and_update(ValidatedVectorMultivariateFuncti
     }
 }
 
-List<ValidatedVectorMultivariateFunctionModelDP> InclusionEvolver::reach(BoxDomainType const& initial, Real const& tmax) {
+List<ValidatedVectorMultivariateFunctionPatch> InclusionEvolver::reach(BoxDomainType const& initial, Real const& tmax) {
     ARIADNE_LOG_SCOPE_CREATE;
     ARIADNE_LOG_PRINTLN_AT(1,"System: "<<_system);
     ARIADNE_LOG_PRINTLN_AT(1,"Initial: "<<initial);
 
     StepSizeType hsug(_configuration->maximum_step_size());
 
-    ValidatedVectorMultivariateFunctionModelDP evolve_function = ValidatedVectorMultivariateTaylorFunctionModelDP::identity(initial,this->_sweeper);
+    ValidatedVectorMultivariateFunctionPatch evolve_function(
+        static_cast<ValidatedVectorMultivariateFunctionModelDP>(ValidatedVectorMultivariateTaylorFunctionModelDP::identity(initial,this->_sweeper)));
 
     TimeStepType t;
 
     InclusionEvolverState state(_system,_configuration->approximations(),*_integrator);
 
-    List<ValidatedVectorMultivariateFunctionModelDP> result;
+    List<ValidatedVectorMultivariateFunctionPatch> result;
 
     ProgressIndicator indicator(tmax.get_d());
 
@@ -223,9 +232,9 @@ List<ValidatedVectorMultivariateFunctionModelDP> InclusionEvolver::reach(BoxDoma
 
         TimeStepType new_t = lower_bound(t+h);
 
-        List<ValidatedVectorMultivariateFunctionModelDP> reach_functions;
-        List<ValidatedVectorMultivariateFunctionModelDP> best_reach_functions;
-        ValidatedVectorMultivariateFunctionModelDP best_evolve_function;
+        List<ValidatedVectorMultivariateFunctionPatch> reach_functions;
+        List<ValidatedVectorMultivariateFunctionPatch> best_reach_functions;
+        ValidatedVectorMultivariateFunctionPatch best_evolve_function;
         InclusionIntegratorHandle best = approximators_to_use.at(0);
         FloatDPApproximation best_volume(inf,dp);
 
@@ -315,22 +324,24 @@ Void LohnerReconditioner::update_from(InclusionEvolverState const& state) {
     _number_of_parameters_to_keep = static_cast<Nat>(round(npk).get_d());
 }
 
-ValidatedVectorMultivariateFunctionModelDP LohnerReconditioner::incorporate_errors(ValidatedVectorMultivariateFunctionModelDP const& f) const {
+ValidatedVectorMultivariateFunctionPatch LohnerReconditioner::incorporate_errors(ValidatedVectorMultivariateFunctionPatch const& f) const {
     ARIADNE_LOG_SCOPE_CREATE;
     ValidatedVectorMultivariateTaylorFunctionModelDP const& tf = dynamic_cast<ValidatedVectorMultivariateTaylorFunctionModelDP const&>(f.reference());
 
     BoxDomainType domain=f.domain();
-    BoxDomainType errors=cast_exact(cast_exact(f.errors())*FloatDPUpperInterval(-1,+1)); // FIXME: Avoid cast;
+#warning
+    auto ferrors=f.errors(); BoxDomainType errors(f.result_size(),[&](SizeType i){return cast_exact_interval(ferrors[i]*FloatDPUpperInterval(-1,+1));});
+    //    BoxDomainType errors=cast_exact(cast_exact(f.errors())*FloatDPUpperInterval(-1,+1)); // FIXME: Avoid cast;
 
     ARIADNE_LOG_PRINTLN("Uniform errors:"<<errors);
 
-    ValidatedVectorMultivariateFunctionModelDP error_function=ValidatedVectorMultivariateTaylorFunctionModelDP::identity(errors,tf.properties());
-    ValidatedVectorMultivariateFunctionModelDP result = embed(f,errors)+embed(domain,error_function);
+    ValidatedVectorMultivariateFunctionPatch error_function(static_cast<ValidatedVectorMultivariateFunctionModelDP>(ValidatedVectorMultivariateTaylorFunctionModelDP::identity(errors,tf.properties())));
+    ValidatedVectorMultivariateFunctionPatch result = embed(f,errors)+embed(domain,error_function);
     for(SizeType i=0; i!=result.result_size(); ++i) { result[i].clobber(); }
     return result;
 }
 
-Void LohnerReconditioner::reduce_parameters(ValidatedVectorMultivariateFunctionModelDP& f) const {
+Void LohnerReconditioner::reduce_parameters(ValidatedVectorMultivariateFunctionPatch& f) const {
     ARIADNE_LOG_SCOPE_CREATE;
     ARIADNE_LOG_PRINTLN("f="<<f);
 
@@ -411,7 +422,8 @@ Void LohnerReconditioner::reduce_parameters(ValidatedVectorMultivariateFunctionM
     for (auto i : range(remove_indices.size())) {
         auto j=remove_indices[i]; auto cj=old_domain[j].midpoint();
         projection[j]=ValidatedScalarMultivariateTaylorFunctionModelDP::constant(new_domain,cj,sweeper); }
-    f=compose(f,projection);
+#warning
+    f=static_cast<ValidatedVectorMultivariateFunctionModelDP>(compose(f,projection));
 }
 
 

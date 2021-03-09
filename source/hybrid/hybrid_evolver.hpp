@@ -65,14 +65,14 @@ using HybridOrbit = Orbit<HybridEnclosure>;
 //! \ingroup FunctionModule
 //! \brief A class representing the flow \f$\phi(x,t)\f$ of a differential equation \f$\frac{dx}{dt}=f(x)\f$.
 class FlowFunctionModel
-    : public ValidatedVectorMultivariateFunctionModelDP
+    : public ValidatedVectorMultivariateFunctionPatch
 {
   public:
-    FlowFunctionModel(const ValidatedVectorMultivariateFunctionModelDP& f) : ValidatedVectorMultivariateFunctionModelDP(f) { }
+    FlowFunctionModel(const ValidatedVectorMultivariateFunctionPatch& f) : ValidatedVectorMultivariateFunctionPatch(f) { }
     StepSizeType step_size() const { return static_cast<StepSizeType>(this->time_domain().upper_bound()); }
     ExactIntervalType time_domain() const { return this->domain()[this->domain().size()-1]; }
     ExactBoxType space_domain() const { return ExactBoxType(project(this->domain(),Ariadne::range(0,this->domain().size()-1))); }
-    ExactBoxType const codomain() const { return this->ValidatedVectorMultivariateFunctionModelDP::codomain(); }
+    ExactBoxType const codomain() const { return this->ValidatedVectorMultivariateFunctionPatch::codomain(); }
 };
 
 struct TransitionData;
@@ -106,7 +106,7 @@ class HybridEvolverBase
   public:
     typedef HybridEvolverInterface Interface;
     typedef HybridEvolverBaseConfiguration ConfigurationType;
-    typedef ValidatedFunctionModelDPFactory::Interface FunctionFactoryType;
+    typedef ValidatedFunctionPatchFactory FunctionFactoryType;
     typedef HybridAutomatonInterface SystemType;
     typedef SystemType::TimeType TimeType;
     typedef TimeType::ContinuousTimeType ContinuousTimeType;
@@ -143,7 +143,7 @@ class HybridEvolverBase
     virtual Void reconfigure(const HybridExactBoxes& domain, const HybridExactFloatVector& lengths) { }
 
     //! \brief The class which constructs functions for the enclosures.
-    const FunctionFactoryType& function_factory() const;
+    const FunctionFactoryType function_factory() const;
     //! \brief Set the class which constructs functions for the enclosures.
     Void set_function_factory(const FunctionFactoryType& factory);
 
@@ -241,7 +241,7 @@ class HybridEvolverBase
     //! defined on a domain \f$B\times [0,h]\f$, where \f$B\f$ is the bounding
     //! box for the set, and \f$h\f$ is the step size actually used.
     virtual
-    ValidatedVectorMultivariateFunctionModelDP
+    ValidatedVectorMultivariateFunctionPatch
     _compute_flow(EffectiveVectorMultivariateFunction vector_field,
                   ExactBoxType const& initial_set,
                   const StepSizeType& maximum_step_size) const;
@@ -257,7 +257,7 @@ class HybridEvolverBase
     Set<DiscreteEvent>
     _compute_active_events(EffectiveVectorMultivariateFunction const& dynamic,
                            Map<DiscreteEvent,EffectiveScalarMultivariateFunction> const& guards,
-                           ValidatedVectorMultivariateFunctionModelDP const& flow,
+                           ValidatedVectorMultivariateFunctionPatch const& flow,
                            HybridEnclosure const& starting_set) const;
 
     //! \brief Compute data on how trajectories of the \a flow
@@ -344,7 +344,7 @@ class HybridEvolverBase
     virtual
     Void
     _apply_reach_step(HybridEnclosure& set,
-                      ValidatedVectorMultivariateFunctionModelDP const& flow,
+                      ValidatedVectorMultivariateFunctionPatch const& flow,
                       TimingData const& timing_data) const;
 
     //! \brief Apply the \a flow to the \a set for the time specified by \a timing_data
@@ -352,7 +352,7 @@ class HybridEvolverBase
     virtual
     Void
     _apply_evolve_step(HybridEnclosure& set,
-                       ValidatedVectorMultivariateFunctionModelDP const& flow,
+                       ValidatedVectorMultivariateFunctionPatch const& flow,
                        TimingData const& timing_data) const;
 
     //! \brief Apply the \a flow to the \a set for to reach the
@@ -365,7 +365,7 @@ class HybridEvolverBase
     Void
     _apply_guard_step(HybridEnclosure& set,
                       EffectiveVectorMultivariateFunction const& dynamic,
-                      ValidatedVectorMultivariateFunctionModelDP const& flow,
+                      ValidatedVectorMultivariateFunctionPatch const& flow,
                       TimingData const& timing_data,
                       TransitionData const& transition_data,
                       CrossingData const& crossing_data,
@@ -388,9 +388,9 @@ class HybridEvolverBase
     virtual
     Void
     _apply_guard(List<HybridEnclosure>& sets,
-                 const ValidatedScalarMultivariateFunctionModelDP& sets_elapsed_time,
+                 const ValidatedScalarMultivariateFunctionPatch& sets_elapsed_time,
                  const HybridEnclosure& starting_set,
-                 const ValidatedVectorMultivariateFunctionModelDP& flow,
+                 const ValidatedVectorMultivariateFunctionPatch& flow,
                  const TransitionData& transition_data,
                  const CrossingData crossing_data,
                  const Semantics semantics) const;
@@ -438,7 +438,7 @@ class HybridEvolverBase
     Void
     _apply_evolution_step(EvolutionData& evolution_data,
                           HybridEnclosure const& starting_set,
-                          ValidatedVectorMultivariateFunctionModelDP const& flow,
+                          ValidatedVectorMultivariateFunctionPatch const& flow,
                           TimingData const& timing_data,
                           Map<DiscreteEvent,CrossingData> const& crossing_data,
                           EffectiveVectorMultivariateFunction const& dynamic,
@@ -450,10 +450,10 @@ class HybridEvolverBase
     _log_summary(EvolutionData const& evolution_data, HybridEnclosure const& starting_set) const;
 
   protected:
-    Void _create(const SystemType& system, FunctionFactoryType* factory);
+    Void _create(const SystemType& system, const FunctionFactoryType& factory);
     std::shared_ptr< IntegratorInterface > _integrator_ptr;
   private:
-    std::shared_ptr< FunctionFactoryType > _function_factory_ptr;
+    std::shared_ptr< FunctionFactoryType::Interface > _function_factory_ptr;
   protected:
     std::shared_ptr< SolverInterface > _solver_ptr;
     std::shared_ptr< SystemType > _sys_ptr;
@@ -536,7 +536,7 @@ struct CrossingData
 {
     CrossingData() : crossing_kind() { }
     CrossingData(CrossingKind crk) : crossing_kind(crk) { }
-    CrossingData(CrossingKind crk, const ValidatedScalarMultivariateFunctionModelDP& crt)
+    CrossingData(CrossingKind crk, const ValidatedScalarMultivariateFunctionPatch& crt)
         : crossing_kind(crk), crossing_time(crt) { }
     //! \brief The way in which the guard function changes along trajectories
     //! during a crossing. e.g. increasing.
@@ -545,10 +545,10 @@ struct CrossingData
     UpperIntervalType crossing_time_range;
     //! \brief The time \f$\gamma(x)\f$ at which the crossing occurs,
     //! as a function of the initial point in space. Satisfies \f$g(\phi(x,\gamma(x)))=0\f$.
-    ValidatedScalarMultivariateFunctionModelDP crossing_time;
+    ValidatedScalarMultivariateFunctionPatch crossing_time;
     //! \brief The time \f$\mu(x)\f$ at which the guard function reaches a maximum or minimum
     //! i.e. \f$L_{f}g(\phi(x,\mu(x))) = 0\f$.
-    ValidatedScalarMultivariateFunctionModelDP critical_time;
+    ValidatedScalarMultivariateFunctionPatch critical_time;
     //! \brief The range of values of the guard function at the critical time.
     UpperIntervalType guard_range_at_critical_time;
     //! \brief The range of values of the guard function at the critical time.
@@ -604,23 +604,23 @@ OutputStream& operator<<(OutputStream& os, const FinishingKind& crk);
 //! \relates HybridEvolverBase
 struct TimingData
 {
-    TimingData() : step_size(dp) { }
+    TimingData() { }
     StepKind step_kind; //!< The kind of step taken in the evolution
     FinishingKind finishing_kind; //!< The relationship between the finishing time of the step, and the final time of the evolution trace.
     Real final_time; //!< The time \f$t_{\max}\f$ specified as the final time of the evolution trace.
-    FloatDPValue step_size; //!< The maximum step size \f$h\f$ allowed by the computed flow function.
-    ValidatedScalarMultivariateFunctionModelDP spacetime_dependent_evolution_time;
+    Dyadic step_size; //!< The maximum step size \f$h\f$ allowed by the computed flow function.
+    ValidatedScalarMultivariateFunctionPatch spacetime_dependent_evolution_time;
         //!< The evolution time \f$\varepsilon(x,t)\f$ used in a \a SPACETIME_DEPENDENT_EVOLUTION_TIME step.
-    ValidatedScalarMultivariateFunctionModelDP spacetime_dependent_finishing_time;
+    ValidatedScalarMultivariateFunctionPatch spacetime_dependent_finishing_time;
         //!< The final time \f$\omega(x,t)\f$ used in a \a SPACETIME_DEPENDENT_FINISHING_TIME step.
-    ValidatedScalarMultivariateFunctionModelDP parameter_dependent_finishing_time;
+    ValidatedScalarMultivariateFunctionPatch parameter_dependent_finishing_time;
         //!< The time \f$\omega(s)\f$ reached after an \a PARAMETER_DEPENDENT_FINISHING_TIME as a function of the parameters.
-    ValidatedScalarMultivariateFunctionModelDP parameter_dependent_evolution_time;
+    ValidatedScalarMultivariateFunctionPatch parameter_dependent_evolution_time;
         //!< The time \f$\delta(s)\f$ used in a \a PARAMETER_DEPENDENT_EVOLUTION_TIME step.
         //! Set equal to \f$\varepsilon(\xi(s))\f$ for a \a SPACE_DEPENDENT_EVOLUTION_TIME
         //! and \f$\omega(s)-\varepsilon(s)\f$ for an \a PARAMETER_DEPENDENT_FINISHING_TIME.
     ExactIntervalType evolution_time_domain; //!< The time domain of the flow function, equal to \f$[0,h]\f$.
-    ValidatedScalarMultivariateFunctionModelDP evolution_time_coordinate; //!< The time coordinate of the flow function, equal to the identity on \f$[0,h]\f$.
+    ValidatedScalarMultivariateFunctionPatch evolution_time_coordinate; //!< The time coordinate of the flow function, equal to the identity on \f$[0,h]\f$.
 };
 OutputStream& operator<<(OutputStream& os, const TimingData& timing);
 
@@ -796,13 +796,13 @@ class GeneralHybridEvolverFactory
 {
   private:
 
-    std::shared_ptr<ValidatedFunctionModelDPFactory::Interface> _function_factory;
+    std::shared_ptr<ValidatedFunctionPatchFactory::Interface> _function_factory_ptr;
 
   public:
 
     GeneralHybridEvolverFactory();
 
-    GeneralHybridEvolverFactory(const ValidatedFunctionModelDPFactory::Interface& factory);
+    GeneralHybridEvolverFactory(const ValidatedFunctionPatchFactory& factory);
 
     virtual GeneralHybridEvolverFactory* clone() const { return new GeneralHybridEvolverFactory(*this); }
 

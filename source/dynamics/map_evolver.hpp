@@ -70,7 +70,7 @@ class MapEvolver
     typedef Pair<TerminationType, EnclosureType> TimedEnclosureType;
     typedef Orbit<EnclosureType> OrbitType;
     typedef ListSet<EnclosureType> EnclosureListType;
-    typedef ValidatedFunctionModelDPFactory FunctionFactoryType;
+    typedef ValidatedFunctionPatchFactory FunctionFactoryType;
   public:
 
     //! \brief Default constructor.

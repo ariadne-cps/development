@@ -34,6 +34,9 @@ template<class I> decltype(auto) inline norm(Box<I> const& bx) { return norm(cas
 
 namespace {
 static const typename ErrorType::PrecisionType pr=typename ErrorType::PrecisionType();
+#warning
+inline ValidatedVectorMultivariateTaylorFunctionModelDP compose(ValidatedVectorMultivariateFunctionPatch const&,
+                                                                ValidatedVectorMultivariateTaylorFunctionModelDP const&);
 } // namespace
 
 template<> ErrorType wstar_multiplier<ZeroApproximation>() { return ErrorType(0u,pr); }
@@ -274,8 +277,8 @@ InclusionIntegrator<A>::operator<(const InclusionIntegratorInterface& rhs) const
     return this->index() < rhs.index();
 }
 
-template<class A> List<ValidatedVectorMultivariateFunctionModelType>
-InclusionIntegrator<A>::reach(BoxDomainType const& domx, ValidatedVectorMultivariateFunctionModelType const& evolve_function, UpperBoxType const& B, TimeStepType const& t, StepSizeType const& h) const {
+template<class A> List<ValidatedVectorMultivariateFunctionPatch>
+InclusionIntegrator<A>::reach(BoxDomainType const& domx, ValidatedVectorMultivariateFunctionPatch const& evolve_function, UpperBoxType const& B, TimeStepType const& t, StepSizeType const& h) const {
     ARIADNE_LOG_SCOPE_CREATE;
     TimeStepType new_t = lower_bound(t+h);
 
@@ -292,7 +295,7 @@ InclusionIntegrator<A>::reach(BoxDomainType const& domx, ValidatedVectorMultivar
     auto phi = this->_integrator->flow_step(Fw,domx,domt,doma,B);
     add_errors(phi,e);
 
-    List<ValidatedVectorMultivariateFunctionModelType> result;
+    List<ValidatedVectorMultivariateFunctionPatch> result;
     result.append(this->build_reach_function(evolve_function, phi, t, new_t));
 
     return result;
@@ -312,8 +315,8 @@ template<class A> Vector<EffectiveScalarMultivariateFunction> InclusionIntegrato
     return result;
 }
 
-template<class A> ValidatedVectorMultivariateFunctionModelDP InclusionIntegrator<A>::build_secondhalf_piecewise_reach_function(
-        ValidatedVectorMultivariateFunctionModelDP const& evolve_function, ValidatedVectorMultivariateFunctionModelDP const& Phi, TimeStepType const& t,
+template<class A> ValidatedVectorMultivariateFunctionPatch InclusionIntegrator<A>::build_secondhalf_piecewise_reach_function(
+        ValidatedVectorMultivariateFunctionPatch const& evolve_function, ValidatedVectorMultivariateFunctionPatch const& Phi, TimeStepType const& t,
         TimeStepType const& new_t) const {
 
     // Evolve function is e(x,a,b) at s; Flow is phi(x,h,b)
@@ -329,7 +332,7 @@ template<class A> ValidatedVectorMultivariateFunctionModelDP InclusionIntegrator
     BoxDomainType X=evolve_function.domain()[range(0,n)];
     BoxDomainType PA=evolve_function.domain()[range(n,n+a)];
     BoxDomainType PB=Phi.domain()[range(n+1,n+1+b)];
-
+#warning
     auto Tau=IntervalDomainType(t,new_t);
     BoxDomainType XTP = product(X,Tau,PA,PB);
     ValidatedVectorMultivariateTaylorFunctionModelDP xf=ValidatedVectorMultivariateTaylorFunctionModelDP::projection(XTP,range(0,n),swp);
@@ -339,11 +342,11 @@ template<class A> ValidatedVectorMultivariateFunctionModelDP InclusionIntegrator
 
     ValidatedVectorMultivariateTaylorFunctionModelDP ef=compose(evolve_function,join(xf,af,bf));
 
-    return compose(Phi,join(ef,tf,bf));
+    return static_cast<ValidatedVectorMultivariateFunctionModelDP>(compose(Phi,join(ef,tf,bf)));
 }
 
-template<class A> ValidatedVectorMultivariateFunctionModelDP InclusionIntegrator<A>::build_reach_function(
-        ValidatedVectorMultivariateFunctionModelDP const& evolve_function, ValidatedVectorMultivariateFunctionModelDP const& Phi, TimeStepType const& t,
+template<class A> ValidatedVectorMultivariateFunctionPatch InclusionIntegrator<A>::build_reach_function(
+        ValidatedVectorMultivariateFunctionPatch const& evolve_function, ValidatedVectorMultivariateFunctionPatch const& Phi, TimeStepType const& t,
         TimeStepType const& new_t) const {
 
     // Evolve function is e(x,a) at s; flow is phi(x,h,b)
@@ -362,21 +365,21 @@ template<class A> ValidatedVectorMultivariateFunctionModelDP InclusionIntegrator
 
     auto Tau=IntervalDomainType(t,new_t);
     BoxDomainType XTP = product(X,Tau,PA,PB);
-    ValidatedVectorMultivariateTaylorFunctionModelDP xf=ValidatedVectorMultivariateTaylorFunctionModelDP::projection(XTP,range(0,n),swp);
-    ValidatedScalarMultivariateTaylorFunctionModelDP tf=ValidatedScalarMultivariateTaylorFunctionModelDP::coordinate(XTP,n,swp);
-    ValidatedVectorMultivariateTaylorFunctionModelDP af=ValidatedVectorMultivariateTaylorFunctionModelDP::projection(XTP,range(n+1,n+1+a),swp);
-    ValidatedVectorMultivariateTaylorFunctionModelDP bf=ValidatedVectorMultivariateTaylorFunctionModelDP::projection(XTP,range(n+1+a,n+1+a+b),swp);
+    ValidatedVectorMultivariateTaylorFunctionModelDP xf(ValidatedVectorMultivariateTaylorFunctionModelDP::projection(XTP,range(0,n),swp));
+    ValidatedVectorMultivariateTaylorFunctionModelDP tf(ValidatedScalarMultivariateTaylorFunctionModelDP::coordinate(XTP,n,swp));
+    ValidatedVectorMultivariateTaylorFunctionModelDP af(ValidatedVectorMultivariateTaylorFunctionModelDP::projection(XTP,range(n+1,n+1+a),swp));
+    ValidatedVectorMultivariateTaylorFunctionModelDP bf(ValidatedVectorMultivariateTaylorFunctionModelDP::projection(XTP,range(n+1+a,n+1+a+b),swp));
 
     ValidatedVectorMultivariateTaylorFunctionModelDP ef=compose(evolve_function,join(xf,af));
 
-    return compose(Phi,join(ef,tf,bf));
+    return static_cast<ValidatedVectorMultivariateFunctionModelDP>(compose(Phi,join(ef,tf,bf)));
 }
 
-template<class A> ValidatedVectorMultivariateFunctionModelDP InclusionIntegrator<A>::evolve(ValidatedVectorMultivariateFunctionModelDP const& reach_function, TimeStepType const& t) const {
+template<class A> ValidatedVectorMultivariateFunctionPatch InclusionIntegrator<A>::evolve(ValidatedVectorMultivariateFunctionPatch const& reach_function, TimeStepType const& t) const {
     return partial_evaluate(reach_function,reach_function.result_size(),t);
 }
 
-Void add_errors(ValidatedVectorMultivariateFunctionModelDP& phi, Vector<ErrorType> const& e) {
+Void add_errors(ValidatedVectorMultivariateFunctionPatch& phi, Vector<ErrorType> const& e) {
     assert(phi.result_size()==e.size());
     ValidatedVectorMultivariateTaylorFunctionModelDP& tphi = dynamic_cast<ValidatedVectorMultivariateTaylorFunctionModelDP&>(phi.reference());
     for (auto i : range(e.size())) {
@@ -484,11 +487,11 @@ template<> Vector<EffectiveScalarMultivariateFunction> build_w_functions<Piecewi
     return result;
 }
 
-template<> List<ValidatedVectorMultivariateFunctionModelType>
-InclusionIntegrator<PiecewiseApproximation>::reach(BoxDomainType const& domx, ValidatedVectorMultivariateFunctionModelType const& evolve_function, UpperBoxType const& B, TimeStepType const& t, StepSizeType const& h) const {
+template<> List<ValidatedVectorMultivariateFunctionPatch>
+InclusionIntegrator<PiecewiseApproximation>::reach(BoxDomainType const& domx, ValidatedVectorMultivariateFunctionPatch const& evolve_function, UpperBoxType const& B, TimeStepType const& t, StepSizeType const& h) const {
     ARIADNE_LOG_SCOPE_CREATE;
 
-    List<ValidatedVectorMultivariateFunctionModelType> result;
+    List<ValidatedVectorMultivariateFunctionPatch> result;
 
     auto n = _f.result_size();
     auto m = _inputs.size();

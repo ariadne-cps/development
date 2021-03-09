@@ -51,22 +51,36 @@
 
 namespace Ariadne {
 
+
+template<class P> class FunctionPatchFactory;
+using ValidatedFunctionPatchFactory = FunctionPatchFactory<ValidatedTag>;
+
+#warning
+template<class P, class F> class TaylorModel;
+template<class M> class ScaledFunctionPatch;
+template<class M> class VectorScaledFunctionPatch;
+
+template<class P, class F> using ScalarMultivariateTaylorFunctionModel = ScaledFunctionPatch<TaylorModel<P,F>>;
+template<class P, class F> using VectorMultivariateTaylorFunctionModel = VectorScaledFunctionPatch<TaylorModel<P,F>>;
+
 template<class P, class D> struct AlgebraOperations<ScalarFunctionPatch<P,D>>;
 
 // FIXME: Extend with univariate case
 template<class P> class FunctionPatchFactory {
-    SharedPointer<const FunctionPatchFactoryInterface<P>> _ptr;
+    SharedPointer<FunctionPatchFactoryInterface<P>> _ptr;
     typedef RealScalar SARG;
     typedef RealVector VARG;
   public:
+    typedef FunctionPatchFactoryInterface<ValidatedTag> Interface;
     typedef P Paradigm;
     typedef IntervalDomainType ScalarDomainType;
     typedef BoxDomainType VectorDomainType;
 
     operator const FunctionPatchFactoryInterface<P>& () const { return *_ptr; }
+    SharedPointer<FunctionPatchFactoryInterface<P>> managed_pointer() const { return this->_ptr; }
 
-    explicit FunctionPatchFactory(const FunctionPatchFactoryInterface<P>* p) : _ptr(p) { }
-    explicit FunctionPatchFactory(SharedPointer<const FunctionPatchFactoryInterface<P>> p) : _ptr(p) { }
+    explicit FunctionPatchFactory(FunctionPatchFactoryInterface<P>* p) : _ptr(p) { }
+    explicit FunctionPatchFactory(SharedPointer<FunctionPatchFactoryInterface<P>> p) : _ptr(p) { }
 
     ScalarUnivariateFunctionPatch<P> create(ScalarDomainType const& dom, ScalarUnivariateFunction<P> const& f) const {
         return ScalarUnivariateFunctionPatch<P>(this->_ptr->_create(dom,f)); }
@@ -81,6 +95,8 @@ template<class P> class FunctionPatchFactory {
         return ScalarFunctionPatch<P,VARG>(this->_ptr->_create_zero(dom)); }
     ScalarFunctionPatch<P,VARG> create_constant(VectorDomainType const& dom, Number<P> const& c) const {
         return ScalarFunctionPatch<P,VARG>(this->_ptr->_create_constant(dom,c)); }
+    template<class X> requires Constructible<Number<P>,X> ScalarFunctionPatch<P,VARG> create_constant(VectorDomainType const& dom, X const& c) const {
+        return this->create_constant(dom,Number<P>(c)); }
     ScalarFunctionPatch<P,VARG> create_coordinate(VectorDomainType const& dom, SizeType index) const {
         return ScalarFunctionPatch<P,VARG>(this->_ptr->_create_coordinate(dom,index)); }
     VectorFunctionPatch<P,VARG> create_zeros(SizeType rsize, VectorDomainType const& dom) const {
@@ -144,6 +160,7 @@ template<class P, class... ARGS> class FunctionPatch<P,RealScalar(ARGS...)>
   public:
     typedef Function<P,SIG> GenericType;
     typedef P Paradigm;
+    typedef FunctionPatchInterface<P,SIG> Interface;
     typedef typename FunctionPatchInterface<P,SIG>::DomainType DomainType;
     typedef typename FunctionPatchInterface<P,SIG>::CodomainType CodomainType;
     typedef typename FunctionPatchInterface<P,SIG>::RangeType RangeType;
@@ -166,7 +183,7 @@ template<class P, class... ARGS> class FunctionPatch<P,RealScalar(ARGS...)>
     FunctionPatch& operator=(const FunctionPatch<P,SIG>& f) { this->_ptr=f._ptr; return *this; }
         FunctionPatch(const FunctionPatchInterface<P,SIG>& f) : _ptr(f._clone()) { }
     FunctionPatch(const Function<P,SIG>& f) : _ptr(dynamic_cast<FunctionPatchInterface<P,SIG>*>(f.raw_pointer()->_clone())) { }
-    template<class PR, class PRE> inline explicit FunctionPatch(FunctionModel<P,SIG,PR,PRE> fm);
+    template<class PR, class PRE> inline FunctionPatch(FunctionModel<P,SIG,PR,PRE> fm);
     operator Function<P,SIG>() const { return Function<P,SIG>(this->_ptr->_clone()); }
     operator FunctionPatchInterface<P,SIG>& () { return *_ptr; }
     operator const FunctionPatchInterface<P,SIG>& () const { return *_ptr; }
@@ -177,7 +194,6 @@ template<class P, class... ARGS> class FunctionPatch<P,RealScalar(ARGS...)>
     ScalarFunctionPatch<P,ARGS...>& operator=(const Number<P>& c);
     ScalarFunctionPatch<P,ARGS...>& operator=(const ScalarFunction<P,ARGS...>& f);
     ScalarFunctionPatch<P,ARGS...>& operator=(const ScalarFunctionPatchInterface<P,ARGS...>& f);
-//    ScalarFunctionPatch<P,D>& operator=(const ValidatedScalarMultivariateTaylorFunctionPatchDP& f);
 
     inline ArgumentSizeType argument_size() const { return this->_ptr->argument_size(); }
     template<class X> X operator() (const Vector<X>& x) const {
@@ -200,6 +216,11 @@ template<class P, class... ARGS> class FunctionPatch<P,RealScalar(ARGS...)>
         FunctionPatchFactory<P> factory(f._ptr->_patch_factory());
         return FunctionPatchCreator<FunctionPatchFactory<P>,ARGS...>(f.domain(),factory); }
   public:
+    friend ScalarFunctionPatch<P,ARGS...> operator+(ScalarFunctionPatch<P,ARGS...> const&, ScalarFunction<P,ARGS...> const&);
+    friend ScalarFunctionPatch<P,ARGS...> operator+(ScalarFunction<P,ARGS...> const&, ScalarFunctionPatch<P,ARGS...> const&);
+    friend ScalarFunctionPatch<P,ARGS...> operator-(ScalarFunctionPatch<P,ARGS...> const&, ScalarFunction<P,ARGS...> const&);
+    friend ScalarFunctionPatch<P,ARGS...> operator-(ScalarFunction<P,ARGS...> const&, ScalarFunctionPatch<P,ARGS...> const&);
+
   public:
     friend Number<P> evaluate(const ScalarFunctionPatch<P,ARGS...>& f, const Vector<Number<P>>& x) {
         return f._ptr->_evaluate(x); }
@@ -235,6 +256,8 @@ template<class P, class... ARGS> class FunctionPatch<P,RealScalar(ARGS...)>
     friend VectorFunctionPatch<P,ARGS...> join(const ScalarFunctionPatch<P,ARGS...>& f1, const ScalarFunctionPatch<P,ARGS...>& f2) {
         return join(VectorFunctionPatch<P,ARGS...>(1,f1),f2); }
     friend VectorFunctionPatch<P,ARGS...> combine(const ScalarFunctionPatch<P,ARGS...>& f1, const ScalarFunctionPatch<P,ARGS...>& f2);
+  public:
+    friend Bool refines(ScalarFunctionPatch<P,ARGS...> const& f1, ScalarFunctionPatch<P,ARGS...> const& f2);
   public:
     friend OutputStream& operator<<(OutputStream& os, const ScalarFunctionPatch<P,ARGS...>& f) {
         return os <<  f.operator ScalarMultivariateFunction<P>(); }
@@ -305,6 +328,7 @@ template<class P, class... ARGS> class FunctionPatch<P,RealVector(ARGS...)>
     clone_on_copy_ptr< VectorFunctionPatchInterface<P,ARGS...> > _ptr;
   public:
     typedef P Paradigm;
+    typedef FunctionPatchInterface<P,SIG> Interface;
     typedef VectorFunction<P,ARGS...> GenericType;
     typedef typename FunctionPatchInterface<P,SIG>::DomainType DomainType;
     typedef typename FunctionPatchInterface<P,SIG>::CodomainType CodomainType;
@@ -327,7 +351,7 @@ template<class P, class... ARGS> class FunctionPatch<P,RealVector(ARGS...)>
     inline FunctionPatch(List<ScalarFunctionPatch<P,ARGS...>> const& lsf)
         : FunctionPatch(lsf.size(),lsf[0]) { for(SizeType i=0; i!=lsf.size(); ++i) { (*this)[i]=lsf[i]; } }
     inline explicit FunctionPatch(FunctionPatchInterface<P,SIG>* p) : _ptr(p) { }
-    template<class PR, class PRE> inline explicit FunctionPatch(FunctionModel<P,SIG,PR,PRE> fm);
+    template<class PR, class PRE> inline FunctionPatch(FunctionModel<P,SIG,PR,PRE> fm);
     inline FunctionPatch(const FunctionPatchInterface<P,SIG>& f) : _ptr(f._clone()) { }
     inline FunctionPatch(const FunctionPatch<P,SIG>& f) : _ptr(f._ptr) { }
     inline FunctionPatch& operator=(const FunctionPatch<P,SIG>& f) { this->_ptr=f._ptr; return *this; }
@@ -351,8 +375,8 @@ template<class P, class... ARGS> class FunctionPatch<P,RealVector(ARGS...)>
     inline DomainType const domain() const { return this->_ptr->domain(); }
     inline CodomainType const codomain() const { return this->_ptr->codomain(); }
     inline RangeType const range() const; // { return this->_ptr->_range(); }
-//        inline Vector<ErrorType> const errors() const { return this->_ptr->_errors(); }
-//        inline ErrorType const error() const { return this->_ptr->_error(); }
+    inline Vector<ErrorType> const errors() const; // { return this->_ptr->_errors(); }
+    inline ErrorType const error() const; // { return this->_ptr->_error(); }
     inline Void clobber(); // { this->_ptr->clobber(); }
     inline Matrix<NumericType> const jacobian(const Vector<NumericType>& x) const;
 
@@ -364,17 +388,17 @@ template<class P, class... ARGS> class FunctionPatch<P,RealVector(ARGS...)>
   public:
     friend inline ScalarFunctionPatch<P,ARGS...> compose(const ScalarMultivariateFunction<P>& f, const VectorFunctionPatch<P,ARGS...>& g); // {
         // return ScalarFunctionPatch<P,ARGS...>(g._ptr->_compose(f)); }
-    friend inline ScalarFunctionPatch<P,ARGS...> compose(const ScalarFunctionPatch<P,ARGS...>& f, const VectorFunctionPatch<P,ARGS...>& g) {
-        return ScalarFunctionPatch<P,ARGS...>(g._ptr->_compose(f)); }
+    friend inline ScalarFunctionPatch<P,ARGS...> compose(const ScalarFunctionPatch<P,ARGS...>& f, const VectorFunctionPatch<P,ARGS...>& g); // {
+        // return ScalarFunctionPatch<P,ARGS...>(g._ptr->_compose(f)); }
     friend inline VectorFunctionPatch<P,ARGS...> compose(const VectorMultivariateFunction<P>& f, const VectorFunctionPatch<P,ARGS...>& g); // {
         // return VectorFunctionPatch<P,ARGS...>(g._ptr->_compose(f)); }
-    friend inline VectorFunctionPatch<P,ARGS...> compose(const VectorFunctionPatch<P,ARGS...>& f, const VectorFunctionPatch<P,ARGS...>& g) {
-        return VectorFunctionPatch<P,ARGS...>(g._ptr->_compose(f)); }
+    friend inline VectorFunctionPatch<P,ARGS...> compose(const VectorFunctionPatch<P,ARGS...>& f, const VectorFunctionPatch<P,ARGS...>& g); // {
+        // return VectorFunctionPatch<P,ARGS...>(g._ptr->_compose(f)); }
 
-    friend inline ScalarFunctionPatch<P,ARGS...> unchecked_compose(const ScalarFunctionPatch<P,ARGS...>& f, const VectorFunctionPatch<P,ARGS...>& g) {
-        return ScalarFunctionPatch<P,ARGS...>(g._ptr->_unchecked_compose(f)); }
-    friend inline VectorFunctionPatch<P,ARGS...> unchecked_compose(const VectorFunctionPatch<P,ARGS...>& f, const VectorFunctionPatch<P,ARGS...>& g) {
-        return VectorFunctionPatch<P,ARGS...>(g._ptr->_unchecked_compose(f)); }
+    friend inline ScalarFunctionPatch<P,ARGS...> unchecked_compose(const ScalarFunctionPatch<P,ARGS...>& f, const VectorFunctionPatch<P,ARGS...>& g); // {
+        // return ScalarFunctionPatch<P,ARGS...>(g._ptr->_unchecked_compose(f)); }
+    friend inline VectorFunctionPatch<P,ARGS...> unchecked_compose(const VectorFunctionPatch<P,ARGS...>& f, const VectorFunctionPatch<P,ARGS...>& g); // {
+        // return VectorFunctionPatch<P,ARGS...>(g._ptr->_unchecked_compose(f)); }
 
     friend inline VectorFunctionPatch<P,ARGS...> operator+(const VectorFunctionPatch<P,ARGS...>& f) {
         return VectorFunctionPatch<P,ARGS...>(f._ptr->_clone()); }
@@ -426,8 +450,8 @@ template<class P, class... ARGS> class FunctionPatch<P,RealVector(ARGS...)>
         return embed(f,DomainType(1,d)); }
     friend VectorFunctionPatch<P,ARGS...> restrict(const VectorFunctionPatch<P,ARGS...>& f, const DomainType& d) {
         VectorFunctionPatchInterface<P,ARGS...>* rptr=f._ptr->_clone(); rptr->restrict(d); return VectorFunctionPatch<P,ARGS...>(rptr); }
-    friend VectorFunctionPatch<P,ARGS...> restriction(const VectorFunctionPatch<P,ARGS...>& f, const DomainType& d) {
-        VectorFunctionPatchInterface<P,ARGS...>* rptr=f._ptr->_clone(); rptr->restrict(d); return VectorFunctionPatch<P,ARGS...>(rptr); }
+    friend VectorFunctionPatch<P,ARGS...> restriction(const VectorFunctionPatch<P,ARGS...>& f, const DomainType& d); // {
+        //VectorFunctionPatchInterface<P,ARGS...>* rptr=f._ptr->_clone(); rptr->restrict(d); return VectorFunctionPatch<P,ARGS...>(rptr); }
     friend inline VectorFunction<P,ARGS...> cast_unrestricted(VectorFunctionPatch<P,ARGS...> const& f);
 
     friend Vector<Number<P>> evaluate(const VectorFunctionPatch<P,ARGS...>& f, const Vector<Number<P>>& x) {
@@ -477,6 +501,8 @@ template<class P, class... ARGS> class FunctionPatch<P,RealVector(ARGS...)>
         return VectorFunctionPatch<P,ARGS...>(f1._ptr->_combine(VectorFunctionPatch<P,ARGS...>(1,f2))); };
     friend VectorFunctionPatch<P,ARGS...> combine(const VectorFunctionPatch<P,ARGS...>& f1, const VectorFunctionPatch<P,ARGS...>& f2) {
         return VectorFunctionPatch<P,ARGS...>(f1._ptr->_combine(f2)); }
+  public:
+    friend Bool refines(VectorFunctionPatch<P,ARGS...> const& f1, VectorFunctionPatch<P,ARGS...> const& f2);
 };
 
 template<class P> inline Number<P> unchecked_evaluate(const ScalarMultivariateFunction<P>& f, const Vector<Number<P>>& x) {

@@ -45,6 +45,8 @@
 #include "function/affine.hpp"
 #include "algebra/sweeper.hpp"
 
+#include "function/function_patch.hpp"
+
 namespace Ariadne {
 
 class Real;
@@ -53,9 +55,11 @@ template<class X> class Differential;
 template<class X> class Procedure;
 template<class I, class X> class Polynomial;
 template<class X> using MultivariatePolynomial = Polynomial<MultiIndex,X>;
-typedef FunctionModelFactoryInterface<ValidatedTag,DoublePrecision> ValidatedFunctionModelDPFactoryInterface;
-typedef SharedPointer<const ValidatedFunctionModelDPFactoryInterface> ValidatedFunctionModelDPFactoryPointer;
-typedef SharedPointer<const ValidatedFunctionModelDPFactoryInterface> FunctionFactoryPointer;
+
+template<class P> class FunctionPatchFactoryInterface;
+typedef FunctionPatchFactoryInterface<ValidatedTag> ValidatedFunctionPatchFactoryInterface;
+typedef SharedPointer<const ValidatedFunctionPatchFactoryInterface> ValidatedFunctionPatchFactoryPointer;
+typedef SharedPointer<const ValidatedFunctionPatchFactoryInterface> FunctionFactoryPointer;
 typedef SharedPointer<const BounderInterface> BounderPointer;
 
 struct LipschitzConstant : Attribute<ApproximateDouble> { using Attribute<ApproximateDouble>::Attribute; };
@@ -81,17 +85,17 @@ static const Generator<MaximumSpacialOrder> maximum_spacial_order = Generator<Ma
 static const Generator<MaximumTemporalOrder> maximum_temporal_order = Generator<MaximumTemporalOrder>();
 
 //! \brief Class used for storing the result of a flow step.
-class FlowStepModelType : public ValidatedVectorMultivariateFunctionModelDP {
+class FlowStepModelType : public ValidatedVectorMultivariateFunctionPatch {
   public:
-    using ValidatedVectorMultivariateFunctionModelDP::ValidatedVectorMultivariateFunctionModelDP;
-    FlowStepModelType(ValidatedVectorMultivariateFunctionModelDP const& fsmt) : ValidatedVectorMultivariateFunctionModelDP(fsmt) { }
+    using ValidatedVectorMultivariateFunctionPatch::ValidatedVectorMultivariateFunctionPatch;
+    FlowStepModelType(ValidatedVectorMultivariateFunctionPatch const& fsmt) : ValidatedVectorMultivariateFunctionPatch(fsmt) { }
     friend OutputStream& operator<<(OutputStream& os, FlowStepModelType const& flwstpm);
 };
 
 //! \brief Class used for storing the result of a flow tube.
-class FlowModelType : public List<ValidatedVectorMultivariateFunctionModelDP> {
+class FlowModelType : public List<ValidatedVectorMultivariateFunctionPatch> {
   public:
-    using List<ValidatedVectorMultivariateFunctionModelDP>::List;
+    using List<ValidatedVectorMultivariateFunctionPatch>::List;
     friend OutputStream& operator<<(OutputStream& os, FlowModelType const& flwm);
 };
 
@@ -112,9 +116,9 @@ class IntegratorBase
     ExactDouble lipschitz_tolerance() const { return this->_lipschitz_tolerance; }
 
     //! \brief The class which constructs functions for representing the flow.
-    const ValidatedFunctionModelDPFactoryInterface& function_factory() const;
+    const ValidatedFunctionPatchFactoryInterface& function_factory() const;
     //! \brief Set the class which constructs functions for representing the flow.
-    Void set_function_factory(const ValidatedFunctionModelDPFactoryInterface& factory);
+    Void set_function_factory(const ValidatedFunctionPatchFactoryInterface& factory);
 
     //! \brief The class that computes bounds.
     const BounderInterface& bounder() const;
@@ -409,7 +413,7 @@ class AffineIntegrator
 
 template<class P> class Sweeper;
 
-ValidatedVectorMultivariateFunctionModelDP
+ValidatedVectorMultivariateFunctionPatch
 series_flow_step(const ValidatedVectorMultivariateFunction& f,
                  const ExactBoxType& domx,
                  const Interval<StepSizeType>& domt,

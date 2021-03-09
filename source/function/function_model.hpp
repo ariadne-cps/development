@@ -377,10 +377,6 @@ template<class P, class ARG, class PR, class PRE> struct AlgebraOperations<Scala
 };
 
 
-// FIXME: Should not be needed since ScalarMultivariateFunctionModel has a representation
-template<class P> inline ScalarMultivariateFunctionModel<P,DoublePrecision> embed(const ScalarMultivariateFunction<P>& f, const IntervalDomainType& d) {
-    return embed(ScalarMultivariateFunctionModel<P,DoublePrecision>(f),d); }
-
 template<class P, class ARG, class PR, class PRE> inline
 ScalarFunctionModel<P,ARG,PR,PRE>& ScalarFunctionModel<P,ARG,PR,PRE>::operator=(const CanonicalNumericType<P,PR,PRE>& c) {
     (*this)*=nul(c); (*this)+=c; return *this; }

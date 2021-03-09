@@ -38,6 +38,7 @@
 #include "output/graphics_interface.hpp"
 #include "output/drawer_interface.hpp"
 
+#include "function/function_patch.hpp"
 #include "function/function_model.hpp"
 
 #include "geometry/box.hpp"
@@ -68,18 +69,18 @@ using RealVariablesBox = VariablesBox<RealInterval>;
 
 struct Variables2d;
 
-typedef Constraint<ValidatedScalarMultivariateFunctionModelDP,FloatDPBounds> ValidatedConstraintModel;
+typedef Constraint<ValidatedScalarMultivariateFunctionPatch,FloatDPBounds> ValidatedConstraintModel;
 
 typedef Dyadic StepSizeType;
 
 struct EnclosureConfiguration {
-    ValidatedFunctionModelDPFactory _function_factory;
+    ValidatedFunctionPatchFactory _function_factory;
     Paver _paver;
     Drawer _drawer;
-    EnclosureConfiguration(ValidatedFunctionModelDPFactory function_factory);
-    EnclosureConfiguration(ValidatedFunctionModelDPFactory::Interface const& function_factory)
-        : EnclosureConfiguration(ValidatedFunctionModelDPFactory(function_factory.clone())) { }
-    EnclosureConfiguration(ValidatedFunctionModelDPFactory function_factory, Paver paver, Drawer drawer)
+    EnclosureConfiguration(ValidatedFunctionPatchFactory function_factory);
+    EnclosureConfiguration(ValidatedFunctionPatchFactory::Interface const& function_factory)
+        : EnclosureConfiguration(ValidatedFunctionPatchFactory(function_factory.clone())) { }
+    EnclosureConfiguration(ValidatedFunctionPatchFactory function_factory, Paver paver, Drawer drawer)
         : _function_factory(function_factory), _paver(paver), _drawer(drawer) { }
     EnclosureConfiguration& set_paver(Paver paver) { _paver=paver; return *this; }
     EnclosureConfiguration& set_drawer(Drawer drawer) { _drawer=drawer; return *this; }
@@ -99,9 +100,9 @@ class Enclosure
 {
     ExactBoxType _domain;
     EffectiveVectorMultivariateFunction _auxiliary_mapping;
-    ValidatedVectorMultivariateFunctionModelDP _state_function;
-    ValidatedScalarMultivariateFunctionModelDP _time_function;
-    ValidatedScalarMultivariateFunctionModelDP _dwell_time_function;
+    ValidatedVectorMultivariateFunctionPatch _state_function;
+    ValidatedScalarMultivariateFunctionPatch _time_function;
+    ValidatedScalarMultivariateFunctionPatch _dwell_time_function;
     List<ValidatedConstraintModel> _constraints;
     mutable ExactBoxType _reduced_domain;
     mutable Bool _is_fully_reduced;
@@ -139,7 +140,7 @@ class Enclosure
     //! \brief The classes used to work with the set.
     const EnclosureConfiguration& configuration() const;
     //! \brief The class used to create new function instances.
-    const ValidatedFunctionModelDPFactory& function_factory() const;
+    const ValidatedFunctionPatchFactory& function_factory() const;
     //! \brief The class used to discretise the set.
     const Paver& paver() const;
     Void set_paver(Paver const&);
@@ -155,23 +156,23 @@ class Enclosure
     //! \brief An over-approximation to the image of \f$D\f$ under \f$f\f$.
     ExactBoxType codomain() const;
     //! \brief The function giving the state \c x in terms of parameters \c s, \f$x=\xi(s)\f$.
-    ValidatedVectorMultivariateFunctionModelDP const& state_function() const;
+    ValidatedVectorMultivariateFunctionPatch const& state_function() const;
     //! \brief The function giving the time \c t in terms of parameters \c s, \f$t=\tau(s)\f$.
-    ValidatedScalarMultivariateFunctionModelDP const& time_function() const;
+    ValidatedScalarMultivariateFunctionPatch const& time_function() const;
     //! \brief The function giving the auxiliary variables in terms of parameters \c s.
-    ValidatedVectorMultivariateFunctionModelDP const  auxiliary_function() const;
+    ValidatedVectorMultivariateFunctionPatch const  auxiliary_function() const;
     //! \brief The function giving the state and auxiliary variables in terms of parameters \c s.
-    ValidatedVectorMultivariateFunctionModelDP const  state_auxiliary_function() const;
+    ValidatedVectorMultivariateFunctionPatch const  state_auxiliary_function() const;
     //! \brief The function giving the state, time and auxiliary variables in terms of parameters \c s.
-    ValidatedVectorMultivariateFunctionModelDP const  state_time_auxiliary_function() const;
+    ValidatedVectorMultivariateFunctionPatch const  state_time_auxiliary_function() const;
     //! \brief The function giving the time since the last discrete jump in terms of the parameters \c s.
-    ValidatedScalarMultivariateFunctionModelDP const& dwell_time_function() const;
+    ValidatedScalarMultivariateFunctionPatch const& dwell_time_function() const;
     //! \brief The function \c g of the constrants \f$g(s)\in C\f$.
-    ValidatedVectorMultivariateFunctionModelDP const  constraint_function() const;
+    ValidatedVectorMultivariateFunctionPatch const  constraint_function() const;
     //! \brief The bounds \c C of the constrants \f$g(s)\in C\f$.
     ExactBoxType const constraint_bounds() const;
     //! \brief The function of parameters \a s giving the \a i<sup>th</sup> state variable.
-    ValidatedScalarMultivariateFunctionModelDP const  get_function(SizeType i) const;
+    ValidatedScalarMultivariateFunctionPatch const  get_function(SizeType i) const;
 
     //! \brief Set the auxiliary function.
     Void set_auxiliary_mapping(EffectiveVectorMultivariateFunction const& aux);
@@ -191,7 +192,7 @@ class Enclosure
     Void _unchecked_new_variable(ExactIntervalType ivl, EnclosureVariableKind vk);
     //! \brief Substitutes the expression \f$x_j=v(x_1,\ldots,x_{j-1},x_{j+1}\ldots,x_n)\f$ into the function and constraints.
     //! Requires that \f$v(D_1,\ldots,D_{j-1},D_{j+1}\ldots,D_n) \subset D_j\f$ where \f$D\f$ is the domain.
-    Void substitute(SizeType j, ValidatedScalarMultivariateFunctionModelDP v);
+    Void substitute(SizeType j, ValidatedScalarMultivariateFunctionPatch v);
     //! \brief Substitutes the expression \f$x_j=c\f$ into the function and constraints.
     Void substitute(SizeType j, FloatDP c);
 
@@ -214,11 +215,11 @@ class Enclosure
     Void apply_finishing_parameter_evolve_step(ValidatedVectorMultivariateFunction phi, ValidatedScalarMultivariateFunction omega);
 
     //! \brief Set \f$\xi'(s,r)=\phi(\xi(s),r)\f$ and \f$\tau'(s,r)=\tau(s)+r\f$ for \f$0\leq r\leq h\f$.
-    Void apply_full_reach_step(ValidatedVectorMultivariateFunctionModelDP phi);
+    Void apply_full_reach_step(ValidatedVectorMultivariateFunctionPatch phi);
     //! \brief Apply the flow \f$xi'(s,r)=\phi(\xi(s),r)\f$, \f$\tau'(s,r)=\tau(s)+r\f$, \f$0\leq r\leq\epsilon(\xi(s),\tau(s))\f$
-    Void apply_spacetime_reach_step(ValidatedVectorMultivariateFunctionModelDP phi, ValidatedScalarMultivariateFunction elps);
+    Void apply_spacetime_reach_step(ValidatedVectorMultivariateFunctionPatch phi, ValidatedScalarMultivariateFunction elps);
     //! \brief Set \f$\xi'(s,r)=\phi(\xi(s),r)\f$ and \f$\tau'(s,r)=\tau(s)+r\f$ for \f$0\leq r\leq\epsilon(s)\f$.
-    Void apply_parameter_reach_step(ValidatedVectorMultivariateFunctionModelDP phi, ValidatedScalarMultivariateFunction elps);
+    Void apply_parameter_reach_step(ValidatedVectorMultivariateFunctionPatch phi, ValidatedScalarMultivariateFunction elps);
 /*
     //! \brief Apply the flow \f$\phi(x,t)\f$ for \f$t\in[0,h]\f$
     Void apply_reach_step(ValidatedVectorMultivariateFunction phi, FloatDP h);
@@ -400,7 +401,7 @@ Enclosure product(const Enclosure& set1, const Enclosure& set2);
 //! \related Enclosure \brief The image of the \a set under the \a function.
 Enclosure apply(const ValidatedVectorMultivariateFunction& function, const Enclosure& set);
 //! \related Enclosure \brief The image of the \a set under the \a function. Does not perform domain-checking.
-Enclosure unchecked_apply(const ValidatedVectorMultivariateFunctionModelDP& function, const Enclosure& set);
+Enclosure unchecked_apply(const ValidatedVectorMultivariateFunctionPatch& function, const Enclosure& set);
 
 } // namespace Ariadne
 
@@ -443,7 +444,7 @@ class LabelledEnclosure
     const RealSpace space() const;
     Enclosure const& euclidean_set() const { return *this; }
     Pair<LabelledEnclosure,LabelledEnclosure> split() const;
-    Void apply_full_reach_step(ValidatedVectorMultivariateFunctionModelDP phi);
+    Void apply_full_reach_step(ValidatedVectorMultivariateFunctionPatch phi);
 
     Void apply_map(ValidatedVectorMultivariateFunction const& f);
     Void apply_map(ValidatedVectorMultivariateFunction const& f, RealSpace const& new_state_space);

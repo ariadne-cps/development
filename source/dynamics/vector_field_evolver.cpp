@@ -49,7 +49,12 @@
 
 namespace Ariadne {
 
+#warning
+inline PositiveValidatedUpperNumber abs(PositiveValidatedUpperNumber y) { return y; }
+
 namespace {
+
+
 
 template<class ES> List<ES> subdivide(const ES& enclosure) {
     List<ES> result;
@@ -136,9 +141,10 @@ typename VectorFieldEvolver::EnclosureType VectorFieldEvolver::enclosure(const R
     return EnclosureType(box,this->system().state_space(),this->function_factory());
 }
 
-typename VectorFieldEvolver::FunctionFactoryType const& VectorFieldEvolver::function_factory() const {
-    return std::dynamic_pointer_cast<const IntegratorBase>(this->_integrator)->function_factory();
-}
+#warning
+//typename VectorFieldEvolver::FunctionFactoryType const& VectorFieldEvolver::function_factory() const {
+//    return std::dynamic_pointer_cast<const IntegratorBase>(this->_integrator)->function_factory();
+//}
 
 
 Orbit<VectorFieldEvolver::EnclosureType>

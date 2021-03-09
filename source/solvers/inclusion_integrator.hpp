@@ -34,6 +34,7 @@
 #include "algebra/sweeper.hpp"
 #include "algebra/algebra.hpp"
 #include "function/domain.hpp"
+#include "function/function_patch.hpp"
 #include "function/function_model.hpp"
 #include "function/formula.hpp"
 #include "function/symbolic_function.hpp"
@@ -44,9 +45,6 @@
 namespace Ariadne {
 
 class Real;
-
-using ValidatedScalarMultivariateFunctionModelType = ValidatedScalarMultivariateFunctionModelDP;
-using ValidatedVectorMultivariateFunctionModelType = ValidatedVectorMultivariateFunctionModelDP;
 
 using TimeStepType = Dyadic;
 
@@ -64,7 +62,7 @@ inline TimeStepType lower_bound(Real const& t) {
 inline Vector<FloatDPValue> const& cast_exact(Vector<ErrorType> const& v) {
     return reinterpret_cast<Vector<FloatDPValue>const&>(v); }
 
-Void add_errors(ValidatedVectorMultivariateFunctionModelDP& phi, Vector<ErrorType> const& e);
+Void add_errors(ValidatedVectorMultivariateFunctionPatch& phi, Vector<ErrorType> const& e);
 
 EffectiveVectorMultivariateFunction substitute_v_with_w(EffectiveVectorMultivariateFunction const& F, Vector<EffectiveScalarMultivariateFunction> const& w);
 
@@ -326,8 +324,8 @@ class InclusionIntegratorInterface {
     virtual Bool operator<(const InclusionIntegratorInterface& rhs) const = 0;
     virtual Nat index() const = 0;
     virtual Nat num_params_per_input() const = 0;
-    virtual List<ValidatedVectorMultivariateFunctionModelType> reach(BoxDomainType const& D, ValidatedVectorMultivariateFunctionModelType const& evolve_function, UpperBoxType const& B, TimeStepType const& t, StepSizeType const& h) const = 0;
-    virtual ValidatedVectorMultivariateFunctionModelDP evolve(ValidatedVectorMultivariateFunctionModelDP const& reach_function, TimeStepType const& t) const = 0;
+    virtual List<ValidatedVectorMultivariateFunctionPatch> reach(BoxDomainType const& D, ValidatedVectorMultivariateFunctionPatch const& evolve_function, UpperBoxType const& B, TimeStepType const& t, StepSizeType const& h) const = 0;
+    virtual ValidatedVectorMultivariateFunctionPatch evolve(ValidatedVectorMultivariateFunctionPatch const& reach_function, TimeStepType const& t) const = 0;
     virtual Pair<StepSizeType,UpperBoxType> flow_bounds(BoxDomainType const& domx, BoxDomainType const& doma, StepSizeType const& hsug) const = 0;
 
     friend std::ostream& operator<<(std::ostream& os, const InclusionIntegratorInterface& approximator) { approximator.write(os); return os; }
@@ -348,8 +346,8 @@ class InclusionIntegrator : public InclusionIntegratorInterface {
     const Nat _num_params_per_input;
   public:
     virtual Void write(OutputStream& os) const override { os << A(); }
-    virtual List<ValidatedVectorMultivariateFunctionModelType> reach(BoxDomainType const& D, ValidatedVectorMultivariateFunctionModelType const& evolve_function, UpperBoxType const& B, TimeStepType const& t, StepSizeType const& h) const override;
-    virtual ValidatedVectorMultivariateFunctionModelDP evolve(ValidatedVectorMultivariateFunctionModelDP const& reach_function, TimeStepType const& t) const override;
+    virtual List<ValidatedVectorMultivariateFunctionPatch> reach(BoxDomainType const& D, ValidatedVectorMultivariateFunctionPatch const& evolve_function, UpperBoxType const& B, TimeStepType const& t, StepSizeType const& h) const override;
+    virtual ValidatedVectorMultivariateFunctionPatch evolve(ValidatedVectorMultivariateFunctionPatch const& reach_function, TimeStepType const& t) const override;
     virtual Pair<StepSizeType,UpperBoxType> flow_bounds(BoxDomainType const& domx, BoxDomainType const& doma, StepSizeType const& hsug) const override;
 
     virtual Bool operator==(const InclusionIntegratorInterface& rhs) const override;
@@ -363,8 +361,8 @@ class InclusionIntegrator : public InclusionIntegratorInterface {
   private:
     Vector<ErrorType> compute_errors(StepSizeType const& h, UpperBoxType const& B) const { return _processor->process(PositiveFloatDPValue(h,DoublePrecision()),B); };
     BoxDomainType build_parameter_domain(BoxDomainType const& V) const;
-    ValidatedVectorMultivariateFunctionModelDP build_reach_function(ValidatedVectorMultivariateFunctionModelDP const& evolve_function, ValidatedVectorMultivariateFunctionModelDP const& Phi, TimeStepType const& t, TimeStepType const& new_t) const;
-    ValidatedVectorMultivariateFunctionModelDP build_secondhalf_piecewise_reach_function(ValidatedVectorMultivariateFunctionModelDP const& evolve_function, ValidatedVectorMultivariateFunctionModelDP const& Phi, TimeStepType const& t, TimeStepType const& new_t) const;
+    ValidatedVectorMultivariateFunctionPatch build_reach_function(ValidatedVectorMultivariateFunctionPatch const& evolve_function, ValidatedVectorMultivariateFunctionPatch const& Phi, TimeStepType const& t, TimeStepType const& new_t) const;
+    ValidatedVectorMultivariateFunctionPatch build_secondhalf_piecewise_reach_function(ValidatedVectorMultivariateFunctionPatch const& evolve_function, ValidatedVectorMultivariateFunctionPatch const& Phi, TimeStepType const& t, TimeStepType const& new_t) const;
     Vector<EffectiveScalarMultivariateFunction> build_secondhalf_piecewise_w_functions(Interval<TimeStepType> const& domt, BoxDomainType const& doma, SizeType n, SizeType m) const;
 };
 
@@ -393,8 +391,8 @@ class InclusionIntegratorHandle {
     friend std::ostream& operator<<(std::ostream& os, const InclusionIntegratorHandle& approximator) { os << *approximator._impl; return os; }
 
     Pair<StepSizeType,UpperBoxType> flow_bounds(BoxDomainType const& domx, BoxDomainType const& doma, StepSizeType const& hsug) const { return _impl->flow_bounds(domx,doma,hsug); }
-    List<ValidatedVectorMultivariateFunctionModelType> reach(BoxDomainType const& D, ValidatedVectorMultivariateFunctionModelType const& evolve_function, UpperBoxType const& B, TimeStepType const& t, StepSizeType const& h) const { return _impl->reach(D,evolve_function,B,t,h); }
-    ValidatedVectorMultivariateFunctionModelDP evolve(ValidatedVectorMultivariateFunctionModelDP const& reach_function, TimeStepType const& t) const { return _impl->evolve(reach_function,t); }
+    List<ValidatedVectorMultivariateFunctionPatch> reach(BoxDomainType const& D, ValidatedVectorMultivariateFunctionPatch const& evolve_function, UpperBoxType const& B, TimeStepType const& t, StepSizeType const& h) const { return _impl->reach(D,evolve_function,B,t,h); }
+    ValidatedVectorMultivariateFunctionPatch evolve(ValidatedVectorMultivariateFunctionPatch const& reach_function, TimeStepType const& t) const { return _impl->evolve(reach_function,t); }
   public:
     virtual ~InclusionIntegratorHandle() = default;
 };
