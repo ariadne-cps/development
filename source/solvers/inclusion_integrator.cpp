@@ -95,7 +95,7 @@ compute_constants(EffectiveVectorMultivariateFunction const& noise_independent_c
     ErrorType ze(pr);
     ErrorType K=ze, pK=ze, pKv=ze, pKw=ze, L=ze, pL=ze, pLv=ze, pLw=ze, H=ze, pH=ze, pHv=ze, pHw=ze;
     Vector<ErrorType> Kj(n,pr), pKj(n,pr), pKjv(n,pr), pKjw(n,pr), Lj(n,pr), pLj(n,pr), pLjv(n,pr), pLjw(n,pr), Hj(n,pr), pHj(n,pr), pHjv(n,pr), pHjw(n,pr);
-    FloatDPUpperBound Lambda=ze;
+    FloatDPUpperBound Lambda=-infty;
 
     auto Df=noise_independent_component.differential(cast_singleton(B),2);
     for (auto j : range(n)) {
